@@ -9,6 +9,7 @@ import { loadManifest, type Manifest } from '../data/manifest';
 import { isMuted, setMuted, sfx } from '../audio/sfx';
 import { readNotebook, recordDiscovery, recordResult } from '../state/notebook';
 import { needsJar, renderMutant } from '../art/mutantRenderer';
+import { SKIN_TINT } from '../config/geneInfo';
 import type { Difficulty } from '../arena/bot';
 import type { MatchResult } from '../arena/ArenaScene';
 import { Lab } from './Lab';
@@ -51,6 +52,14 @@ function setUrl(params: Record<string, string> | null) {
   history.replaceState(null, '', s ? `/?${s}` : '/');
 }
 
+/** Body colour for the arena rig: blend of both parents' skin tints. */
+function bodyColorOf(m: Mutant): number {
+  const p = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [a, b] = m.visualRecipe.skins.map((k) => p(SKIN_TINT[k] ?? SKIN_TINT.none!));
+  const [r, g, bl] = a!.map((c, i) => Math.round((c + b![i]!) / 2));
+  return (r! << 16) | (g! << 8) | bl!;
+}
+
 async function fighterCanvas(m: Mutant, sprites: Manifest['sprites']): Promise<HTMLCanvasElement> {
   const c = document.createElement('canvas');
   await renderMutant(c, m.visualRecipe, 256, needsJar(sprites, m.visualRecipe));
@@ -91,7 +100,8 @@ export function App() {
     if (!TEST_MODE || !manifest) return;
     void import('../arena/sim').then(({ runBalanceSim, runHeadlessMatch }) => {
       (window as unknown as { __sim: unknown }).__sim = {
-        run: (n: number, seed: number, difficulty?: 'easy' | 'normal' | 'hard') => runBalanceSim(manifest.chogs, n, seed, undefined, difficulty),
+        run: (n: number, seed: number, difficulty?: 'easy' | 'normal' | 'hard') =>
+          runBalanceSim(manifest.chogs, n, seed, undefined, difficulty),
         match: runHeadlessMatch,
       };
     });
@@ -303,6 +313,23 @@ export function App() {
                     </button>
                   )}
                 </div>
+                <ol className="home-steps" aria-label="How it works">
+                  <li>
+                    <span className="step-n">1</span>
+                    <strong>PICK TWO CHOGS</strong>
+                    <span>Any of the 1,969 real Chog NFTs.</span>
+                  </li>
+                  <li>
+                    <span className="step-n">2</span>
+                    <strong>SPLICE</strong>
+                    <span>Their real traits become a mutant with its own moves.</span>
+                  </li>
+                  <li>
+                    <span className="step-n">3</span>
+                    <strong>FIGHT</strong>
+                    <span>Knock the lab bot off the screen. Then try another pair.</span>
+                  </li>
+                </ol>
                 <p className="mono dim small">
                   {manifest
                     ? '1,969 real Chogs. 1,937,496 possible pairings.'
@@ -373,12 +400,14 @@ export function App() {
                       canvas: canvases[0],
                       color: 0x4ff0ff,
                       kit: buildKit(mutant),
+                      bodyColor: bodyColorOf(mutant),
                     },
                     {
                       name: opponent.name,
                       canvas: canvases[1],
                       color: 0xff4fd8,
                       kit: buildKit(opponent),
+                      bodyColor: bodyColorOf(opponent),
                     },
                   ]}
                   modifiers={arenaRules?.modifiers ?? []}

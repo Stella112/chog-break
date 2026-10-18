@@ -41,3 +41,21 @@ kbd { font-family: var(--mono); background: var(--bg); border: 1px solid var(--t
 .pm-bar-go { margin-left: auto; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .pm-row-single { grid-template-columns: 1fr; }
 .pm-card canvas { width: min(180px, 100%); }
+.howto { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 1.5rem; align-items: start; margin-top: 1rem; }
+.howto h3 { margin: 0 0 0.4rem; font-size: 0.85rem; color: var(--hazard); }
+.howto ol { margin: 0 0 0.5rem; padding-left: 1.3rem; line-height: 1.7; }
+.howto-keys { display: flex; flex-wrap: wrap; gap: 1.6rem; }
+.howto-gene { grid-column: 1 / -1; margin: 0; }
+.kb-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.kb-cluster { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.kb-row { display: flex; gap: 6px; }
+.kcap { width: 74px; height: 64px; border: 2px solid var(--text); border-bottom-width: 5px; border-radius: 8px; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.kcap-key { font-family: var(--display); font-size: 1.4rem; line-height: 1; }
+.kcap-label { font-family: var(--mono); font-size: 0.62rem; color: var(--dim); text-transform: uppercase; text-align: center; line-height: 1.1; padding: 0 2px; }
+.kcap-move { border-color: var(--a); }
+.kcap-move .kcap-key { color: var(--a); }
+.kcap-attack { border-color: var(--text); }
+.kcap-gene { border-color: var(--hazard); background: rgba(255, 212, 0, 0.08); }
+.kcap-gene .kcap-key { color: var(--hazard); }
+.kcap-gene .kcap-label { color: var(--hazard); }
+@media (max-width: 820px) { .howto { grid-template-columns: 1fr; } }

@@ -27,6 +27,8 @@ export class BotSource implements ControlSource {
   private history: { t: number; x: number; y: number }[] = [];
   private lastAttackAt = -9999;
   private lastAbilityThink = 0;
+  /** First coached fight: the bot moves around but doesn't attack until this time. */
+  graceUntil = 0;
   private lastJumpAt = -9999;
   private spaceUntil = 0;
   private stuckSince = 0;
@@ -83,6 +85,13 @@ export class BotSource implements ControlSource {
     else if (this.now < this.spaceUntil) this.state = 'SPACE';
     else if (Math.abs(dx) < 90 && Math.abs(dy) < 70) this.state = 'ATTACK';
     else this.state = 'APPROACH';
+
+    // Grace period while a new player learns the controls: wander, never attack.
+    if (this.now < this.graceUntil && this.state !== 'RECOVER') {
+      this.moveTo(c, Math.abs(dx) < 220 ? me.x - Math.sign(dx || 1) * 120 : foe.x, 40);
+      this.guardEdges(c);
+      return c;
+    }
 
     switch (this.state) {
       case 'RECOVER':

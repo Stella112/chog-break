@@ -3,6 +3,7 @@ import type { ModifierId } from '../core/arenaRules';
 import { MODIFIER_INFO } from '../config/geneInfo';
 import type { ArenaScene } from './ArenaScene';
 import { MATCH, STAGE } from './rules';
+import { Coach } from './coach';
 
 /** Fixed overlay drawn above the zooming arena camera: timer, damage panels, banners, modifiers. */
 export class HudScene extends Phaser.Scene {
@@ -11,6 +12,8 @@ export class HudScene extends Phaser.Scene {
   private panels: { dmg: Phaser.GameObjects.Text; pips: Phaser.GameObjects.Graphics; shownDmg: number }[] = [];
   private bannerText!: Phaser.GameObjects.Text;
   private modText!: Phaser.GameObjects.Text;
+  private coach: Coach | null = null;
+  private coachPending = false;
 
   constructor() {
     super('hud');
@@ -19,6 +22,8 @@ export class HudScene extends Phaser.Scene {
   init(data: { arena: ArenaScene }) {
     this.arena = data.arena;
     this.panels = [];
+    this.coach = null;
+    this.coachPending = !!data.arena.cfg.showControls && data.arena.cfg.drivers[0] === 'human';
   }
 
   create() {
@@ -39,20 +44,7 @@ export class HudScene extends Phaser.Scene {
     });
     this.modText = this.add.text(STAGE.width / 2, 70, '', { ...mono, fontSize: '14px', color: '#ffd400', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5);
     this.setModifiers(cfg.modifiers ?? []);
-    if (cfg.showControls) this.controlsCard(cfg.drivers[1] === 'human');
     this.bannerText = this.add.text(STAGE.width / 2, STAGE.height / 2 - 60, '', { ...font, fontSize: '96px', color: '#ffd400', stroke: '#000', strokeThickness: 10 }).setOrigin(0.5).setAlpha(0);
-  }
-
-  private controlsCard(twoPlayer: boolean) {
-    const lines = ['A/D move   W jump ×2 + recovery   S drop', 'J punch   K dash   L special   I close'];
-    if (twoPlayer) lines.push('P2: ←/→  ↑  ↓   ,  punch   .  dash   /  special   M  close');
-    const box = this.add.container(STAGE.width / 2, 170);
-    const h = 28 + lines.length * 24;
-    box.add(this.add.rectangle(0, 0, 640, h, 0x000000, 0.75).setStrokeStyle(2, 0xffd400));
-    lines.forEach((l, i) =>
-      box.add(this.add.text(0, -h / 2 + 22 + i * 24, l, { fontFamily: '"JetBrains Mono", monospace', fontSize: '16px', color: '#f1eef7' }).setOrigin(0.5)),
-    );
-    this.tweens.add({ targets: box, alpha: 0, delay: 4500, duration: 600, onComplete: () => box.destroy() });
   }
 
   setModifiers(mods: ModifierId[]) {
@@ -73,6 +65,12 @@ export class HudScene extends Phaser.Scene {
   update() {
     const a = this.arena;
     if (!a.fighters || !this.timer) return;
+    // First fight: start coaching once the arena is live (fighters exist).
+    if (this.coachPending) {
+      this.coachPending = false;
+      this.coach = new Coach(this, a.fighters[0], a.fighters[1]);
+    }
+    this.coach?.update();
     const left = Math.max(0, MATCH.durationMs - a.elapsedMs);
     this.timer.setText(a.suddenDeath ? 'SUDDEN DEATH' : `${Math.floor(left / 60000)}:${String(Math.floor((left % 60000) / 1000)).padStart(2, '0')}`);
     this.timer.setColor(left < 10_000 && !a.suddenDeath ? '#ff4f4f' : '#f1eef7');

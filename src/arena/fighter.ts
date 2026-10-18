@@ -6,6 +6,7 @@ import { baselineKit, type FighterKit, type PhysicsProfile } from './kit';
 import { MATCH, newScore, type FighterScore } from './rules';
 import { startClose, startSpecial } from './moves';
 import { TUNING } from './tuning';
+import { FighterRig, RIG_SCALE } from './rig';
 
 export type { PhysicsProfile };
 
@@ -72,6 +73,8 @@ export class Fighter {
   private shadow: Phaser.GameObjects.Ellipse;
   private ring: Phaser.GameObjects.Ellipse;
   private tag: Phaser.GameObjects.Text;
+  /** Animated character drawn over the (invisible) physics sprite; null in headless sims. */
+  rig: FighterRig | null = null;
   private lastFallSpeed = 0;
 
   constructor(
@@ -95,8 +98,8 @@ export class Fighter {
     this.body.setAllowGravity(true);
     this.applyFacing();
     // Readability: ground shadow, player-colour ring under the feet, and a P1/P2/CPU tag.
-    this.shadow = scene.add.ellipse(spawn.x, spawn.y, 76, 16, 0x000000, 0.35).setDepth(9);
-    this.ring = scene.add.ellipse(spawn.x, spawn.y, 84, 20).setStrokeStyle(3, color, 0.9).setDepth(9);
+    this.shadow = scene.add.ellipse(spawn.x, spawn.y, 86, 18, 0x000000, 0.35).setDepth(9);
+    this.ring = scene.add.ellipse(spawn.x, spawn.y, 94, 22).setStrokeStyle(3, color, 0.9).setDepth(9);
     this.tag = scene.add
       .text(spawn.x, spawn.y - 80, '', { fontFamily: '"JetBrains Mono", monospace', fontSize: '14px', color: '#' + color.toString(16).padStart(6, '0'), stroke: '#000', strokeThickness: 4 })
       .setOrigin(0.5)
@@ -105,6 +108,21 @@ export class Fighter {
 
   setTag(text: string) {
     this.tag.setText(text);
+  }
+
+  /** Swap the flat portrait for the animated rig (round portrait head on a code-drawn body). */
+  attachRig(headKey: string, bodyColor: number) {
+    this.rig = new FighterRig(this.scene, headKey, bodyColor, this.color);
+    this.sprite.setVisible(false);
+  }
+
+  /** Brief full-colour flash (hits, toxic ticks). */
+  flash(color: number, ms: number) {
+    if (this.rig) this.rig.flash(color, ms);
+    else {
+      this.sprite.setTintFill(color);
+      this.scene.time.delayedCall(ms, () => this.sprite.clearTint());
+    }
   }
 
   get profile(): PhysicsProfile {
@@ -496,18 +514,47 @@ export class Fighter {
       this.shadow.setVisible(false);
       this.ring.setVisible(false);
     }
-    this.tag.setPosition(this.x, b.y - 22 * this.sizeMul - 10).setVisible(visible);
+    const headTop = this.rig ? b.bottom - 124 * RIG_SCALE * this.sizeMul : b.y - 22 * this.sizeMul;
+    this.tag.setPosition(this.x, headTop - 10).setVisible(visible);
     const lean = this.state === 'hitstun' ? b.velocity.x * 0.02 : (b.velocity.x / TUNING.runSpeed) * 7;
-    this.sprite.setAngle(Phaser.Math.Clamp(lean, -25, 25));
     let alpha = 1;
     if (now < this.invulnUntil) alpha = Math.floor(now / 80) % 2 ? 0.35 : 1;
     if (now < this.hiddenUntil) alpha = 0.15;
+    let tint: number | null = null;
+    if (now < this.rageUntil) tint = 0xff8080;
+    else if (now < this.superArmorUntil) tint = 0xffe680;
+    else if (this.blocking) tint = 0x9fd8ff;
+    else if (this.kit.unstable) tint = Phaser.Display.Color.HSVToRGB((now / 1500) % 1, 0.25, 1).color;
+
+    if (this.rig) {
+      const a = this.attackId ? ATTACKS[this.attackId] : null;
+      const punch = a ? (now - this.attackStart) / (a.startupMs + a.activeMs + a.recoveryMs * 0.5) : -1;
+      this.rig.setAlpha(alpha);
+      this.rig.setTint(tint);
+      this.rig.update(
+        this.x,
+        b.bottom,
+        {
+          vx: b.velocity.x,
+          vy: b.velocity.y,
+          grounded: this.grounded,
+          facing: this.facing,
+          state: this.state,
+          punch,
+          punchStep: this.comboStep,
+          blocking: this.blocking,
+          sizeMul: this.sizeMul,
+          runSpeed: TUNING.runSpeed,
+        },
+        now,
+        Math.min(50, this.scene.game.loop.delta),
+      );
+      return;
+    }
+    this.sprite.setAngle(Phaser.Math.Clamp(lean, -25, 25));
     this.sprite.setAlpha(alpha);
     if (!this.scene.tweens.isTweening(this.sprite)) this.sprite.setScale(this.baseScale * this.sizeMul);
-    if (now < this.rageUntil) this.sprite.setTint(0xff8080);
-    else if (now < this.superArmorUntil) this.sprite.setTint(0xffe680);
-    else if (this.blocking) this.sprite.setTint(0x9fd8ff);
-    else if (this.kit.unstable) this.sprite.setTint(Phaser.Display.Color.HSVToRGB(((now / 1500) % 1), 0.25, 1).color);
+    if (tint !== null) this.sprite.setTint(tint);
     else if (this.sprite.isTinted && !this.sprite.tintFill) this.sprite.clearTint();
   }
 
@@ -517,6 +564,7 @@ export class Fighter {
     this.body.setVelocity(0, 0);
     this.body.setAllowGravity(false);
     this.sprite.setVisible(false);
+    this.rig?.setVisible(false);
     this.shadow.setVisible(false);
     this.ring.setVisible(false);
     this.tag.setVisible(false);
@@ -526,7 +574,8 @@ export class Fighter {
     this.state = 'free';
     this.attackId = null;
     this.action = null;
-    this.sprite.setVisible(true);
+    this.sprite.setVisible(!this.rig);
+    this.rig?.setVisible(true);
     this.body.setAllowGravity(true);
     this.body.reset(x, y);
     this.body.setVelocity(0, 0);
@@ -539,6 +588,7 @@ export class Fighter {
   }
 
   private squash(sx: number, sy: number) {
+    if (this.rig) return this.rig.squash(sx, sy);
     const base = this.baseScale * this.sizeMul;
     this.scene.tweens.killTweensOf(this.sprite);
     this.sprite.setScale(base * sx, base * sy);

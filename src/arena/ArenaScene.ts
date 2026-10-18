@@ -10,9 +10,10 @@ import { EMPTY_CONTROLS, KEYMAP, KeyboardSource, type ControlSource } from './in
 import type { FighterKit } from './kit';
 import { ModifierRuntime, modifierPhysics, type ModifierHost } from './modifiers';
 import { ATTACKS } from './attacks';
+import { makeHeadCanvas } from './rig';
 import { applyKO, isOutside, knockback, knockbackVector, MATCH, resolveMatch, respawn, STAGE } from './rules';
 
-export type FighterSetup = { name: string; canvas: HTMLCanvasElement; color: number; kit?: FighterKit };
+export type FighterSetup = { name: string; canvas: HTMLCanvasElement; color: number; kit?: FighterKit; bodyColor?: number };
 export type MatchResult = {
   winner: 0 | 1 | null;
   reason: 'stocks' | 'time';
@@ -105,6 +106,12 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
       const f = new Fighter(this, i as 0 | 1, `fighter-${i}`, spawns[i]!, setup.color, setup.kit);
       f.ctx = this;
       f.sprite.setDepth(DEPTH.fighter);
+      if (!this.instant && this.game.renderer) {
+        const key = `head-${i}`;
+        if (this.textures.exists(key)) this.textures.remove(key);
+        this.textures.addCanvas(key, makeHeadCanvas(setup.canvas, setup.color));
+        f.attachRig(key, setup.bodyColor ?? 0xb48cff);
+      }
       f.setTag(this.cfg.drivers[i] === 'bot' ? 'CPU' : this.cfg.drivers[0] === 'human' && this.cfg.drivers[1] === 'human' ? `P${i + 1}` : 'YOU');
       return f;
     }) as [Fighter, Fighter];
@@ -150,6 +157,10 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
 
   private go() {
     this.live = true;
+    // First coached fight: give the new player 8 s to try the controls before the bot attacks.
+    if (this.cfg.showControls) {
+      for (const src of this.sources) if (src instanceof BotSource) src.graceUntil = this.time.now + 8000;
+    }
   }
 
   update(time: number, delta: number) {
@@ -165,6 +176,9 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
     this.elapsedMs += dt;
 
     const [a, b] = this.fighters;
+    // Blast zones are checked right after the physics step and BEFORE anyone acts,
+    // so a fighter past the line can't teleport (BLINK/WARP) back out on the same frame.
+    for (const f of this.fighters) if (f.state !== 'ko' && isOutside(f.x, f.y)) this.onBlast(f);
     const ca = this.sources[0].read();
     const cb = this.sources[1].read();
     a.update(time, dt, ca, b);
@@ -181,7 +195,6 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
     this.frogs = this.frogs.filter((f) => f.alive);
 
     for (const f of this.fighters) {
-      if (f.state !== 'ko' && isOutside(f.x, f.y)) this.onBlast(f);
       if (!this.instant && f.state === 'hitstun' && Math.hypot(f.body.velocity.x, f.body.velocity.y) > 650 && time > this.trailAt) {
         this.trailAt = time + 28;
         const dot = this.add.circle(f.x, f.y, 14, 0xffffff, 0.5).setDepth(DEPTH.fx);
@@ -246,8 +259,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
 
     if (tick || spec.noKnockback) {
       if (!this.instant) {
-        target.sprite.setTintFill(0x8aff4f);
-        this.time.delayedCall(50, () => target.sprite.clearTint());
+        target.flash(0x8aff4f, 50);
       }
       return dmg;
     }
@@ -281,8 +293,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
     // feel: hitstop, flash, particles, number, sound, shake
     this.hitstopUntil = now + spec.hitstopMs + (big ? 30 : 0);
     if (!this.instant) {
-      target.sprite.setTintFill(0xffffff);
-      this.time.delayedCall(70, () => target.sprite.clearTint());
+      target.flash(0xffffff, 70);
       this.burst(target.x, target.y, big ? 14 : 8, big ? 0xffd400 : 0xffffff);
       this.damageNumber(target.x, target.y - 60, Math.round(dmg), big);
       if (big) {
@@ -623,7 +634,9 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
       for (let i = 0; i < 4; i++) {
         this.time.delayedCall(i * 35, () => {
           if (f.state === 'ko') return;
-          const ghost = this.add.image(f.x, f.y - 6, f.sprite.texture.key).setDisplaySize(f.sprite.displayWidth, f.sprite.displayHeight).setFlipX(f.facing === -1).setAlpha(0.4).setTint(f.color).setDepth(DEPTH.fighter - 1);
+          const ghost = f.rig
+            ? this.add.image(f.x, f.body.bottom - 102, f.rig.headKey).setDisplaySize(98, 98).setAlpha(0.45).setTint(f.color).setDepth(DEPTH.fighter - 1)
+            : this.add.image(f.x, f.y - 6, f.sprite.texture.key).setDisplaySize(f.sprite.displayWidth, f.sprite.displayHeight).setFlipX(f.facing === -1).setAlpha(0.4).setTint(f.color).setDepth(DEPTH.fighter - 1);
           this.tweens.add({ targets: ghost, alpha: 0, duration: 220, onComplete: () => ghost.destroy() });
         });
       }

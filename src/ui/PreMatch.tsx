@@ -5,6 +5,7 @@ import type { ModifierId } from '../core/arenaRules';
 import type { Mutant } from '../core/splice';
 import { GENE_INFO, MODIFIER_INFO } from '../config/geneInfo';
 import { needsJar, renderMutant } from '../art/mutantRenderer';
+import { HowToPlay } from './HowToPlay';
 
 function MoveList({ m }: { m: Mutant }) {
   // The kit is what actually plays, so labels always match real effects (§F Phase 4 fallback rule).
@@ -65,17 +66,6 @@ function MutantCard({
     </div>
   );
 }
-
-// [action, P1 keys, P2 keys] — P2 avoids the numpad so laptops work (§D7).
-const CONTROLS: [string, string, string][] = [
-  ['Move', 'A / D', '← / →'],
-  ['Jump · double jump · recovery', 'W', '↑'],
-  ['Drop through / fast fall', 'S', '↓'],
-  ['Punch (3-hit combo)', 'J', ','],
-  ['Dash (hits!) · GUARD heads block', 'K', '.'],
-  ['Special (from the Eyes)', 'L', '/'],
-  ['Close move (from the Mouth)', 'I', 'M'],
-];
 
 type Props = {
   player: Mutant;
@@ -174,6 +164,7 @@ export function PreMatch({
           </button>
         </div>
       </div>
+      <HowToPlay player={player} twoPlayer={mode === '2p'} />
       {modifiers.length === 0 ? (
         <p className="stable mono">STABLE… FOR NOW</p>
       ) : (
@@ -192,41 +183,6 @@ export function PreMatch({
           </p>
         </div>
       )}
-      <div className="pm-row pm-row-single">
-        <div className="panel pm-controls">
-          <h3 className="mono">CONTROLS</h3>
-          <table>
-            {mode === '2p' && (
-              <thead>
-                <tr>
-                  <th className="mono small">P1</th>
-                  <th className="mono small">P2</th>
-                  <th />
-                </tr>
-              </thead>
-            )}
-            <tbody>
-              {CONTROLS.map(([action, k1, k2]) => (
-                <tr key={action}>
-                  <th>
-                    <kbd>{k1}</kbd>
-                  </th>
-                  {mode === '2p' && (
-                    <th>
-                      <kbd>{k2}</kbd>
-                    </th>
-                  )}
-                  <td>{action}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="small dim">
-            Knock your opponent past the edge of the screen. 2 lives each. The more damage, the
-            further they fly.
-          </p>
-        </div>
-      </div>
     </section>
   );
 }
