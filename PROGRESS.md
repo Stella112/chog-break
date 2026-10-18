@@ -43,7 +43,6 @@ Built: Phaser 3 arena (Arcade Physics), 1280×720 logical stage, main platform p
 - FUN GATE needs Maris (see "What Maris must do").
 
 ## Next
-- Finish sprites → contact-sheet survey of 25 sprites in DECISIONS.md → compositor tuning.
 - After the FUN GATE: Phase 4A (high-traffic genes, P0 modifiers, P0 recipe perks).
 
 ## What Maris must do (FUN GATE)
