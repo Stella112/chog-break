@@ -97,3 +97,21 @@ test('arena frame rate', async ({ page }) => {
   console.log(`arena fps: ${fps.toFixed(1)}`);
   expect(fps).toBeGreaterThan(50);
 });
+
+test('resting fighters never sink through the floor at a low frame rate', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  await toArena(page, errors);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 20 });
+  await page.evaluate(() => {
+    window.__arena!.idle(0, 300);
+    window.__arena!.idle(1, 1000);
+  });
+  await page.waitForTimeout(10_000);
+  const s = await page.evaluate(() => window.__arena!.state());
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+  console.log(`after 10 s throttled: lives ${s.fighters.map((f) => f.lives).join('/')}, y ${s.fighters.map((f) => Math.round(f.y)).join('/')}`);
+  expect(s.fighters.map((f) => f.lives)).toEqual([2, 2]);
+  expect(errors).toEqual([]);
+});

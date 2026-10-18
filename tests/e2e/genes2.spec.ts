@@ -260,10 +260,16 @@ test('P0 arena modifiers: telegraph, effect', async ({ page }) => {
   await page.waitForFunction(() => (window as any).__arena.state().entities.zones.includes('floor-toxic'), null, { timeout: 5000 });
   const zone = await page.evaluate(() => {
     const z = (window as any).__arena.scene.zones.find((z: any) => z.o.kind === 'floor-toxic');
-    return { x: z.rect.x, w: z.rect.width, armedIn: z.activeAt - (window as any).__arena.scene.time.now };
+    return { x: z.rect.x, w: z.rect.width, armedIn: z.activeAt - (window as any).__arena.scene.time.now, dieIn: z.dieAt - (window as any).__arena.scene.time.now };
   });
   expect(zone.armedIn).toBeGreaterThan(500); // visible telegraph before it hurts
-  await page.evaluate((x) => (window as any).__arena.idle(0, x), zone.x + zone.w / 2);
+  // Park on the glowing segment and make sure we are standing on the main floor (not a float above it).
+  for (let tries = 0; tries < 5; tries++) {
+    await page.evaluate((x) => (window as any).__arena.idle(0, x), zone.x + zone.w / 2);
+    await page.waitForTimeout(250);
+    const y = await page.evaluate(() => (window as any).__arena.scene.fighters[0].y);
+    if (Math.abs(y - 521) < 6) break;
+  }
   // Wait on game time, not wall time: under load the game clock runs slower than real time.
   await page.waitForFunction(() => (window as any).__arena.scene.fighters[0].score.damage > 0, null, { timeout: 15_000 }).catch(() => {});
   const dmg = await page.evaluate(() => (window as any).__arena.scene.fighters[0].score.damage);

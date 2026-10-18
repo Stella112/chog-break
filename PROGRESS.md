@@ -140,6 +140,16 @@ Done:
 - Balance with P1 live (300 matches, seed 2026): the first run FAILED (PUKE 72% at n=50; LEECH 80%; healing genes ~80% because bot matches reach the 120 s timer). Tuned: PUKE 2→1.5 dmg/tick and cooldown 3→3.5 s; LEECH 8→7 dmg, heal 35→25%; REGEN/BLOOM heal 1% every 3 s (was 2 s). Re-run PASSES; highest with n ≥ 30 is FROST 59.3%. Small samples are still noisy (UNDEAD 89% at n=19; it was 63–68% in earlier runs). Weakest: SHIV 20% (n=10), DROOL 29%, TEARS 31%, FLOATY 32%.
 - Bug fixed: a key tapped down and up within one frame was lost (Phaser clears JustDown on keyup). Presses are now queued from keydown, which also buffers inputs during hitstop.
 
+## Game polish pass (Maris: "keep polishing the game: feel, visuals, bot")
+Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tests/e2e/shots.spec.ts` → `test-results/shots/`).
+- **Camera:** Smash-style dynamic camera frames both live fighters (zoom 1–1.35, eased, clamped so no void shows); zooms out on GAME!. The HUD moved to an overlay scene (`src/arena/HudScene.ts`) so it stays fixed; damage numbers punch when they rise; a lost life shows as a crossed-out pip.
+- **Readability:** ground shadow (shrinks with height), player-colour ring under the feet, YOU/CPU/P1/P2 tag above each fighter.
+- **Attack visuals:** punch arcs in the player's colour (gold on the combo finisher), headbutt arc, dash afterimages, a growing flickering glow while BEAM charges (replaced the hard-to-read "CHARGING" text).
+- **Pre-match:** mode, difficulty and FIGHT ▸ moved into one bar under the mutant cards (they were below the fold at 900 px). The first match of a session flashes a compact controls card during the countdown.
+- **Lethality (bot matches mostly timed out):** knockback unit 1.0 → 1.2 and hitstun air drag 520 → 420. Hard bot-vs-bot, 20 matches: lives lost per match 0.85 → 1.55 (×1.1) → **1.8** (×1.2), KO finishes 2/20 → 8/20, average match 118 s → 107 s. The early-kill guard is now physics-based: at 60% no move carries a normal-weight fighter from mid-stage to the blast zone (unit test).
+- **Bot:** edge-guards with ranged specials (SPIT/BEAM/CHAOS ORB/TEARS) at an opponent recovering from off-stage.
+- Refactor: fighter tuning constants moved to `src/arena/tuning.ts` (Phaser-free, unit-testable).
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 

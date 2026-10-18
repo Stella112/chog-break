@@ -82,7 +82,7 @@ export function startSpecial(f: Fighter, now: number) {
             done = true;
             const dealt = ctx.hit(f, foe, spec, f.facing);
             if (dealt > 0) {
-              const heal = dealt * 0.25;
+              const heal = dealt * 0.15;
               f.score.damage = Math.max(0, f.score.damage - heal);
               ctx.fx('text', f.x, f.y - 80, 0x8aff4f, 18, `+${Math.round(heal)} HEAL`);
               ctx.sfx('heal');
@@ -192,7 +192,7 @@ export function startClose(f: Fighter, now: number) {
     }
 
     case 'BUBBLE':
-      f.bubbleUntil = now + 1200;
+      f.bubbleUntil = now + 1000;
       ctx.fx('ring', f.x, f.y, 0xff9fd8, 60);
       recoveryAction(f, now, 120, 1);
       break;

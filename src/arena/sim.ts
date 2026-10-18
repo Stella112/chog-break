@@ -50,7 +50,7 @@ export function runHeadlessMatch(kits: [FighterKit, FighterKit], modifiers: Aren
       parent: host,
       width: STAGE.width,
       height: STAGE.height,
-      physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 1900 }, fps: 60 } },
+      physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 1900 }, fps: 60, overlapBias: 20, fixedStep: true } },
       banner: false,
       audio: { noAudio: true },
       scene: [],

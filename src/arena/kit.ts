@@ -29,7 +29,7 @@ export const SPECIAL_CD: Record<SpecialGene, number> = {
   BEAM: 5000,
   BLINK: 3000,
   TEARS: 4000,
-  LEECH: 4000,
+  LEECH: 5000,
   RAGE: 6000,
   CHAOS_ORB: 4000,
   SPIT: 3000,
@@ -37,7 +37,7 @@ export const SPECIAL_CD: Record<SpecialGene, number> = {
 export const CLOSE_CD: Record<CloseGene, number> = {
   PUKE: 3500,
   DROOL: 4000,
-  BUBBLE: 4000,
+  BUBBLE: 5500,
   COIN_TOSS: 2500,
   HONK: 4000,
   HEADBUTT: 1500,

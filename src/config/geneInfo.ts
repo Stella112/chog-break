@@ -30,7 +30,7 @@ export const GENE_INFO: Record<string, { label: string; desc: string }> = {
   // Mouth
   PUKE: { label: 'PUKE', desc: 'Multi-hit rainbow cone' },
   DROOL: { label: 'DROOL', desc: 'Slippery puddle at your feet' },
-  BUBBLE: { label: 'BUBBLE', desc: 'Bubble shield; slows falling' },
+  BUBBLE: { label: 'BUBBLE', desc: '1 s bubble shield; slows falling' },
   COIN_TOSS: { label: 'COIN TOSS', desc: 'Arcing coin projectile' },
   HONK: { label: 'HONK', desc: 'Close-range stun' },
   HEADBUTT: { label: 'HEADBUTT', desc: 'Quick headbutt' },

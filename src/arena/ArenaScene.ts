@@ -650,11 +650,14 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
         f.recoveryUsed = false;
         f.airDashUsed = false;
         f.body.reset(x, y);
+        f.body.prev.copy(f.body.position); // no stale "came from above" for one-way platforms
         f.body.setVelocity(vx, vy);
       },
       idle: (i: 0 | 1, x = 640) => {
         this.sources[i] = { read: () => EMPTY_CONTROLS };
-        this.fighters[i].body.reset(x, STAGE.mainY - 60);
+        const b = this.fighters[i].body;
+        b.reset(x, STAGE.mainY - 60);
+        b.prev.copy(b.position); // no stale "came from above" for one-way platforms
       },
       press: (i: 0 | 1, key: 'special' | 'close' | 'punch' | 'dash') => {
         // One-frame press: restores the real source only after the press has been read.

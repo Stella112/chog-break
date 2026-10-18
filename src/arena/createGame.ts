@@ -11,7 +11,8 @@ export function createArenaGame(parent: HTMLElement, cfg: ArenaConfig): Phaser.G
     height: STAGE.height,
     backgroundColor: '#07060b',
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-    physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 1900 }, debug: false } },
+    // overlapBias 20 (default 4): at low frame rates a resting fighter sank > 4 px per step and fell through the floor.
+    physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 1900 }, debug: false, overlapBias: 20, fixedStep: true } },
     fps: { target: 60 },
     banner: false,
     audio: { noAudio: true },

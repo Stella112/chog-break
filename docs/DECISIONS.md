@@ -27,3 +27,5 @@
 - **Live stage edges:** SHRINKING STAGE moves the main platform's edges at runtime; `groundAt`, the bot and UNDEAD revive read the live edges (`ArenaScene.edges`).
 - **Input buffering:** keyboard presses are queued from keydown and consumed on the next read (no lost taps; presses during hitstop fire right after).
 - **2P notebook rule:** local 2P matches don't change the mutant's W–L record (the record is "your mutant vs the lab bot").
+- **Lethality tuning (polish pass):** `KNOCKBACK.unit` 1.2 and `TUNING.hitstunDrag` 420. Measured with the headless sim (Hard bots, 20 matches): lives lost per 120 s went 0.85 → 1.8. The "no unavoidable kill below ~60%" rule is checked physically: travel = vx² / (2 · drag) < 840 px for every base move at 60% on a weight-1 target.
+- **HUD as an overlay scene:** a zooming arena camera would scale and move a same-scene HUD, so the HUD is a separate Phaser scene launched alongside the arena.
