@@ -35,11 +35,11 @@ await pool(records, 8, async (r) => {
     const png = await base.png().toBuffer();
     await sharp(png)
       .resize(256, 256, { fit: 'contain', background: transparent })
-      .webp({ quality: 82, alphaQuality: 90 })
+      .webp({ quality: 68, alphaQuality: 80, effort: 6 })
       .toFile(`${OUT}/${r.tokenId}.webp`);
     await sharp(png)
       .resize(96, 96, { fit: 'contain', background: transparent })
-      .webp({ quality: 75 })
+      .webp({ quality: 60, effort: 6 })
       .toFile(`${OUT}/thumbs/${r.tokenId}.webp`);
     meta[r.tokenId] = {
       bgRemoved,

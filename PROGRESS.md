@@ -4,58 +4,53 @@
 2026-10-18 by the BUILDER (Claude Code)
 
 ## Current phase
-**Phase 0: setup, facts and data.** The scaffold is done and chain facts are verified. The metadata fetch is running and the sprites come after it.
+**Phase 3: base fight. Waiting on the FUN GATE (HUMAN CHECKPOINT).** Phases 0–2 are done apart from the sprite download, which is finishing.
 
-### Phase 0 plan
-1. Scaffold (§B): done
-2. `scripts/verify-chain.ts` → `docs/CHAIN_CHECK.md`: done
-3. `scripts/build-manifest.ts` → `public/data/chogs.json` + `valid-token-ids.json`: minted set proven; metadata fetch in progress (resumable `.cache/meta`)
-4. `scripts/trait-report.ts` → `docs/TRAIT_REPORT.md`: written; runs once the manifest is complete
-5. `scripts/build-sprites.ts` → `public/chogs/*.webp`: written; runs after the manifest
+## Phase 0: setup, facts, data
+- [x] `npm run build`, `typecheck`, `lint` and `test` pass
+- [x] `docs/CHAIN_CHECK.md`: every automatable §C2 row passes. MANUAL rows: $CHOG burn source, fee-on-transfer (Reviewer fork test), explorer docs.
+- [x] `public/data/chogs.json`: 1,969 records, validated against §C3 (tiers, presence counts, distinct raw values). §C3 counts raw spellings: Head has 66 raw values and 64 normalized ('Boob Cap'/'BOOB Cap', 'JEET Cap'/'Jeet Cap'). `docs/TRAIT_REPORT.md` generated.
+- [ ] Sprites: `npm run data:sprites` running (resumable); size to report when done
 
-### Phase 0 acceptance
-- [x] `npm run build`, `typecheck`, `lint` and `test` pass on the scaffold (10 tests)
-- [x] `docs/CHAIN_CHECK.md` exists. Every automatable §C2 row passes. MANUAL rows: burn source, fee-on-transfer (Reviewer fork test), explorer docs.
-- [x] `public/data/chogs.json` has 1,969 records and matches §C3: tiers 1279/590/60/30/10, presence counts and distinct values all pass. Note: §C3 counts raw spellings, so Head has 66 raw values and 64 normalized ('Boob Cap'/'BOOB Cap', 'JEET Cap'/'Jeet Cap'); the validator compares raw counts. `TRAIT_REPORT.md` generated.
-- [ ] Sprites built and size reported
+## Phase 1: deterministic core (done)
+- [x] Every real trait value maps to exactly one gene per slot. The gene distributions on the real manifest equal the §D4 counts exactly.
+- [x] createMutant(A,B) deep-equals createMutant(B,A) for 1,000 seeded pairs; 20-pair snapshot on real data
+- [x] pairKey vectors created (`tests/fixtures/pairkey-vectors.json`); Vitest parity passes (Foundry side: Reviewer)
+- [x] Power budget over all 3.6M combinations (range −1..+5); Tier never affects stats
+- [x] All 16 recipe pair counts equal the spec exactly; `docs/RECIPE_EXAMPLES.md`; 8 P0 pairs power TRY A SECRET MUTATION
+- [x] Core purity (lint rule + test)
 
-## Working
-- RPC `https://rpc.monad.xyz` answers chainId 143. The NFT, $CHOG and Multicall3 all have code.
-- `ownerOf` scan over 0..2100: exactly token IDs **1–1969** exist.
-- $CHOG: symbol CHOG, decimals 18.
-- Metadata: tokenURI(1) = `ipfs://bafybeid4ybujnscdipkno7ps5utqelp5ry5ryreqhay3zhgk3a6x4jruqu/1462.json`, name "CHOG #1462". The image follows the §C2 pattern.
+## Phase 2: the Lab (done, except compositor tuning)
+- [x] Playwright: home → lab → pick A → pick B → splice → reveal → notebook, no console errors (`tests/e2e/lab.spec.ts`, 6 tests)
+- [x] Same deep link → identical mutant after reload and in a second browser context, also with A/B reversed
+- [x] Lab usable at 375 px (no horizontal scroll); missing art shows the fallback, no crash
+- [x] Reveal shows "from #A / from #B" and the gene for every inherited slot
+- [ ] Compositor tuning against ≥25 real sprites (after the download)
+
+## Phase 3: base fight
+Built: Phaser 3 arena (Arcade Physics), 1280×720 logical stage, main platform plus 3 pass-through platforms, blast zones 200 px out, move / jump / double jump / recovery / drop-through / fast fall, 3-hit punch combo, dash attack, damage %, knockback formula (§D7) with cap, hitstun, hitstop, hit flash, particles, knockback trail, screen shake on big hits, floating damage numbers, squash and stretch, run lean, synthesized fight SFX, 2 lives, 2 s respawn invulnerability, 120 s timer, time-out rules and sudden death at 150%, HUD, results (winner, KOs, damage dealt, time), rematch, Change parent, New experiment, notebook W–L. Bot: FSM (APPROACH/ATTACK/SPACE/RECOVER/EDGEGUARD) with Easy/Normal/Hard reaction times of 400/220/110 ms. Default opponent: a pair seeded by the UTC date.
+- [x] Full match vs Normal bot → results; rematch ×10 with fresh state, one canvas, no errors (`tests/e2e/arena.spec.ts`)
+- [x] Lives drop exactly once per KO (unit test on `applyKO` + e2e: lingering outside the blast zone costs one life)
+- [x] Bot recovers in 9/10 scripted off-stage launches (meets the bar but borderline; will harden in Phase 4)
+- [x] 60 fps measured: 60.6–60.7 fps in Chromium with the GPU on. Without the GPU (software WebGL) it was 9 fps; baking the static art into textures fixed the per-frame cost.
+- [x] Keyboard verified with real KeyboardEvents (D moved 186 px in 0.5 s, W jumped ≈200 px, J punched). The browser pane's synthetic keys omit `keyCode`, so test with a real keyboard.
+- [ ] **FUN GATE (HARD), HUMAN CHECKPOINT:** Maris plays 5 matches and answers "would I press rematch?". Verdict goes here.
 
 ## Broken
 - Nothing known.
 
 ## Blockers
-- None. The metadata fetch is slow (≈0.5 records/s) because public gateways rate-limit.
-
-## Phase 1 (started early, allowed by §E): deterministic core
-- Done: pair/pairKey, sfc32 streams, gene tables for every slot, splice (createMutant), the 16 recipes (P1 tier off by default), naming, unstable, arena rules, power budget.
-- Tests pass: order independence (1,000 pairs), tier changes no stat, power budget over all 3.6M gene combos (range −1..+5), recipe order independence, unstable ≈5%, arena rules order-independent and capped at 3.
-- Real-manifest checks pass: every gene distribution equals the §D4 counts exactly; every recipe has a resolving real pair; the 20-pair stability snapshot is recorded.
-- All 16 recipe pair counts equal the spec exactly (docs/RECIPE_EXAMPLES.md). The 8 P0 example pairs are in `src/config/secretPairs.json` and power TRY A SECRET MUTATION.
-
-### Phase 1 acceptance
-- [x] Every real trait value maps to exactly one gene per slot (distribution test on the real manifest)
-- [x] createMutant(A,B) deep-equals createMutant(B,A) for 1,000 seeded pairs; 20-pair snapshot
-- [x] pairKey vectors file created; Vitest parity passes (Foundry side: Reviewer)
-- [x] Power budget passes over every combination; Tier never affects stats
-- [x] Every recipe has ≥1 real pair; counts in TRAIT_REPORT; RECIPE_EXAMPLES.md; curated pairs
-- [x] Core purity (lint rule + test)
-- Decision: sfc32 discards 12 outputs after seeding (deterministic warm-up).
-
-## Phase 2 (in progress): the Lab
-- Done and checked in the browser (dev server, partial data): Home, Lab chambers, collection browser (windowed grid, search by name/#number/token ID, filters built from the manifest, Random, detail panel with genes), SPLICE, reveal timeline with SFX (alarm, electricity, impact, discovery), SKIP after the first reveal, reduced-motion crossfade, mutant canvas compositor (jagged seam, glitch bands, hue shift, tint, chromatic aberration, recipe glow, unstable holo), art-offline fallback, notebook (localStorage with try/catch), deep links `/?a=&b=`, mute toggle, 375 px layout (no horizontal scroll).
-- Fixed during the browser check: React dev double-effect showed "ALREADY IN NOTEBOOK" on first view (now a once-only guard); grid clipped its last column on mobile.
-- **Core change:** recipes now pin their ingredient slots to the parent that supplied them (KING BEAM always has BEAM + ROYAL). Without this, a recipe perk could have no move to modify. Recorded in DECISIONS.md.
-- TRY A SECRET MUTATION is hidden until `src/config/secretPairs.json` is generated from the real manifest (`npx tsx scripts/recipe-examples.ts`).
-- Not done yet: Playwright e2e, the second-profile deep-link check, compositor tuning against real sprites (needs ≥25 sprites inspected).
+- FUN GATE needs Maris (see "What Maris must do").
 
 ## Next
-- Sprites downloading (`npm run data:sprites`), then inspect 25 sprites and tune the compositor.
-- Phase 2: compositor tuning with real sprites, then Playwright.
+- Finish sprites → contact-sheet survey of 25 sprites in DECISIONS.md → compositor tuning.
+- After the FUN GATE: Phase 4A (high-traffic genes, P0 modifiers, P0 recipe perks).
+
+## What Maris must do (FUN GATE)
+1. In the project folder run `npm run dev` and open http://localhost:5173
+2. ENTER THE LAB → pick any two Chogs → SPLICE → FIGHT ▸ → FIGHT ▸
+3. Play 5 matches (try Easy, Normal, Hard). Controls: A/D move, W jump (press three times in the air for recovery), S drop, J punch, K dash.
+4. Tell the Builder: would you press rematch? What felt bad (too floaty, too slow, bot too hard or easy, hits not punchy)?
 
 ## Unverified facts (all in `src/config/chain.ts`)
 - RPC URL works but is not yet confirmed in the official Monad docs.
@@ -67,9 +62,10 @@
 ## Needs human verification
 - $CHOG `burn()`: the implementation bytecode contains the selectors, but the source was not checked. The spec still uses the dead address.
 - $CHOG fee-on-transfer: needs the Reviewer fork test.
+- FUN GATE verdict.
 
 ## Proposals
-- (none)
+- **P-1, mutant art matches the genes:** §D6 picks the top/bottom parent of the art from the "visual" stream, independent of inheritance. So a KING BEAM can show parent A's wizard hat while the gene table says the head (Crown) came from parent B. Proposal: put the parent that gave the inherited **Head** on top (fall back to the visual stream when Head is `none`), so the picture matches "from #A / from #B". Needs Maris's OK because it changes §D6 wording.
 
 ## Do not touch
 - `contracts/**`, `docs/REVIEW.md`, `docs/SECURITY.md`, `tests/review/**` (Reviewer-owned)

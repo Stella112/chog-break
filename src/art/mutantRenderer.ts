@@ -37,7 +37,25 @@ async function layer(s: number, tokenId: number, tint: string): Promise<HTMLCanv
 }
 
 /** Draws the mutant into `canvas`. Resolves even if art is missing (fallback sprites). */
-export async function renderMutant(canvas: HTMLCanvasElement, v: VisualRecipe, size = 256): Promise<void> {
+/** Specimen-jar outline: rounded top, flat base. */
+function jarPath(ctx: CanvasRenderingContext2D, s: number) {
+  const m = s * 0.04;
+  const r = s * 0.28;
+  ctx.beginPath();
+  ctx.moveTo(m, s - m);
+  ctx.lineTo(m, m + r);
+  ctx.quadraticCurveTo(m, m, m + r, m);
+  ctx.lineTo(s - m - r, m);
+  ctx.quadraticCurveTo(s - m, m, s - m, m + r);
+  ctx.lineTo(s - m, s - m);
+  ctx.closePath();
+}
+
+/**
+ * Draws the mutant into `canvas`. Resolves even if art is missing (fallback sprites).
+ * `framed`: a parent kept its original background (§D6 bgRemoved:false) → clip into a specimen jar.
+ */
+export async function renderMutant(canvas: HTMLCanvasElement, v: VisualRecipe, size = 256, framed = false): Promise<void> {
   const s = size;
   canvas.width = canvas.height = s;
   const ctx = canvas.getContext('2d');
@@ -70,6 +88,14 @@ export async function renderMutant(canvas: HTMLCanvasElement, v: VisualRecipe, s
     const hh = Math.max(1, Math.round(h * s));
     c.clearRect(0, y, s, hh);
     c.drawImage(bandsSrc, 0, y, s, hh, Math.round(shift * s * intensity * 2), y, s, hh);
+  }
+
+  if (framed) {
+    c.save();
+    c.globalCompositeOperation = 'destination-in';
+    jarPath(c, s);
+    c.fill();
+    c.restore();
   }
 
   // 3. final: hue shift toward blended skin tint, light chromatic aberration, recipe glow
@@ -109,4 +135,22 @@ export async function renderMutant(canvas: HTMLCanvasElement, v: VisualRecipe, s
     ctx.fillRect(0, 0, s, s);
     ctx.restore();
   }
+
+  if (framed) {
+    ctx.save();
+    jarPath(ctx, s);
+    ctx.lineWidth = s * 0.02;
+    ctx.strokeStyle = 'rgba(200, 240, 255, 0.7)';
+    ctx.stroke();
+    // glass highlight
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(s * 0.12, s * 0.16, s * 0.05, s * 0.6);
+    ctx.restore();
+  }
+}
+
+/** True if either parent's sprite kept its background (needs the specimen jar). */
+export function needsJar(sprites: Record<string, { bgRemoved: boolean }>, v: VisualRecipe): boolean {
+  return sprites[v.baseParent]?.bgRemoved === false || sprites[v.insertParent]?.bgRemoved === false;
 }

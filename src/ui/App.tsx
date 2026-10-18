@@ -6,7 +6,7 @@ import { SECRET_PAIRS } from '../config/game';
 import { loadManifest, type Manifest } from '../data/manifest';
 import { isMuted, setMuted, sfx } from '../audio/sfx';
 import { readNotebook, recordDiscovery, recordResult } from '../state/notebook';
-import { renderMutant } from '../art/mutantRenderer';
+import { needsJar, renderMutant } from '../art/mutantRenderer';
 import type { Difficulty } from '../arena/bot';
 import type { MatchResult } from '../arena/ArenaScene';
 import { Arena } from './Arena';
@@ -40,9 +40,9 @@ function setUrl(params: Record<string, string> | null) {
   history.replaceState(null, '', s ? `/?${s}` : '/');
 }
 
-async function fighterCanvas(m: Mutant): Promise<HTMLCanvasElement> {
+async function fighterCanvas(m: Mutant, sprites: Manifest['sprites']): Promise<HTMLCanvasElement> {
   const c = document.createElement('canvas');
-  await renderMutant(c, m.visualRecipe, 256);
+  await renderMutant(c, m.visualRecipe, 256, needsJar(sprites, m.visualRecipe));
   return c;
 }
 
@@ -151,11 +151,11 @@ export function App() {
   };
 
   const startFight = async () => {
-    if (!mutant || !opponent || starting) return;
+    if (!mutant || !opponent || !manifest || starting) return;
     setStarting(true);
     sfx.click();
     try {
-      setCanvases(await Promise.all([fighterCanvas(mutant), fighterCanvas(opponent)]));
+      setCanvases(await Promise.all([fighterCanvas(mutant, manifest.sprites), fighterCanvas(opponent, manifest.sprites)]));
       setResult(null);
       setMatchKey((k) => k + 1);
       setScreen('arena');
@@ -289,6 +289,7 @@ export function App() {
             onFight={startFight}
             onBack={() => go('reveal')}
             touch={IS_TOUCH}
+            sprites={manifest.sprites}
           />
         )}
 

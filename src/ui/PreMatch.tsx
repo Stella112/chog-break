@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
 import type { Difficulty } from '../arena/bot';
 import type { Mutant } from '../core/splice';
-import { renderMutant } from '../art/mutantRenderer';
+import { needsJar, renderMutant } from '../art/mutantRenderer';
 
-function MutantCard({ m, side, label }: { m: Mutant; side: 'a' | 'b'; label: string }) {
+function MutantCard({ m, side, label, framed }: { m: Mutant; side: 'a' | 'b'; label: string; framed: boolean }) {
   const c = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
-    if (c.current) void renderMutant(c.current, m.visualRecipe);
-  }, [m]);
+    if (c.current) void renderMutant(c.current, m.visualRecipe, 256, framed);
+  }, [m, framed]);
   return (
     <div className={`pm-card pm-${side}`}>
       <span className="mono small">{label}</span>
@@ -34,9 +34,10 @@ type Props = {
   onFight: () => void;
   onBack: () => void;
   touch: boolean;
+  sprites: Record<string, { bgRemoved: boolean }>;
 };
 
-export function PreMatch({ player, opponent, difficulty, onDifficulty, onFight, onBack, touch }: Props) {
+export function PreMatch({ player, opponent, difficulty, onDifficulty, onFight, onBack, touch, sprites }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter') onFight();
@@ -48,9 +49,9 @@ export function PreMatch({ player, opponent, difficulty, onDifficulty, onFight, 
   return (
     <section className="prematch">
       <div className="pm-versus">
-        <MutantCard m={player} side="a" label="YOUR MUTANT" />
+        <MutantCard m={player} side="a" label="YOUR MUTANT" framed={needsJar(sprites, player.visualRecipe)} />
         <span className="pm-vs">VS</span>
-        <MutantCard m={opponent} side="b" label="TODAY'S LAB OPPONENT" />
+        <MutantCard m={opponent} side="b" label="TODAY'S LAB OPPONENT" framed={needsJar(sprites, opponent.visualRecipe)} />
       </div>
       <p className="stable mono">STABLE… FOR NOW</p>
       <div className="pm-row">

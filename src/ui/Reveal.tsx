@@ -3,7 +3,7 @@ import { INHERITED_SLOTS, type Mutant } from '../core/splice';
 import { NONE } from '../core/types';
 import { GENE_INFO, SLOT_ROLE } from '../config/geneInfo';
 import type { Manifest } from '../data/manifest';
-import { renderMutant } from '../art/mutantRenderer';
+import { needsJar, renderMutant } from '../art/mutantRenderer';
 import { sfx } from '../audio/sfx';
 import { ChogImage } from './ChogImage';
 import { geneForSlot } from './traitGenes';
@@ -44,11 +44,11 @@ export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onN
     let alive = true;
     setArtReady(false);
     if (canvas.current)
-      void renderMutant(canvas.current, mutant.visualRecipe).then(() => alive && setArtReady(true));
+      void renderMutant(canvas.current, mutant.visualRecipe, 256, needsJar(manifest.sprites, mutant.visualRecipe)).then(() => alive && setArtReady(true));
     return () => {
       alive = false;
     };
-  }, [mutant]);
+  }, [mutant, manifest.sprites]);
 
   useEffect(() => {
     if (reducedMotion) {
