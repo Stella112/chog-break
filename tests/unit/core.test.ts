@@ -153,6 +153,24 @@ describe('recipes', () => {
     a.traits.Aura = NONE;
     expect(createMutant({ parentA: a, parentB: b }).name).toBe('KING BEAM');
   });
+  it('recipes pin their ingredient genes (perk always has its move)', () => {
+    let checked = 0;
+    for (let i = 0; i < 3000; i++) {
+      const [a, b] = randomPair();
+      const m = createMutant({ parentA: a, parentB: b, recipeTiers: ['P0', 'P1'] });
+      if (m.recipe?.id === 'KING_BEAM') {
+        expect(m.special).toBe('BEAM');
+        expect(m.head).toBe('ROYAL');
+        checked++;
+      }
+      if (m.recipe?.id === 'WILDFIRE') expect(m.special).toBe('BEAM');
+      if (m.recipe?.id === 'FWOG_LORD') expect(m.trinket).toBe('FWOG');
+      if (m.recipe?.id === 'NUCLEAR_UNDEAD') expect(m.affinity).toBe('UNDEAD');
+      if (m.recipe?.id === 'ARCHMAGE') expect(m.head).toBe('WARP');
+      if (m.recipe?.id === 'THE_NAKED_KING') expect(m.physics).toBe('LIGHT');
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
   it('P1 recipes stay off by default', () => {
     const a = randomParent(1);
     const b = randomParent(2);

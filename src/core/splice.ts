@@ -79,6 +79,9 @@ export function createMutant({
   const pLo = parentA.tokenId === lo ? parentA : parentB;
   const pHi = parentA.tokenId === lo ? parentB : parentA;
 
+  const found = findRecipe(pLo.traits, pHi.traits, recipeTiers);
+  const recipe = found?.recipe;
+
   // Inheritance: always draw one bit per slot (keeps the stream stable), then apply the recessive rule.
   const genes = streamFor(pairKey, 'genes');
   const inherited = {} as Record<InheritedSlot, Inherited>;
@@ -88,6 +91,13 @@ export function createMutant({
     const other = chosen === pLo ? pHi : pLo;
     if (chosen.traits[slot] === NONE && other.traits[slot] !== NONE) chosen = other;
     inherited[slot] = { value: chosen.traits[slot], from: chosen.tokenId };
+  }
+  // Recipes pin their ingredient slots to the parent that supplied them (bits above are still drawn).
+  if (found) {
+    const px = found.xIsLo ? pLo : pHi;
+    const py = found.xIsLo ? pHi : pLo;
+    if (found.recipe.pinX) inherited[found.recipe.pinX] = { value: px.traits[found.recipe.pinX], from: px.tokenId };
+    if (found.recipe.pinY) inherited[found.recipe.pinY] = { value: py.traits[found.recipe.pinY], from: py.tokenId };
   }
   const bodyParent = inherited.Body.from === lo ? pLo : pHi;
   const naked = bodyParent.traits.Naked === 'yes';
@@ -103,7 +113,6 @@ export function createMutant({
     metal: pLo.traits.Skin === 'metal' || pHi.traits.Skin === 'metal',
   };
 
-  const recipe = findRecipe(pLo.traits, pHi.traits, recipeTiers);
   const unstable = isUnstable(pairKey);
   const name = recipe ? recipe.name : generateName(streamFor(pairKey, 'name'), geneSet.special, geneSet.physics);
 

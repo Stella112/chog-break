@@ -31,9 +31,16 @@
 ## Blockers
 - None. The metadata fetch is slow (≈0.5 records/s) because public gateways rate-limit.
 
+## Phase 1 (started early, allowed by §E): deterministic core
+- Done: pair/pairKey, sfc32 streams, gene tables for every slot, splice (createMutant), the 16 recipes (P1 tier off by default), naming, unstable, arena rules, power budget.
+- Tests pass: order independence (1,000 pairs), tier changes no stat, power budget over all 3.6M gene combos (range −1..+5), recipe order independence, unstable ≈5%, arena rules order-independent and capped at 3.
+- Waiting on the real manifest: `tests/unit/manifest.test.ts` (gene distributions must equal the §D4 counts, ≥1 real pair per recipe, snapshot of 20 pairs) is skipped until chogs.json is complete.
+- Still to do: RECIPE_EXAMPLES.md, curated pairs in config/game.ts, gene and recipe sections in TRAIT_REPORT.
+- Decision: sfc32 discards 12 outputs after seeding (deterministic warm-up).
+
 ## Next
 - Finish the manifest, run validation (any mismatch = STOP 6), then the trait report, then the sprites.
-- Phase 1: deterministic core.
+- Finish Phase 1 against real data, then Phase 2 (the Lab UI).
 
 ## Unverified facts (all in `src/config/chain.ts`)
 - RPC URL works but is not yet confirmed in the official Monad docs.
