@@ -3,10 +3,15 @@ import type Phaser from 'phaser';
 import type { ArenaConfig, MatchResult } from '../arena/ArenaScene';
 import { createArenaGame } from '../arena/createGame';
 
-type Props = Omit<ArenaConfig, 'onEnd'> & { onEnd: (r: MatchResult) => void; matchKey: number; onQuit: () => void };
+type Props = Omit<ArenaConfig, 'onEnd'> & {
+  onEnd: (r: MatchResult) => void;
+  matchKey: number;
+  onQuit: () => void;
+  twoPlayer?: boolean;
+};
 
 /** Mounts one Phaser game; destroys it on unmount or rematch (matchKey change). */
-export function Arena({ onEnd, matchKey, onQuit, ...cfg }: Props) {
+export function Arena({ onEnd, matchKey, onQuit, twoPlayer = false, ...cfg }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const onEndRef = useRef(onEnd);
   onEndRef.current = onEnd;
@@ -15,7 +20,10 @@ export function Arena({ onEnd, matchKey, onQuit, ...cfg }: Props) {
 
   useEffect(() => {
     if (!host.current) return;
-    const game: Phaser.Game = createArenaGame(host.current, { ...cfgRef.current, onEnd: (r) => onEndRef.current(r) });
+    const game: Phaser.Game = createArenaGame(host.current, {
+      ...cfgRef.current,
+      onEnd: (r) => onEndRef.current(r),
+    });
     host.current.focus();
     return () => game.destroy(true);
   }, [matchKey]);
@@ -30,9 +38,18 @@ export function Arena({ onEnd, matchKey, onQuit, ...cfg }: Props) {
 
   return (
     <section className="arena-wrap">
-      <div className="arena-host" ref={host} tabIndex={-1} aria-label="Arena. Use the keyboard to fight." />
+      <div
+        className="arena-host"
+        ref={host}
+        tabIndex={-1}
+        aria-label="Arena. Use the keyboard to fight."
+      />
       <p className="mono small dim arena-hint">
-        A/D move · W jump (×2, then recovery) · S drop · J punch · K dash · ESC quit
+        P1: A/D move · W jump · S drop · J punch · K dash · L special · I close
+        {twoPlayer
+          ? ' │ P2: ←/→ move · ↑ jump · ↓ drop · , punch · . dash · / special · M close'
+          : ''}{' '}
+        · ESC quit
       </p>
     </section>
   );

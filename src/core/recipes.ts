@@ -68,13 +68,13 @@ export function recipeMatches(r: Recipe, a: NormalizedTraits, b: NormalizedTrait
 }
 
 /**
- * First matching recipe among the enabled tiers (P1 recipes stay off until their perks exist).
+ * First matching recipe among the enabled tiers (all 16 recipes are live; P0 are listed first and win ties).
  * Call with (lo, hi) traits; `xIsLo` says which parent satisfied x (lo preferred when both orders match).
  */
 export function findRecipe(
   lo: NormalizedTraits,
   hi: NormalizedTraits,
-  tiers: readonly RecipeTier[] = ['P0'],
+  tiers: readonly RecipeTier[] = ['P0', 'P1'],
 ): { recipe: Recipe; xIsLo: boolean } | undefined {
   for (const recipe of RECIPES) {
     if (!tiers.includes(recipe.tier)) continue;

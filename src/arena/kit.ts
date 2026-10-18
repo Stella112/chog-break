@@ -84,6 +84,8 @@ export type FighterKit = {
   /** Jumps before the recovery (ESCAPE VELOCITY: 3). */
   maxJumps: number;
   beamColor: number;
+  /** LASER SHOW: the other parent's laser colour for the second beam. */
+  beamColor2: number;
   unstable: boolean;
   glitch: number;
 };
@@ -120,6 +122,7 @@ export function buildKit(m: Mutant): FighterKit {
     recipe: m.recipe?.id,
     maxJumps: m.recipe?.id === 'ESCAPE_VELOCITY' ? 3 : 2,
     beamColor: beamColor(m.inherited.Eyes.value),
+    beamColor2: beamColor(m.inherited.Eyes.from === m.lo ? m.parents.hi.traits.Eyes : m.parents.lo.traits.Eyes),
     unstable: m.unstable,
     glitch: m.visualRecipe.glitchIntensity,
   };
@@ -142,6 +145,7 @@ export function baselineKit(name: string): FighterKit {
     physics: 'BALANCED',
     maxJumps: 2,
     beamColor: 0xff4fd8,
+    beamColor2: 0x4ff0ff,
     unstable: false,
     glitch: 0.15,
   };

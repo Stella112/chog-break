@@ -28,7 +28,18 @@ const BACKGROUND_SOURCES: [ModifierId, string[]][] = [
 ];
 
 /** Only implemented modifiers may ever be shown (§D7). P1 modifiers are added here when they exist. */
-export const IMPLEMENTED_MODIFIERS: readonly ModifierId[] = ['TOXIC_FLOOR', 'SLIPPERY_FLOOR', 'LOW_GRAVITY', 'UNSTABLE_KNOCKBACK'];
+export const IMPLEMENTED_MODIFIERS: readonly ModifierId[] = [
+  'TOXIC_FLOOR',
+  'SLIPPERY_FLOOR',
+  'LOW_GRAVITY',
+  'UNSTABLE_KNOCKBACK',
+  'OVERCLOCK',
+  'BOUNCY_FLOOR',
+  'SHRINKING_STAGE',
+  'METEOR_SHOWER',
+  'COIN_RAIN',
+  'GLITCH',
+];
 
 export function backgroundModifier(bg: string): ModifierId | undefined {
   return BACKGROUND_SOURCES.find(([, vals]) => vals.includes(bg))?.[0];

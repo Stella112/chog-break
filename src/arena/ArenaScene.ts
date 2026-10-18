@@ -4,11 +4,11 @@ import type { ModifierId } from '../core/arenaRules';
 import { MODIFIER_INFO } from '../config/geneInfo';
 import { BotSource, type Difficulty } from './bot';
 import type { ArenaCtx, HitSpec, ProjectileOpts, ZoneOpts } from './ctx';
-import { Frog, Projectile, Zone } from './entities';
+import { Coin, Frog, Projectile, Zone } from './entities';
 import { Fighter, TUNING } from './fighter';
 import { EMPTY_CONTROLS, KEYMAP, KeyboardSource, type ControlSource } from './input';
 import type { FighterKit } from './kit';
-import { modifierPhysics, ToxicFloor } from './modifiers';
+import { ModifierRuntime, modifierPhysics, type ModifierHost } from './modifiers';
 import { applyKO, isOutside, knockback, knockbackVector, MATCH, resolveMatch, respawn, STAGE } from './rules';
 
 export type FighterSetup = { name: string; canvas: HTMLCanvasElement; color: number; kit?: FighterKit };
@@ -37,18 +37,22 @@ export const UNDEAD_REVIVE_DAMAGE = 90;
 
 const DEPTH = { bg: 0, platform: 5, fx: 8, fighter: 10, fxTop: 12, hud: 20 };
 
-export class ArenaScene extends Phaser.Scene implements ArenaCtx {
+export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
   cfg!: ArenaConfig;
   fighters!: [Fighter, Fighter];
   sources!: [ControlSource, ControlSource];
-  mods = { gravity: 1, friction: 1, kb: 1 };
+  mods = modifierPhysics([]);
+  edges = { left: STAGE.mainLeft, right: STAGE.mainRight };
   instant = false;
   private platforms!: Phaser.Physics.Arcade.StaticGroup;
   private floats!: Phaser.Physics.Arcade.StaticGroup;
   private projectiles: Projectile[] = [];
   private zones: Zone[] = [];
   private frogs: Frog[] = [];
-  private toxicFloor: ToxicFloor | null = null;
+  private modRuntime!: ModifierRuntime;
+  private coins: Coin[] = [];
+  private mainRect!: Phaser.GameObjects.Rectangle;
+  private mainDeco!: Phaser.GameObjects.Graphics;
   private hitstopUntil = 0;
   private live = false;
   private ended = false;
@@ -57,6 +61,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
   private hud!: { timer: Phaser.GameObjects.Text; panels: { dmg: Phaser.GameObjects.Text; pips: Phaser.GameObjects.Graphics }[]; banner: Phaser.GameObjects.Text };
   private scanImg: Phaser.GameObjects.Image | null = null;
   private trailAt = 0;
+  private modText: Phaser.GameObjects.Text | null = null;
   private elapsedMs = 0;
 
   constructor() {
@@ -76,6 +81,8 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
     this.projectiles = [];
     this.zones = [];
     this.frogs = [];
+    this.coins = [];
+    this.edges = { left: STAGE.mainLeft, right: STAGE.mainRight };
   }
 
   create() {
@@ -113,8 +120,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
       return new KeyboardSource(kb, i === 0 ? KEYMAP.p1 : KEYMAP.p2);
     }) as [ControlSource, ControlSource];
 
-    if (this.cfg.modifiers?.includes('TOXIC_FLOOR')) this.toxicFloor = new ToxicFloor(this);
-    else this.toxicFloor = null;
+    this.modRuntime = new ModifierRuntime(this, this.cfg.modifiers ?? [], (this.cfg.botSeed ?? 7) * 7919);
 
     this.buildHud();
     this.wireFx();
@@ -164,10 +170,12 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
     a.update(time, dt, ca, b);
     b.update(time, dt, cb, a);
 
-    this.toxicFloor?.update(time);
+    this.modRuntime.update(time, this.elapsedMs);
     for (const p of this.projectiles) p.update(dt);
     for (const z of this.zones) z.update(this.fighters);
     for (const fr of this.frogs) fr.update(dt);
+    for (const c of this.coins) c.update(dt, this.fighters);
+    this.coins = this.coins.filter((c) => c.alive);
     this.projectiles = this.projectiles.filter((p) => p.alive);
     this.zones = this.zones.filter((z) => z.alive);
     this.frogs = this.frogs.filter((f) => f.alive);
@@ -210,6 +218,8 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
     }
 
     let dmg = spec.damage * (attacker?.damageDealtMul ?? 1) * target.damageTakenMul;
+    // BEAR MARKET: the opponent takes +5% damage while you are above 100%.
+    if (attacker?.kit.recipe === 'BEAR_MARKET' && attacker.score.damage > 100) dmg *= 1.05;
     if (target.kit.element === 'SHIELD' && target.shieldReady && !tick) {
       dmg *= 0.5;
       target.shieldReady = false;
@@ -341,7 +351,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
   /** Top of the nearest platform at or below y under x. */
   groundAt(x: number, y: number): number | null {
     let best: number | null = null;
-    if (x >= STAGE.mainLeft && x <= STAGE.mainRight && y <= STAGE.mainY + 4) best = STAGE.mainY;
+    if (x >= this.edges.left && x <= this.edges.right && y <= STAGE.mainY + 4) best = STAGE.mainY;
     for (const [fx, fy, fw] of STAGE.floats) {
       if (x >= fx && x <= fx + fw && y <= fy + 4 && (best === null || fy < best)) best = fy;
     }
@@ -355,7 +365,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
     // UNDEAD: first KO each match revives on stage at 60% instead of losing a life.
     if (f.kit.affinity === 'UNDEAD' && f.undeadReady && !this.suddenDeath) {
       f.undeadReady = false;
-      const x = Phaser.Math.Clamp(f.x, STAGE.mainLeft + 80, STAGE.mainRight - 80);
+      const x = Phaser.Math.Clamp(f.x, this.edges.left + 80, this.edges.right - 80);
       f.score.damage = UNDEAD_REVIVE_DAMAGE;
       f.respawnAt(now, x, STAGE.mainY - 260);
       this.fx('text', x, STAGE.mainY - 330, 0xc8ffc8, 26, 'UNDEAD REVIVE');
@@ -473,15 +483,48 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
     const slippery = this.cfg.modifiers?.includes('SLIPPERY_FLOOR');
     const main = this.add.rectangle(STAGE.mainLeft + mainW / 2, STAGE.mainY + 40, mainW, 80, slippery ? 0x1d3a4a : 0x221d30).setDepth(DEPTH.platform);
     this.platforms.add(main);
+    this.mainRect = main;
+    this.mainDeco = this.add.graphics().setDepth(DEPTH.platform + 1);
+    this.drawMainDeco();
     const g = this.add.graphics().setDepth(DEPTH.platform + 1);
-    g.fillStyle(slippery ? 0x7fd4ff : 0xffd400, 1);
-    for (let x = STAGE.mainLeft; x < STAGE.mainRight; x += 32) g.fillRect(x, STAGE.mainY, 16, 6);
-    g.fillStyle(0x15121f, 1).fillRect(STAGE.mainLeft + 20, STAGE.mainY + 80, mainW - 40, 30);
     for (const [x, y, w] of STAGE.floats) {
       const r = this.add.rectangle(x + w / 2, y + 7, w, 14, 0x3a3346).setDepth(DEPTH.platform);
       this.floats.add(r);
       g.fillStyle(0x4ff0ff, 0.8).fillRect(x, y, w, 3);
     }
+  }
+
+  private drawMainDeco() {
+    const g = this.mainDeco;
+    const { left, right } = this.edges;
+    const mods = this.cfg.modifiers ?? [];
+    const top = mods.includes('SLIPPERY_FLOOR') ? 0x7fd4ff : mods.includes('BOUNCY_FLOOR') ? 0xff8fc7 : 0xffd400;
+    g.clear();
+    g.fillStyle(top, 1);
+    for (let x = left; x < right; x += 32) g.fillRect(x, STAGE.mainY, Math.min(16, right - x), 6);
+    g.fillStyle(0x15121f, 1).fillRect(left + 20, STAGE.mainY + 80, Math.max(0, right - left - 40), 30);
+  }
+
+  // ---------- ModifierHost ----------
+
+  setMainEdges(left: number, right: number) {
+    this.edges = { left, right };
+    this.mainRect.setSize(right - left, 80).setPosition((left + right) / 2, STAGE.mainY + 40);
+    (this.mainRect.body as Phaser.Physics.Arcade.StaticBody).updateFromGameObject();
+    if (this.mainDeco) this.drawMainDeco();
+  }
+
+  spawnCoin(x: number) {
+    this.coins.push(new Coin(this, this, x));
+  }
+
+  banner(text: string) {
+    if (!this.instant) this.flashBanner(text);
+  }
+
+  applyModifiers(mods: ModifierId[]) {
+    this.mods = modifierPhysics(mods);
+    if (this.modText) this.modText.setText(mods.length ? mods.map((m) => `⚠ ${MODIFIER_INFO[m]?.label ?? m}`).join('   ') : 'STABLE… FOR NOW');
   }
 
   private buildHud() {
@@ -502,7 +545,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
     });
     const mods = this.cfg.modifiers ?? [];
     const modText = mods.length ? mods.map((m) => `⚠ ${MODIFIER_INFO[m]?.label ?? m}`).join('   ') : 'STABLE… FOR NOW';
-    this.add.text(STAGE.width / 2, 70, modText, { ...mono, fontSize: '14px', color: mods.length ? '#ffd400' : '#a59fb8', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5).setDepth(DEPTH.hud);
+    this.modText = this.add.text(STAGE.width / 2, 70, modText, { ...mono, fontSize: '14px', color: mods.length ? '#ffd400' : '#a59fb8', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5).setDepth(DEPTH.hud);
     const banner = this.add.text(STAGE.width / 2, STAGE.height / 2 - 60, '', { ...font, fontSize: '96px', color: '#ffd400', stroke: '#000', strokeThickness: 10 }).setOrigin(0.5).setDepth(DEPTH.hud).setAlpha(0);
     this.hud = { timer, panels, banner };
     this.updateHud();
@@ -604,6 +647,9 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
         ended: this.ended,
         modifiers: this.cfg.modifiers ?? [],
         mods: this.mods,
+        edges: this.edges,
+        active: this.modRuntime.active,
+        coins: this.coins.length,
         entities: { projectiles: this.projectiles.length, zones: this.zones.map((z) => z.o.kind), frogs: this.frogs.length },
         fighters: this.fighters.map((f) => ({
           x: f.x,

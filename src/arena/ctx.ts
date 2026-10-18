@@ -16,7 +16,7 @@ export type HitSpec = AttackSpec & {
   comboEnder?: boolean;
 };
 
-export type ZoneKind = 'puddle' | 'fire' | 'rune' | 'smoke' | 'toxic' | 'floor-toxic';
+export type ZoneKind = 'puddle' | 'fire' | 'rune' | 'smoke' | 'toxic' | 'floor-toxic' | 'meteor' | 'bite';
 
 export type ZoneOpts = {
   owner: Fighter | null;
@@ -30,6 +30,10 @@ export type ZoneOpts = {
   armMs?: number;
   /** Who it affects: the owner's opponents, or everyone (arena modifiers). */
   affects: 'opponent' | 'all';
+  /** Custom hit (METEOR SHOWER) instead of the 1 dmg / 0.5 s tick. */
+  spec?: HitSpec;
+  /** Hit each fighter at most once (meteors). */
+  once?: boolean;
 };
 
 export type ProjectileOpts = {
@@ -63,6 +67,6 @@ export interface ArenaCtx {
   sfx(kind: 'special' | 'close' | 'heal' | 'block' | 'zap' | 'honk' | 'warp'): void;
   /** Ground y under a point (main platform or a float), or null if none. */
   groundAt(x: number, y: number): number | null;
-  mods: { gravity: number; friction: number; kb: number };
+  mods: { gravity: number; friction: number; kb: number; speed: number; bounce: boolean };
   instant: boolean;
 }

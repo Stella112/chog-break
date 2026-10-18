@@ -90,6 +90,7 @@ export class Fighter {
   private pulseEndAt = 0;
   private volatilityGrow = true;
   private baseScale = 1;
+  private lastFallSpeed = 0;
 
   constructor(
     readonly scene: Phaser.Scene,
@@ -148,7 +149,8 @@ export class Fighter {
     return this.scene.time.now < this.rageUntil ? 1.15 : 1;
   }
   hasArmor(now: number) {
-    return now < this.superArmorUntil;
+    // GOLDEN BULL: the dash has super armor.
+    return now < this.superArmorUntil || (this.kit.recipe === 'GOLDEN_BULL' && this.state === 'dash');
   }
   isInvulnerable(now: number) {
     return now < this.invulnUntil || this.state === 'ko';
@@ -215,7 +217,7 @@ export class Fighter {
     } else {
       const slow = now < this.slowUntil ? 0.85 : 1;
       const shrinkFast = this.sizeMode === 'shrink' ? 1.15 : 1;
-      const max = T.runSpeed * p.speed * slow * shrinkFast;
+      const max = T.runSpeed * p.speed * slow * shrinkFast * mods.speed;
       const control = this.state === 'attack' ? 0.35 : this.state === 'action' ? (this.action?.control ?? 0.35) : 1;
       if (dir !== 0 && control > 0) {
         const accel = (grounded ? T.groundAccel : T.airAccel) * control;
@@ -264,8 +266,13 @@ export class Fighter {
     const maxFall = now < this.bubbleUntil ? T.maxFall * 0.35 : T.maxFall;
     if (b.velocity.y > maxFall && this.state !== 'hitstun') b.setVelocityY(maxFall);
 
-    if (grounded && !this.wasGrounded) this.squash(1.2, 0.82);
+    if (grounded && !this.wasGrounded) {
+      this.squash(1.2, 0.82);
+      // BOUNCY FLOOR: hard landings bounce back up (hold S to stick the landing).
+      if (mods.bounce && this.lastFallSpeed > 380 && !c.down) b.setVelocityY(-this.lastFallSpeed * 0.6);
+    }
     this.wasGrounded = grounded;
+    this.lastFallSpeed = grounded ? 0 : Math.max(0, b.velocity.y);
     this.visuals(now);
   }
 

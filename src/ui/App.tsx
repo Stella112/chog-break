@@ -69,6 +69,7 @@ export function App() {
   const [muted, setMutedState] = useState(isMuted());
   const [revealsSeen, setRevealsSeen] = useState(0);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
+  const [mode, setMode] = useState<'bot' | '2p'>('bot');
   const [canvases, setCanvases] = useState<[HTMLCanvasElement, HTMLCanvasElement] | null>(null);
   const [matchKey, setMatchKey] = useState(0);
   const [result, setResult] = useState<MatchResult | null>(null);
@@ -212,7 +213,8 @@ export function App() {
   };
 
   const onMatchEnd = (r: MatchResult) => {
-    if (mutant) recordResult(mutant.pairKey, r.winner === 0);
+    // The notebook W–L tracks your mutant against the lab bot only.
+    if (mutant && mode === 'bot') recordResult(mutant.pairKey, r.winner === 0);
     setResult(r);
     setScreen('results');
   };
@@ -349,6 +351,8 @@ export function App() {
                 opponent={opponent}
                 modifiers={arenaRules?.modifiers ?? []}
                 difficulty={difficulty}
+                mode={mode}
+                onMode={setMode}
                 onDifficulty={setDifficulty}
                 onFight={startFight}
                 onBack={() => go('reveal')}
@@ -376,17 +380,18 @@ export function App() {
                     },
                   ]}
                   modifiers={arenaRules?.modifiers ?? []}
-                  drivers={['human', 'bot']}
+                  drivers={mode === 'bot' ? ['human', 'bot'] : ['human', 'human']}
                   difficulty={difficulty}
                   reducedMotion={reducedMotion}
                   testMode={TEST_MODE}
                   onEnd={onMatchEnd}
                   onQuit={() => go('prematch')}
+                  twoPlayer={mode === '2p'}
                 />
               </Suspense>
             )}
 
-            {screen === 'results' && result && mutant && (
+            {manifest && screen === 'results' && result && mutant && (
               <Results
                 result={result}
                 onRematch={() => {
@@ -396,6 +401,9 @@ export function App() {
                 }}
                 onChange={changeParent}
                 onNew={newExperiment}
+                twoPlayer={mode === '2p'}
+                mutant={mutant}
+                manifest={manifest}
                 loLabel={label(mutant.lo)}
                 hiLabel={label(mutant.hi)}
               />

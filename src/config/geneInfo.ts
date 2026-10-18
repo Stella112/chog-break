@@ -70,6 +70,12 @@ export const MODIFIER_INFO: Record<string, { label: string; desc: string }> = {
   SLIPPERY_FLOOR: { label: 'SLIPPERY FLOOR', desc: 'Everyone slides' },
   LOW_GRAVITY: { label: 'LOW GRAVITY', desc: 'Everyone floats' },
   UNSTABLE_KNOCKBACK: { label: 'UNSTABLE KNOCKBACK', desc: 'Knockback ×1.35' },
+  OVERCLOCK: { label: 'OVERCLOCK', desc: 'Everyone runs 20% faster' },
+  BOUNCY_FLOOR: { label: 'BOUNCY FLOOR', desc: 'Hard landings bounce you back up' },
+  SHRINKING_STAGE: { label: 'SHRINKING STAGE', desc: 'The main platform shrinks after 60 s' },
+  METEOR_SHOWER: { label: 'METEOR SHOWER', desc: 'Red targets mark falling rocks' },
+  COIN_RAIN: { label: 'COIN RAIN', desc: 'Grab falling coins to heal 5%' },
+  GLITCH: { label: 'GLITCH', desc: 'A new random modifier every 20 s' },
 };
 
 export const SKIN_TINT: Record<string, string> = {

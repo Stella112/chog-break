@@ -108,14 +108,22 @@ export function startSpecial(f: Fighter, now: number) {
       const spec: HitSpec = { damage: 9, base: 300, scaling: 6, angleDeg: 15, hitstunMs: 320, hitstopMs: 60, kind: 'beam', pierce: king };
       ctx.fx('text', f.x, f.y - 80, k.beamColor, 16, 'CHARGING');
       let fired = false;
+      let fired2 = false;
+      const laserShow = k.recipe === 'LASER_SHOW';
       f.startAction({
-        until: now + 300 + 180,
+        until: now + 300 + 180 + (laserShow ? 160 : 0),
         control: 0,
         tick: (t) => {
           f.body.setVelocity(0, Math.min(f.body.velocity.y, 60));
           if (t - now >= 300 && !fired) {
             fired = true;
             ctx.beam(f, { y: f.y - 12, color: k.beamColor, width, spec, pierce: king, fireTrail: k.recipe === 'WILDFIRE' });
+            ctx.sfx('zap');
+          }
+          // LASER SHOW: a second beam in the other parent's colour.
+          if (laserShow && t - now >= 460 && !fired2) {
+            fired2 = true;
+            ctx.beam(f, { y: f.y - 12, color: k.beamColor2, width, spec, pierce: false, fireTrail: false });
             ctx.sfx('zap');
           }
         },
@@ -177,7 +185,7 @@ export function startClose(f: Fighter, now: number) {
     case 'DROOL': {
       const gy = ctx.groundAt(f.x, f.y);
       if (gy !== null) ctx.spawnZone({ owner: f, x: f.x - 110, y: gy - 10, w: 220, h: 10, kind: 'puddle', durationMs: 5000, affects: 'opponent' });
-      if (f.kit.recipe === 'SHARK_WEEK' && gy !== null) ctx.spawnZone({ owner: f, x: f.x - 70, y: gy - 30, w: 140, h: 30, kind: 'fire', durationMs: 5000, armMs: 300, affects: 'opponent' });
+      if (f.kit.recipe === 'SHARK_WEEK' && gy !== null) ctx.spawnZone({ owner: f, x: f.x - 110, y: gy - 30, w: 220, h: 30, kind: 'bite', durationMs: 5000, armMs: 300, affects: 'opponent' });
       recoveryAction(f, now, 200);
       break;
     }

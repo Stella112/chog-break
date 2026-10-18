@@ -96,6 +96,8 @@ const ZONE_STYLE: Record<ZoneOpts['kind'], { color: number; alpha: number }> = {
   smoke: { color: 0xc8c8d8, alpha: 0.55 },
   toxic: { color: 0x8aff4f, alpha: 0.35 },
   'floor-toxic': { color: 0x8aff4f, alpha: 0.6 },
+  meteor: { color: 0xff4f4f, alpha: 0.35 },
+  bite: { color: 0x2fbfbf, alpha: 0.4 },
 };
 
 /** Damage-tick zones hit every 500 ms (fire, rune, toxic floor: "1 dmg / 0.5 s"). */
@@ -119,6 +121,12 @@ export class Zone {
     const st = ZONE_STYLE[o.kind];
     this.gfx = scene.add.rectangle(o.x + o.w / 2, o.y + o.h / 2, o.w, o.h, st.color, st.alpha).setDepth(DEPTH_FX);
     if (o.kind === 'smoke') this.gfx.setDepth(DEPTH_FX + 5);
+    if (o.kind === 'meteor') {
+      // Telegraph: a target on the floor, then the rock drops from the sky just as the zone arms.
+      this.gfx.setSize(o.w, 8).setPosition(o.x + o.w / 2, o.y + o.h - 4);
+      const rock = scene.add.circle(o.x + o.w / 2, -60, 30, 0x6b4a3a).setStrokeStyle(4, 0xff7a1a).setDepth(DEPTH_FX + 4);
+      scene.tweens.add({ targets: rock, y: o.y + o.h - 30, duration: o.armMs ?? 1000, ease: 'Quad.In', onComplete: () => rock.destroy() });
+    }
   }
 
   get active() {
@@ -147,9 +155,11 @@ export class Zone {
       if (this.o.kind === 'smoke') continue;
       const due = this.nextTick.get(f) ?? 0;
       if (now < due) continue;
-      this.nextTick.set(f, now + 500);
+      this.nextTick.set(f, this.o.once ? Infinity : now + 500);
       const attacker = this.o.owner;
-      this.ctx.hit(attacker, f, { damage: 1, base: 0, scaling: 0, angleDeg: 0, hitstunMs: 0, hitstopMs: 0, kind: 'zone', noKnockback: true }, 1);
+      const spec = this.o.spec ?? { damage: 1, base: 0, scaling: 0, angleDeg: 0, hitstunMs: 0, hitstopMs: 0, kind: 'zone' as const, noKnockback: true };
+      const dir = (f.x >= this.rect.centerX ? 1 : -1) as 1 | -1;
+      this.ctx.hit(attacker, f, spec, dir);
     }
   }
 
@@ -211,6 +221,56 @@ export class Frog {
     }
     if (now >= this.dieAt || this.y > STAGE.blast.bottom) return this.destroy();
     this.gfx.setPosition(this.x, this.y);
+  }
+
+  destroy() {
+    this.alive = false;
+    this.gfx.destroy();
+  }
+}
+
+/** COIN RAIN pickup: falls onto the stage; touching it heals 5%. */
+export class Coin {
+  x: number;
+  y = -30;
+  vy = 0;
+  alive = true;
+  private dieAt: number;
+  private gfx: Phaser.GameObjects.Ellipse;
+
+  constructor(
+    scene: Phaser.Scene,
+    private ctx: ArenaCtx,
+    x: number,
+  ) {
+    this.x = x;
+    this.dieAt = ctx.now() + 9000;
+    this.gfx = scene.add.ellipse(x, this.y, 26, 26, 0xffd400).setStrokeStyle(3, 0xb08a00).setDepth(DEPTH_FX + 2);
+  }
+
+  update(dt: number, fighters: Fighter[]) {
+    if (!this.alive) return;
+    const now = this.ctx.now();
+    const prevY = this.y;
+    this.vy = Math.min(this.vy + 900 * (dt / 1000), 420);
+    this.y += this.vy * (dt / 1000);
+    const gy = this.ctx.groundAt(this.x, prevY);
+    if (gy !== null && this.y >= gy - 13) {
+      this.y = gy - 13;
+      this.vy = 0;
+    }
+    this.gfx.setPosition(this.x, this.y);
+    this.gfx.scaleX = Math.abs(Math.cos(now / 160));
+    for (const f of fighters) {
+      if (f.state === 'ko') continue;
+      if (Phaser.Geom.Intersects.CircleToRectangle(new Phaser.Geom.Circle(this.x, this.y, 14), f.hurtbox())) {
+        f.score.damage = Math.max(0, f.score.damage - 5);
+        this.ctx.fx('text', f.x, f.y - 80, 0xffd400, 18, '-5%');
+        this.ctx.sfx('heal');
+        return this.destroy();
+      }
+    }
+    if (now >= this.dieAt || this.y > STAGE.blast.bottom) this.destroy();
   }
 
   destroy() {

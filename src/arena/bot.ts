@@ -45,6 +45,11 @@ export class BotSource implements ControlSource {
     this.rand = lcg(seed);
   }
 
+  /** Live main-platform edges (SHRINKING STAGE moves them). */
+  private get E() {
+    return (this.self.ctx as unknown as { edges?: { left: number; right: number } }).edges ?? { left: STAGE.mainLeft, right: STAGE.mainRight };
+  }
+
   private get L() {
     return BOT_LEVELS[this.difficulty];
   }
@@ -67,8 +72,8 @@ export class BotSource implements ControlSource {
     const foe = this.seenFoe();
     const dx = foe.x - me.x;
     const dy = foe.y - me.y;
-    const offstage = isOffstage(me.x, me.y);
-    const foeOffstage = isOffstage(foe.x, foe.y);
+    const offstage = isOffstage(me.x, me.y, this.E);
+    const foeOffstage = isOffstage(foe.x, foe.y, this.E);
 
     if (offstage && !this.wasOffstage) this.skipRecoveryThisFall = this.rand() < this.L.lateRecovery;
     this.wasOffstage = offstage;
@@ -84,7 +89,7 @@ export class BotSource implements ControlSource {
         this.recover(c);
         break;
       case 'EDGEGUARD': {
-        const edge = foe.x < STAGE.mainLeft ? STAGE.mainLeft + 40 : STAGE.mainRight - 40;
+        const edge = foe.x < this.E.left ? this.E.left + 40 : this.E.right - 40;
         this.moveTo(c, edge, 12);
         if (Math.abs(dx) < 100 && Math.abs(dy) < 90) this.attack(c, dx);
         break;
@@ -188,13 +193,13 @@ export class BotSource implements ControlSource {
 
   private recover(c: Controls) {
     const me = this.self;
-    const centre = (STAGE.mainLeft + STAGE.mainRight) / 2;
+    const centre = (this.E.left + this.E.right) / 2;
     this.moveTo(c, centre, 0);
     const falling = me.body.velocity.y > -50;
     const below = me.y > STAGE.mainY - 30;
-    const farX = me.x < STAGE.mainLeft - 220 || me.x > STAGE.mainRight + 220;
+    const farX = me.x < this.E.left - 220 || me.x > this.E.right + 220;
     if (this.skipRecoveryThisFall && me.y < STAGE.mainY + 80) return; // easy: waits too long
-    if (me.kit.special === 'BLINK' && this.now >= me.specialReadyAt && me.state === 'free' && me.y < STAGE.mainY + 60 && Math.sign(centre - me.x) === me.facing && (me.x < STAGE.mainLeft - 120 || me.x > STAGE.mainRight + 120)) {
+    if (me.kit.special === 'BLINK' && this.now >= me.specialReadyAt && me.state === 'free' && me.y < STAGE.mainY + 60 && Math.sign(centre - me.x) === me.facing && (me.x < this.E.left - 120 || me.x > this.E.right + 120)) {
       c.special = true;
       return;
     }
@@ -210,11 +215,11 @@ export class BotSource implements ControlSource {
   private guardEdges(c: Controls) {
     const me = this.self;
     if (!me.grounded || me.y < STAGE.mainY - 60) return;
-    if (c.left && me.x < STAGE.mainLeft + 30) c.left = false;
-    if (c.right && me.x > STAGE.mainRight - 30) c.right = false;
+    if (c.left && me.x < this.E.left + 30) c.left = false;
+    if (c.right && me.x > this.E.right - 30) c.right = false;
   }
 }
 
-export function isOffstage(x: number, y: number) {
-  return x < STAGE.mainLeft - 6 || x > STAGE.mainRight + 6 || y > STAGE.mainY + 10;
+export function isOffstage(x: number, y: number, edges: { left: number; right: number } = { left: STAGE.mainLeft, right: STAGE.mainRight }) {
+  return x < edges.left - 6 || x > edges.right + 6 || y > STAGE.mainY + 10;
 }

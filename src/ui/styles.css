@@ -202,3 +202,4 @@ table.genes { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-s
 .skip-link { position: absolute; left: -9999px; top: 0; background: var(--hazard); color: #000; padding: 0.5rem 1rem; font-family: var(--mono); z-index: 10; }
 .skip-link:focus { left: 16px; }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--hazard); outline-offset: 2px; }
+a.btn { display: inline-block; text-decoration: none; color: inherit; }

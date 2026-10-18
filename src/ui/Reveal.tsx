@@ -7,6 +7,7 @@ import { needsJar, renderMutant } from '../art/mutantRenderer';
 import { sfx } from '../audio/sfx';
 import { ChogImage } from './ChogImage';
 import { geneForSlot } from './traitGenes';
+import { ShareButtons } from './ShareButtons';
 
 // §D6 reveal timeline (ms). Reduced motion → 1 s crossfade.
 const STEPS = [
@@ -33,7 +34,17 @@ type Props = {
   isNewDiscovery: boolean;
 };
 
-export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onNew, onNotebook, onFight, isNewDiscovery }: Props) {
+export function Reveal({
+  mutant,
+  manifest,
+  canSkip,
+  reducedMotion,
+  onChange,
+  onNew,
+  onNotebook,
+  onFight,
+  isNewDiscovery,
+}: Props) {
   const [step, setStep] = useState<Step>(reducedMotion ? 'open' : 'lock');
   const canvas = useRef<HTMLCanvasElement>(null);
   const [artReady, setArtReady] = useState(false);
@@ -44,7 +55,12 @@ export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onN
     let alive = true;
     setArtReady(false);
     if (canvas.current)
-      void renderMutant(canvas.current, mutant.visualRecipe, 256, needsJar(manifest.sprites, mutant.visualRecipe)).then(() => alive && setArtReady(true));
+      void renderMutant(
+        canvas.current,
+        mutant.visualRecipe,
+        256,
+        needsJar(manifest.sprites, mutant.visualRecipe),
+      ).then(() => alive && setArtReady(true));
     return () => {
       alive = false;
     };
@@ -147,7 +163,9 @@ export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onN
                     <th>{slot}</th>
                     <td>{inh.value === NONE ? <span className="dim">none</span> : String(raw)}</td>
                     <td>
-                      <span className={`from from-${side}`}>from #{src.displayNumber ?? src.tokenId}</span>
+                      <span className={`from from-${side}`}>
+                        from #{src.displayNumber ?? src.tokenId}
+                      </span>
                     </td>
                     <td>
                       <span className="gene" title={GENE_INFO[gene]?.desc}>
@@ -160,7 +178,9 @@ export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onN
               })}
             </tbody>
           </table>
-          {mutant.naked && <p className="small dim">Body came from a naked parent → LIGHT physics.</p>}
+          {mutant.naked && (
+            <p className="small dim">Body came from a naked parent → LIGHT physics.</p>
+          )}
           {mutant.metal && <p className="small dim">Metal skin in the bloodline → heavier.</p>}
 
           <div className="reveal-actions">
@@ -179,6 +199,7 @@ export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onN
             <button className="btn btn-ghost" onClick={onNotebook}>
               NOTEBOOK
             </button>
+            <ShareButtons mutant={mutant} manifest={manifest} />
           </div>
         </div>
       )}

@@ -69,7 +69,7 @@ const TIER_GLITCH: Record<string, number> = { common: 0.15, uncommon: 0.3, rare:
 export function createMutant({
   parentA,
   parentB,
-  recipeTiers = ['P0'],
+  recipeTiers = ['P0', 'P1'],
 }: {
   parentA: Parent;
   parentB: Parent;

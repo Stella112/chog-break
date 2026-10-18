@@ -171,13 +171,13 @@ describe('recipes', () => {
     }
     expect(checked).toBeGreaterThan(0);
   });
-  it('P1 recipes stay off by default', () => {
+  it('P1 recipes are live; restricting tiers still works', () => {
     const a = randomParent(1);
     const b = randomParent(2);
     Object.assign(a.traits, { Eyes: 'btc glass', Head: 'mon cap', Aura: NONE, Accessory: NONE, Base: 'origin', Naked: 'no', Body: 'tuxedo', Mouth: 'smile' });
     Object.assign(b.traits, { Eyes: 'happy', Head: 'btc cap', Aura: NONE, Accessory: NONE, Base: 'origin', Naked: 'no', Body: 'tuxedo', Mouth: 'smile' });
-    expect(createMutant({ parentA: a, parentB: b }).recipe).toBeUndefined();
-    expect(createMutant({ parentA: a, parentB: b, recipeTiers: ['P0', 'P1'] }).recipe?.id).toBe('BTC_MAXI');
+    expect(createMutant({ parentA: a, parentB: b, recipeTiers: ['P0'] }).recipe).toBeUndefined();
+    expect(createMutant({ parentA: a, parentB: b }).recipe?.id).toBe('BTC_MAXI');
   });
 });
 

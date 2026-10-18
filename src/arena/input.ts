@@ -41,6 +41,11 @@ export const KEYMAP = {
 
 export class KeyboardSource implements ControlSource {
   private keys: Record<keyof (typeof KEYMAP)['p1'], Phaser.Input.Keyboard.Key>;
+  /**
+   * Presses are queued from the keydown event and consumed on the next read, so a tap that
+   * goes down and up inside one frame is never lost (Phaser clears JustDown on keyup).
+   */
+  private pending = { jump: false, punch: false, dash: false, special: false, close: false };
 
   constructor(kb: Phaser.Input.Keyboard.KeyboardPlugin, map: (typeof KEYMAP)['p1'] | (typeof KEYMAP)['p2']) {
     const K = Phaser.Input.Keyboard.KeyCodes;
@@ -55,22 +60,27 @@ export class KeyboardSource implements ControlSource {
       special: make(map.special),
       close: make(map.close),
     };
+    for (const action of ['jump', 'punch', 'dash', 'special', 'close'] as const) {
+      this.keys[action].on(Phaser.Input.Keyboard.Events.DOWN, () => (this.pending[action] = true));
+    }
   }
 
   read(): Controls {
     const k = this.keys;
-    const J = Phaser.Input.Keyboard.JustDown;
-    return {
+    const p = this.pending;
+    const c: Controls = {
       left: k.left.isDown,
       right: k.right.isDown,
       down: k.down.isDown,
-      jump: J(k.jump),
-      punch: J(k.punch),
-      dash: J(k.dash),
-      special: J(k.special),
-      close: J(k.close),
+      jump: p.jump,
+      punch: p.punch,
+      dash: p.dash,
+      special: p.special,
+      close: p.close,
       dashHeld: k.dash.isDown,
       closeHeld: k.close.isDown,
     };
+    this.pending = { jump: false, punch: false, dash: false, special: false, close: false };
+    return c;
   }
 }

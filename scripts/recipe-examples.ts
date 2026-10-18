@@ -1,5 +1,5 @@
 // §D5/§F Phase 1: re-count recipes against the real manifest, write docs/RECIPE_EXAMPLES.md
-// and src/config/secretPairs.json (P0 pairs whose mutant actually resolves to that recipe).
+// and src/config/secretPairs.json (one pair per recipe whose mutant actually resolves to that recipe).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { RECIPES } from '../src/core/recipes';
 import { createMutant } from '../src/core/splice';
@@ -13,7 +13,7 @@ const counts = countRecipePairs(records);
 // Example pairs must produce that recipe after precedence; search for one if the first match is shadowed.
 function exampleFor(id: string): [number, number] | undefined {
   const r = RECIPES.find((x) => x.id === id)!;
-  const tiers = r.tier === 'P0' ? (['P0'] as const) : (['P0', 'P1'] as const);
+  const tiers = ['P0', 'P1'] as const;
   const xs = records.filter((c) => r.x(c.traits));
   const ys = records.filter((c) => r.y(c.traits));
   for (const a of xs)
@@ -44,7 +44,7 @@ for (const r of RECIPES) {
   const ex = exampleFor(r.id);
   const n = counts.get(r.id)!.count;
   if (!ex) missing.push(r.id);
-  if (ex && r.tier === 'P0') secret.push({ recipe: r.id, a: ex[0], b: ex[1] });
+  if (ex) secret.push({ recipe: r.id, a: ex[0], b: ex[1] });
   const names = ex ? `${ex[0]} (${byId.get(ex[0])!.displayName}) × ${ex[1]} (${byId.get(ex[1])!.displayName})` : 'NONE';
   lines.push(`| ${r.name} | ${r.tier} | ${SPEC[r.id]} | ${n} | ${names} | ${ex ? `/?a=${ex[0]}&b=${ex[1]}` : '—'} |`);
 }

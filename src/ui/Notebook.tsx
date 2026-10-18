@@ -10,8 +10,8 @@ export function Notebook({ manifest, onOpen }: { manifest: Manifest; onOpen: (lo
     [],
   );
   const secrets = new Set(entries.map((e) => e.recipeId).filter(Boolean));
-  // Only the P0 recipes are live; never reveal the total count.
-  const undiscovered = Math.max(0, RECIPES.filter((r) => r.tier === 'P0').length - secrets.size);
+  // Never reveal the total count; just tease a few unknown slots.
+  const undiscovered = Math.max(0, RECIPES.length - secrets.size);
 
   return (
     <section className="notebook">

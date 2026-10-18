@@ -22,20 +22,32 @@ function MoveList({ m }: { m: Mutant }) {
     <ul className="pm-moves">
       {rows.map(([slot, gene]) => (
         <li key={slot}>
-          <span className="mono small dim">{slot}</span> <span className="gene">{GENE_INFO[gene]?.label ?? gene}</span>{' '}
+          <span className="mono small dim">{slot}</span>{' '}
+          <span className="gene">{GENE_INFO[gene]?.label ?? gene}</span>{' '}
           <span className="small dim">{GENE_INFO[gene]?.desc}</span>
         </li>
       ))}
       {m.recipe && (
         <li>
-          <span className="mono small dim">PERK</span> <span className="gene">{m.recipe.name}</span> <span className="small dim">{m.recipe.perk}</span>
+          <span className="mono small dim">PERK</span> <span className="gene">{m.recipe.name}</span>{' '}
+          <span className="small dim">{m.recipe.perk}</span>
         </li>
       )}
     </ul>
   );
 }
 
-function MutantCard({ m, side, label, framed }: { m: Mutant; side: 'a' | 'b'; label: string; framed: boolean }) {
+function MutantCard({
+  m,
+  side,
+  label,
+  framed,
+}: {
+  m: Mutant;
+  side: 'a' | 'b';
+  label: string;
+  framed: boolean;
+}) {
   const c = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     if (c.current) void renderMutant(c.current, m.visualRecipe, 256, framed);
@@ -54,14 +66,15 @@ function MutantCard({ m, side, label, framed }: { m: Mutant; side: 'a' | 'b'; la
   );
 }
 
-const CONTROLS: [string, string][] = [
-  ['A / D', 'Move'],
-  ['W', 'Jump · double jump · recovery'],
-  ['S', 'Drop through platform / fast fall'],
-  ['J', 'Punch (3-hit combo)'],
-  ['K', 'Dash (hits!) · GUARD heads block'],
-  ['L', 'Special (from the Eyes)'],
-  ['I', 'Close move (from the Mouth)'],
+// [action, P1 keys, P2 keys] — P2 avoids the numpad so laptops work (§D7).
+const CONTROLS: [string, string, string][] = [
+  ['Move', 'A / D', '← / →'],
+  ['Jump · double jump · recovery', 'W', '↑'],
+  ['Drop through / fast fall', 'S', '↓'],
+  ['Punch (3-hit combo)', 'J', ','],
+  ['Dash (hits!) · GUARD heads block', 'K', '.'],
+  ['Special (from the Eyes)', 'L', '/'],
+  ['Close move (from the Mouth)', 'I', 'M'],
 ];
 
 type Props = {
@@ -70,13 +83,27 @@ type Props = {
   modifiers: ModifierId[];
   difficulty: Difficulty;
   onDifficulty: (d: Difficulty) => void;
+  mode: 'bot' | '2p';
+  onMode: (m: 'bot' | '2p') => void;
   onFight: () => void;
   onBack: () => void;
   touch: boolean;
   sprites: Record<string, { bgRemoved: boolean }>;
 };
 
-export function PreMatch({ player, opponent, modifiers, difficulty, onDifficulty, onFight, onBack, touch, sprites }: Props) {
+export function PreMatch({
+  player,
+  opponent,
+  modifiers,
+  difficulty,
+  onDifficulty,
+  mode,
+  onMode,
+  onFight,
+  onBack,
+  touch,
+  sprites,
+}: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter') onFight();
@@ -88,9 +115,19 @@ export function PreMatch({ player, opponent, modifiers, difficulty, onDifficulty
   return (
     <section className="prematch">
       <div className="pm-versus">
-        <MutantCard m={player} side="a" label="YOUR MUTANT" framed={needsJar(sprites, player.visualRecipe)} />
+        <MutantCard
+          m={player}
+          side="a"
+          label={mode === '2p' ? 'PLAYER 1' : 'YOUR MUTANT'}
+          framed={needsJar(sprites, player.visualRecipe)}
+        />
         <span className="pm-vs">VS</span>
-        <MutantCard m={opponent} side="b" label="TODAY'S LAB OPPONENT" framed={needsJar(sprites, opponent.visualRecipe)} />
+        <MutantCard
+          m={opponent}
+          side="b"
+          label={mode === '2p' ? "PLAYER 2 · TODAY'S LAB OPPONENT" : "TODAY'S LAB OPPONENT"}
+          framed={needsJar(sprites, opponent.visualRecipe)}
+        />
       </div>
       {modifiers.length === 0 ? (
         <p className="stable mono">STABLE… FOR NOW</p>
@@ -100,39 +137,81 @@ export function PreMatch({ player, opponent, modifiers, difficulty, onDifficulty
           <ul>
             {modifiers.map((m) => (
               <li key={m}>
-                <strong className="mono">{MODIFIER_INFO[m]?.label ?? m}</strong> <span className="small">{MODIFIER_INFO[m]?.desc}</span>
+                <strong className="mono">{MODIFIER_INFO[m]?.label ?? m}</strong>{' '}
+                <span className="small">{MODIFIER_INFO[m]?.desc}</span>
               </li>
             ))}
           </ul>
-          <p className="small dim">Modifiers come from the Chogs in this match and affect both fighters.</p>
+          <p className="small dim">
+            Modifiers come from the Chogs in this match and affect both fighters.
+          </p>
         </div>
       )}
       <div className="pm-row">
         <div className="panel pm-controls">
           <h3 className="mono">CONTROLS</h3>
           <table>
+            {mode === '2p' && (
+              <thead>
+                <tr>
+                  <th className="mono small">P1</th>
+                  <th className="mono small">P2</th>
+                  <th />
+                </tr>
+              </thead>
+            )}
             <tbody>
-              {CONTROLS.map(([k, v]) => (
-                <tr key={k}>
+              {CONTROLS.map(([action, k1, k2]) => (
+                <tr key={action}>
                   <th>
-                    <kbd>{k}</kbd>
+                    <kbd>{k1}</kbd>
                   </th>
-                  <td>{v}</td>
+                  {mode === '2p' && (
+                    <th>
+                      <kbd>{k2}</kbd>
+                    </th>
+                  )}
+                  <td>{action}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="small dim">Knock your opponent past the edge of the screen. 2 lives each. The more damage, the further they fly.</p>
+          <p className="small dim">
+            Knock your opponent past the edge of the screen. 2 lives each. The more damage, the
+            further they fly.
+          </p>
         </div>
         <div className="panel pm-setup">
-          <h3 className="mono">BOT DIFFICULTY</h3>
-          <div className="seg" role="radiogroup" aria-label="Bot difficulty">
-            {(['easy', 'normal', 'hard'] as const).map((d) => (
-              <button key={d} role="radio" aria-checked={difficulty === d} className={difficulty === d ? 'on' : ''} onClick={() => onDifficulty(d)}>
-                {d.toUpperCase()}
+          <h3 className="mono">MODE</h3>
+          <div className="seg" role="radiogroup" aria-label="Mode">
+            {(['bot', '2p'] as const).map((m) => (
+              <button
+                key={m}
+                role="radio"
+                aria-checked={mode === m}
+                className={mode === m ? 'on' : ''}
+                onClick={() => onMode(m)}
+              >
+                {m === 'bot' ? 'VS BOT' : 'LOCAL 2P'}
               </button>
             ))}
           </div>
+          {mode === 'bot' && <h3 className="mono">BOT DIFFICULTY</h3>}
+          {mode === 'bot' && (
+            <div className="seg" role="radiogroup" aria-label="Bot difficulty">
+              {(['easy', 'normal', 'hard'] as const).map((d) => (
+                <button
+                  key={d}
+                  role="radio"
+                  aria-checked={difficulty === d}
+                  className={difficulty === d ? 'on' : ''}
+                  onClick={() => onDifficulty(d)}
+                >
+                  {d.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          )}
           {touch && <p className="error-text">Best on desktop with a keyboard.</p>}
           <button className="btn btn-primary" onClick={onFight}>
             FIGHT ▸
