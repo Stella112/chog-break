@@ -1,0 +1,40 @@
+{
+  "collection": "0xc96d31F8626c6D03Fae5dCD3d61e3FB9F4a73763",
+  "vectors": [
+    {
+      "lo": 1,
+      "hi": 2,
+      "pairKey": "0xc323b25f8a3c3c4b97450ed8fce1a9ba30ff1ad2fdc33f87a974ba5ebc9a42aa"
+    },
+    {
+      "lo": 1,
+      "hi": 1969,
+      "pairKey": "0x45a9ea012458d05261cc1b600da649676d8506512df5135c8ad1b1539cafb696"
+    },
+    {
+      "lo": 1968,
+      "hi": 1969,
+      "pairKey": "0x6ba40b415e1b6cec8cb1d0b2325643a7d62b82fca3051cd77d2235e95a6ce629"
+    },
+    {
+      "lo": 88,
+      "hi": 1053,
+      "pairKey": "0x3b10dcb30ff39c6f751064c48ee1915a865560dd7515ee03e88cd03f1f2f26d6"
+    },
+    {
+      "lo": 500,
+      "hi": 1000,
+      "pairKey": "0x958a0eaf7c4d1129e862bd7a83c4c13d67b21f79784b002b1d16cea6f860ab35"
+    },
+    {
+      "lo": 42,
+      "hi": 1337,
+      "pairKey": "0x0de6d496b953989ce3730849b0e94b761bd7fc9914307811d46d0e255208c5b9"
+    },
+    {
+      "lo": 7,
+      "hi": 777,
+      "pairKey": "0x61f6263ce2f622f4e8be311a4e18e479cb9f8b1f65704b8309649ebda33261b1"
+    }
+  ]
+}
