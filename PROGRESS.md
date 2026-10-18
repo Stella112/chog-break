@@ -171,6 +171,13 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - `src/audio/music.ts`: lookahead-scheduled synth music, no audio files. **Lab loop** (88 bpm: soft pads Am7–Fmaj7–Dm7–Esus, slow arpeggio, light hats) on every screen except the arena; **arena loop** (128 bpm: four-on-the-floor kick, clap, syncopated bass, chord stabs, a lead every other bar) during fights. Tracks crossfade on screen change; music pauses when the tab is hidden and starts after the first click or key press (browser autoplay rules).
 - **MUSIC ON/OFF** button next to SOUND, persisted (`chogbreak.music.v1`). SOUND OFF silences music too and disables the MUSIC button. Verified in the browser through the real buttons (track switch lab → arena, MUSIC OFF/ON, SOUND OFF/ON) + e2e test for persistence. Not audibly reviewed by the Builder.
 
+## Polish pass 4: notebook, results, bot
+- **Notebook v2 (closes a §D2 gap):** each card now shows the rendered mutant (lazy), both parents, a W–L bar, SECRET/UNSTABLE badges and **FIGHT ▸ / PNG / POST** buttons (the spec asks for Fight and Share on notebook cards). Filters ALL / SECRETS / UNSTABLE and sort NEWEST / MOST WINS. Unknown slots still never reveal the total.
+- **Results v2:** both mutants' art, the winner glowing with a WINNER stamp (confetti on a win) and the loser greyed with K.O.; a lives scoreboard; stat tiles (KOs, damage-dealt bar, time, notebook record). A **LAB TIP** says when a parent is half of a secret recipe not yet found, without naming the recipe or the missing trait, to push "splice again".
+- **Bot:** steps off arming/active hazards (toxic segments, meteor targets, fire, runes) and keeps running until clear; hops over incoming projectiles; anti-air jump + punch at an opponent above it. All gated by a new per-difficulty `awareness` (Easy 0.2, Normal 0.55, Hard 0.9).
+- Balance after the smarter bot: PUKE rose to 72% (n=50) because bots walk into its cone more → PUKE 1.5 → 1.2 dmg/tick, cone 140 → 120 px, cooldown 3.5 → 4 s. Re-run (300 matches) PASSES.
+- **Verified** (`tests/e2e/bot.spec.ts`): difficulty ladder, 30 headless matches each with real mutants: **Hard beat Easy 29–1, Normal beat Easy 29–1, Hard beat Normal 27–3**. The bot escaped an arming hazard in 4/4 trials (moved 117–351 px).
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 

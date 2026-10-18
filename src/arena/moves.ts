@@ -162,8 +162,8 @@ export function startClose(f: Fighter, now: number) {
     case 'PUKE': {
       // Short rainbow cone, multi-hit: 4 ticks over 0.4 s.
       const hits = new Set<number>();
-      const len = f.kit.recipe === 'DOUBLE_RAINBOW' ? 200 : 140;
-      const spec: HitSpec = { damage: 1.5, base: 90, scaling: 1.2, angleDeg: 25, hitstunMs: 140, hitstopMs: 20, kind: 'melee' };
+      const len = f.kit.recipe === 'DOUBLE_RAINBOW' ? 180 : 120;
+      const spec: HitSpec = { damage: 1.2, base: 90, scaling: 1.2, angleDeg: 25, hitstunMs: 120, hitstopMs: 20, kind: 'melee' };
       f.startAction({
         until: now + 420,
         control: 0.2,

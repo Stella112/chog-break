@@ -35,7 +35,7 @@ export const SPECIAL_CD: Record<SpecialGene, number> = {
   SPIT: 3000,
 };
 export const CLOSE_CD: Record<CloseGene, number> = {
-  PUKE: 3500,
+  PUKE: 4000,
   DROOL: 4000,
   BUBBLE: 5500,
   COIN_TOSS: 2500,
