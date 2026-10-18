@@ -79,6 +79,17 @@ export function App() {
   }, []);
   useEffect(load, [load]);
 
+  // Test mode only: headless balance simulator for e2e (§F Phase 4 balance smoke test).
+  useEffect(() => {
+    if (!TEST_MODE || !manifest) return;
+    void import('../arena/sim').then(({ runBalanceSim, runHeadlessMatch }) => {
+      (window as unknown as { __sim: unknown }).__sim = {
+        run: (n: number, seed: number) => runBalanceSim(manifest.chogs, n, seed),
+        match: runHeadlessMatch,
+      };
+    });
+  }, [manifest]);
+
   // §D7 default opponent: a mutant from a pair seeded by the UTC date (same for everyone today).
   const opponent = useMemo(() => {
     if (!manifest) return null;

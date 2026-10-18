@@ -4,7 +4,7 @@
 2026-10-18 by the BUILDER (Claude Code)
 
 ## Current phase
-**Phase 3: base fight. Waiting on the FUN GATE (HUMAN CHECKPOINT).** Phases 0–2 are done apart from the sprite download, which is finishing.
+**Phase 4: mutant gameplay (4A + 4B together).** Every gene, all 8 P0 recipe perks and all 4 P0 modifiers are implemented and verified; balance tuning in progress.
 
 ## Phase 0: setup, facts, data
 - [x] `npm run build`, `typecheck`, `lint` and `test` pass
@@ -31,25 +31,102 @@
 Built: Phaser 3 arena (Arcade Physics), 1280×720 logical stage, main platform plus 3 pass-through platforms, blast zones 200 px out, move / jump / double jump / recovery / drop-through / fast fall, 3-hit punch combo, dash attack, damage %, knockback formula (§D7) with cap, hitstun, hitstop, hit flash, particles, knockback trail, screen shake on big hits, floating damage numbers, squash and stretch, run lean, synthesized fight SFX, 2 lives, 2 s respawn invulnerability, 120 s timer, time-out rules and sudden death at 150%, HUD, results (winner, KOs, damage dealt, time), rematch, Change parent, New experiment, notebook W–L. Bot: FSM (APPROACH/ATTACK/SPACE/RECOVER/EDGEGUARD) with Easy/Normal/Hard reaction times of 400/220/110 ms. Default opponent: a pair seeded by the UTC date.
 - [x] Full match vs Normal bot → results; rematch ×10 with fresh state, one canvas, no errors (`tests/e2e/arena.spec.ts`)
 - [x] Lives drop exactly once per KO (unit test on `applyKO` + e2e: lingering outside the blast zone costs one life)
-- [x] Bot recovers in 9/10 scripted off-stage launches (meets the bar but borderline; will harden in Phase 4)
+- [x] Bot recovers in 10/10 scripted off-stage launches (was 9/10 until the grounded-flicker fix)
 - [x] 60 fps measured: 60.6–60.7 fps in Chromium with the GPU on. Without the GPU (software WebGL) it was 9 fps; baking the static art into textures fixed the per-frame cost.
 - [x] Keyboard verified with real KeyboardEvents (D moved 186 px in 0.5 s, W jumped ≈200 px, J punched). The browser pane's synthetic keys omit `keyCode`, so test with a real keyboard.
 - [x] **FUN GATE (HARD), HUMAN CHECKPOINT: PASSED.** Maris played 5 matches (2026-10-18): "Yes, I'd press rematch."
+
+## Phase 4: mutant gameplay
+4A and 4B were built together: **no gene falls back to its default** (`IMPLEMENTED` sets in `src/arena/kit.ts` are complete; the unit test asserts it). Architecture: `kit.ts` (genes → numbers, pure, unit-tested), `moves.ts` (specials/close moves), `entities.ts` (projectiles, zones, frogs), `modifiers.ts`, one damage pipeline in `ArenaScene.hit()`. The bot uses its mutant's real moves (Easy/Normal/Hard ability use 12/35/65%), and GUARD bots block.
+
+### Every gene: how it was verified (`tests/e2e/genes.spec.ts`, `genes2.spec.ts`, real production build)
+- Eyes: SPIT hit 6% · BEAM hit 9% (telegraphed 0.3 s charge, colour from trait) · CHAOS ORB hit 7% (seeded bounces) · TEARS left 2 puddles · LEECH hit 8% and healed · BLINK teleported 246 px · RAGE buff active
+- Head: ROYAL launched less than LIGHTWEIGHT (632 vs 854 px/s, same hit) · WARP recovery teleported 191 px up · HORNS recovery hit 7% · GUARD blocked 70% (2.1% of 7%) · LIGHTWEIGHT faster/flies further · STEADY baseline
+- Mouth: HEADBUTT 7% · PUKE 10% (multi-hit) · HONK 3% + stun · COIN TOSS 7% · DROOL puddle · BUBBLE shield active (blocked a beam: 0%)
+- Body: LIGHT ran further than HEAVY in 0.7 s (572 vs 515) · FLOATY/DASHER/SLIPPERY via kit profile (unit test)
+- Base: UNDEAD revived without losing a life, second KO costs a life · TOXIC aura damage over time · ANOMALY special cooldown ×0.85 (unit test) · NORMAL
+- Accessory: SHIV punch 3.5% vs 3% · FWOG frog spawned and hit · PUMP grew · DUMP shrank · REGEN healed · CHARM cosmetic
+- Aura: BURN dash left fire · FROST slowed target · GUST pushed opponent · SMOKE puff + hidden · SHOCK combo ender +200 ms stun · SHIELD first hit halved (3.5% of 7%) · BLOOM healed · GLOW cosmetic
+- METAL skin: +0.1 weight (unit test)
+
+### P0 recipes (all playable from TRY A SECRET MUTATION)
+KING BEAM pierces a bubble (9% vs 0%) · NUCLEAR UNDEAD revive burst 8% · THE NAKED KING hold I 1 s → super armor · ARCHMAGE warp leaves a rune · VOLATILITY pulses every 5 s · FWOG LORD 2 frogs · ESCAPE VELOCITY third jump before recovery · WILDFIRE beam leaves fire
+
+### P0 modifiers (telegraph · effect · counterplay)
+- TOXIC FLOOR: segment flickers 1.5 s before arming · 1 dmg / 0.5 s for 3 s (3% measured) · step off or stand on a floating platform; rotates
+- SLIPPERY FLOOR: platform turns icy blue · ground friction ×0.3 · short taps, dash to stop
+- LOW GRAVITY: listed pre-match and in the HUD · gravity ×0.7 (verified) · fast-fall with S
+- UNSTABLE KNOCKBACK: listed pre-match/HUD (⚠) · knockback ×1.35 (verified) · keep damage low, recover early
+- No modifier → "STABLE… FOR NOW"; unimplemented P1 modifiers are never listed.
+
+### Acceptance
+- [x] Every gene has a visible effect (above)
+- [x] Changing one parent changes the mutant and its gameplay: kit/moves differ per pair (pre-match move list; e.g. 18×66 KING BEAM BEAM/ROYAL/SLIPPERY/SHIELD vs today's opponent BLINK/STEADY/BALANCED/GLOW)
+- [x] Each P0 modifier: telegraph, effect, counterplay (above)
+- [x] Balance smoke test PASSES. Run 1 (200 matches, seed 143) passed the rule but showed UNDEAD 11/11, LEECH 76%, ROYAL/HORNS 75%, FROST 72% (n < 30) and FLOATY/GUST/GUARD weak. Tuned values (UNDEAD revive 60→90%, FROST slow 20%/1 s → 15%/0.8 s, LEECH heal 50→35%, ROYAL 0.85→0.9, HORNS 7→6 dmg, FLOATY gravity 0.7→0.8, GUST stronger, DROOL puddle wider, bot uses GUARD).
+- [x] Recipe detection order-independent (unit tests); every P0 recipe playable from TRY A SECRET MUTATION
+
+### Balance run 2 (300 headless matches, seed 2026, both bots Normal, real mutants + real modifiers): PASS
+No gene with n ≥ 30 above 65% (highest: ROYAL and SHIELD at 64.7%). Known skew: bot-vs-bot matches almost always reach the 120 s timer (avg 118.7 s), so damage-reducing and healing genes (LEECH, REGEN, BLOOM, TOXIC, SHIELD) are favoured in time-outs; the weakest are DROOL 29%, FLOATY 32%, RAGE 36%. Watch in human play. `npx playwright test tests/e2e/balance.spec.ts` regenerates `test-results/balance.md`.
+
+| Slot | Gene | n | Wins | Win rate |
+|---|---|---|---|---|
+| affinity | TOXIC | 10 | 8 | 80.0% |
+| special | LEECH | 25 | 18 | 72.0% |
+| trinket | REGEN | 10 | 7 | 70.0% |
+| affinity | UNDEAD | 19 | 13 | 68.4% |
+| element | BLOOM | 29 | 19 | 65.5% |
+| head | ROYAL | 34 | 22 | 64.7% |
+| physics | SLIPPERY | 17 | 11 | 64.7% |
+| element | SHIELD | 51 | 33 | 64.7% |
+| special | SPIT | 208 | 129 | 62.0% |
+| close | BUBBLE | 51 | 31 | 60.8% |
+| physics | DASHER | 12 | 7 | 58.3% |
+| element | GUST | 33 | 19 | 57.6% |
+| close | HEADBUTT | 345 | 189 | 54.8% |
+| element | SMOKE | 24 | 13 | 54.2% |
+| head | HORNS | 24 | 13 | 54.2% |
+| trinket | PUMP | 13 | 7 | 53.8% |
+| close | PUKE | 49 | 26 | 53.1% |
+| close | HONK | 17 | 9 | 52.9% |
+| trinket | FWOG | 21 | 11 | 52.4% |
+| special | CHAOS_ORB | 58 | 30 | 51.7% |
+| trinket | NONE | 467 | 238 | 51.0% |
+| physics | BALANCED | 507 | 257 | 50.7% |
+| element | BURN | 96 | 48 | 50.0% |
+| trinket | SHIV | 10 | 5 | 50.0% |
+| affinity | NORMAL | 568 | 278 | 48.9% |
+| head | GUARD | 33 | 16 | 48.5% |
+| head | STEADY | 471 | 228 | 48.4% |
+| element | GLOW | 138 | 65 | 47.1% |
+| head | WARP | 30 | 14 | 46.7% |
+| element | FROST | 54 | 25 | 46.3% |
+| element | NONE | 153 | 69 | 45.1% |
+| physics | HEAVY | 41 | 18 | 43.9% |
+| special | BEAM | 88 | 37 | 42.0% |
+| element | SHOCK | 22 | 9 | 40.9% |
+| trinket | CHARM | 69 | 28 | 40.6% |
+| trinket | DUMP | 10 | 4 | 40.0% |
+| special | BLINK | 119 | 47 | 39.5% |
+| special | TEARS | 74 | 29 | 39.2% |
+| close | COIN_TOSS | 69 | 25 | 36.2% |
+| special | RAGE | 28 | 10 | 35.7% |
+| physics | FLOATY | 19 | 6 | 31.6% |
+| close | DROOL | 69 | 20 | 29.0% |
+
+### Bugs found and fixed in Phase 4
+- Grounded flicker: Arcade only flags contact on frames with a collision step, so a resting fighter sometimes read as airborne. That cancelled GUARD and puddles and occasionally jump resets. Fixed with a geometric ground check; bot recovery went from 9/10 to 10/10.
+- Headless sims crashed baking textures (no renderer); baked art is now skipped in headless mode.
 
 ## Broken
 - Nothing known.
 
 ## Blockers
-- FUN GATE needs Maris (see "What Maris must do").
+- None.
 
 ## Next
-- After the FUN GATE: Phase 4A (high-traffic genes, P0 modifiers, P0 recipe perks).
+- Phase 5: polish pass, accessibility pass, meta/OG/favicon, production build check, Vercel deploy (Maris).
 
-## What Maris must do (FUN GATE)
-1. In the project folder run `npm run dev` and open http://localhost:5173
-2. ENTER THE LAB → pick any two Chogs → SPLICE → FIGHT ▸ → FIGHT ▸
-3. Play 5 matches (try Easy, Normal, Hard). Controls: A/D move, W jump (press three times in the air for recovery), S drop, J punch, K dash.
-4. Tell the Builder: would you press rematch? What felt bad (too floaty, too slow, bot too hard or easy, hits not punchy)?
 
 ## Unverified facts (all in `src/config/chain.ts`)
 - RPC URL works but is not yet confirmed in the official Monad docs.
@@ -61,7 +138,6 @@ Built: Phaser 3 arena (Arcade Physics), 1280×720 logical stage, main platform p
 ## Needs human verification
 - $CHOG `burn()`: the implementation bytecode contains the selectors, but the source was not checked. The spec still uses the dead address.
 - $CHOG fee-on-transfer: needs the Reviewer fork test.
-- FUN GATE verdict.
 
 ## Proposals
 - **P-1, mutant art matches the genes:** §D6 picks the top/bottom parent of the art from the "visual" stream, independent of inheritance. So a KING BEAM can show parent A's wizard hat while the gene table says the head (Crown) came from parent B. Proposal: put the parent that gave the inherited **Head** on top (fall back to the visual stream when Head is `none`), so the picture matches "from #A / from #B". Needs Maris's OK because it changes §D6 wording.

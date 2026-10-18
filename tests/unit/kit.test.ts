@@ -20,14 +20,14 @@ describe('kit', () => {
     for (const g of ELEMENTS) expect(IMPLEMENTED.element.has(g)).toBe(true);
   });
 
-  it('maps genes to numbers per §D4', () => {
+  it('maps genes to numbers per §D4 (Phase 4 tuned values)', () => {
     for (let a = 1; a <= 400; a += 7) {
       const m = mutant(a, a + 900);
       const k = buildKit(m);
       expect(k.special).toBe(m.special);
       if (m.physics === 'HEAVY') expect(k.profile.weight).toBeCloseTo(m.metal ? 1.4 : 1.3);
       if (m.physics === 'LIGHT') expect(k.profile.speed).toBeGreaterThanOrEqual(1.15);
-      if (m.head === 'ROYAL') expect(k.kbTaken).toBe(0.85);
+      if (m.head === 'ROYAL') expect(k.kbTaken).toBe(0.9);
       if (m.head === 'LIGHTWEIGHT') expect(k.kbTaken).toBe(1.1);
       if (m.affinity === 'ANOMALY') expect(k.specialCd).toBe(Math.round(SPECIAL_CD[m.special] * 0.85));
       expect(k.specialCd).toBeGreaterThanOrEqual(2500);

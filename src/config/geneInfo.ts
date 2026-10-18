@@ -21,7 +21,7 @@ export const GENE_INFO: Record<string, { label: string; desc: string }> = {
   CHAOS_ORB: { label: 'CHAOS ORB', desc: 'Orb with unpredictable bounces' },
   SPIT: { label: 'SPIT', desc: 'Straight projectile' },
   // Head
-  ROYAL: { label: 'ROYAL', desc: '15% less knockback taken' },
+  ROYAL: { label: 'ROYAL', desc: '10% less knockback taken' },
   GUARD: { label: 'GUARD', desc: 'Hold K on the ground to block' },
   WARP: { label: 'WARP', desc: 'Recovery is a teleport' },
   HORNS: { label: 'HORNS', desc: 'Recovery is a horn charge that hits' },

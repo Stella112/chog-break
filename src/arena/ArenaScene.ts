@@ -32,6 +32,9 @@ export type ArenaConfig = {
   instant?: boolean;
 };
 
+/** §D4.5 says 60%; tuned in Phase 4 balance (revive was a free extra life in time-outs). */
+export const UNDEAD_REVIVE_DAMAGE = 90;
+
 const DEPTH = { bg: 0, platform: 5, fx: 8, fighter: 10, fxTop: 12, hud: 20 };
 
 export class ArenaScene extends Phaser.Scene implements ArenaCtx {
@@ -52,7 +55,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
   private suddenDeath = false;
   private lastAttacker: [Fighter | null, Fighter | null] = [null, null];
   private hud!: { timer: Phaser.GameObjects.Text; panels: { dmg: Phaser.GameObjects.Text; pips: Phaser.GameObjects.Graphics }[]; banner: Phaser.GameObjects.Text };
-  private scanImg!: Phaser.GameObjects.Image;
+  private scanImg: Phaser.GameObjects.Image | null = null;
   private trailAt = 0;
   private elapsedMs = 0;
 
@@ -144,7 +147,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
   }
 
   update(time: number, delta: number) {
-    this.scanImg.y = -6 + ((time / 40) % 6);
+    if (this.scanImg) this.scanImg.y = -6 + ((time / 40) % 6);
     if (!this.live || this.ended) return;
     const dt = Math.min(delta, 50);
 
@@ -260,7 +263,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
         big = force > 900;
       }
       if (attacker?.kit.element === 'FROST') {
-        target.slowUntil = now + 1000;
+        target.slowUntil = now + 800;
         this.fx('burst', target.x, target.y, 0x9fe8ff, 6);
       }
     }
@@ -353,7 +356,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
     if (f.kit.affinity === 'UNDEAD' && f.undeadReady && !this.suddenDeath) {
       f.undeadReady = false;
       const x = Phaser.Math.Clamp(f.x, STAGE.mainLeft + 80, STAGE.mainRight - 80);
-      f.score.damage = 60;
+      f.score.damage = UNDEAD_REVIVE_DAMAGE;
       f.respawnAt(now, x, STAGE.mainY - 260);
       this.fx('text', x, STAGE.mainY - 330, 0xc8ffc8, 26, 'UNDEAD REVIVE');
       this.fx('ring', x, STAGE.mainY - 260, 0xc8ffc8, 70);
@@ -440,6 +443,8 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx {
   }
 
   private drawBackground() {
+    // Headless sims have no renderer to bake textures with; there is nothing to see anyway.
+    if (!this.game.renderer) return;
     this.bake('arena-bg', STAGE.width, STAGE.height, (g) => this.paintBackground(g)).setDepth(DEPTH.bg);
     const scanImg = this.bake('arena-scan', STAGE.width, STAGE.height + 12, (g) => {
       g.fillStyle(0xffffff, 1);

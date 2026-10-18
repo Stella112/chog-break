@@ -213,7 +213,7 @@ export class Fighter {
     } else if (this.blocking) {
       b.setVelocityX(approach(b.velocity.x, 0, T.groundFriction * s));
     } else {
-      const slow = now < this.slowUntil ? 0.8 : 1;
+      const slow = now < this.slowUntil ? 0.85 : 1;
       const shrinkFast = this.sizeMode === 'shrink' ? 1.15 : 1;
       const max = T.runSpeed * p.speed * slow * shrinkFast;
       const control = this.state === 'attack' ? 0.35 : this.state === 'action' ? (this.action?.control ?? 0.35) : 1;
@@ -308,7 +308,7 @@ export class Fighter {
     if (this.kit.head === 'HORNS') {
       b.setVelocity(side * 160, -TUNING.recoveryVelocity * 1.05);
       let hit = false;
-      const spec: HitSpec = { damage: 7, base: 320, scaling: 5, angleDeg: 80, hitstunMs: 320, hitstopMs: 60, kind: 'melee' };
+      const spec: HitSpec = { damage: 6, base: 280, scaling: 4.5, angleDeg: 80, hitstunMs: 300, hitstopMs: 60, kind: 'melee' };
       this.startAction({
         until: now + 300,
         control: 0.6,
@@ -363,8 +363,8 @@ export class Fighter {
         break;
       }
       case 'GUST':
-        if (Math.hypot(foe.x - this.x, foe.y - this.y) < 150 && foe.state !== 'ko' && !foe.hasArmor(now)) {
-          foe.body.setVelocity(Math.sign(foe.x - this.x || this.facing) * 520, -180);
+        if (Math.hypot(foe.x - this.x, foe.y - this.y) < 180 && foe.state !== 'ko' && !foe.hasArmor(now)) {
+          foe.body.setVelocity(Math.sign(foe.x - this.x || this.facing) * 760, -220);
           this.ctx.fx('ring', this.x, this.y, 0xdfe8ff, 70);
         }
         break;

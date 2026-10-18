@@ -153,7 +153,7 @@ test('More passives: GUST, SHOCK, DUMP, SHIV, BLOOM, UNDEAD', async ({ page }) =
   const undead = await page.evaluate(() => (window as any).__arena.state().fighters[0]);
   console.log(`UNDEAD after KO: lives ${undead.lives}, damage ${undead.damage}`);
   expect(undead.lives).toBe(2);
-  expect(undead.damage).toBe(60);
+  expect(undead.damage).toBe(90);
   await page.evaluate(() => (window as any).__arena.forceKO(0));
   await page.waitForTimeout(300);
   expect(await page.evaluate(() => (window as any).__arena.state().fighters[0].lives)).toBe(1);

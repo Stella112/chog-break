@@ -17,7 +17,7 @@ export const BALANCED: PhysicsProfile = { weight: 1, speed: 1, gravity: 1, jump:
 
 const PHYSICS: Record<PhysicsGene, Partial<PhysicsProfile>> = {
   HEAVY: { weight: 1.3, speed: 0.88 },
-  FLOATY: { gravity: 0.7, jump: 1.1 },
+  FLOATY: { gravity: 0.8, jump: 1.1 },
   DASHER: { dashDistance: 1.4, dashCooldown: 0.7 },
   SLIPPERY: { friction: 0.4 },
   LIGHT: { weight: 0.8, speed: 1.15 },
@@ -101,7 +101,7 @@ export function buildKit(m: Mutant): FighterKit {
   if (head === 'LIGHTWEIGHT') profile.speed *= 1.1;
   if (m.recipe?.id === 'BTC_MAXI') profile.speed *= 1.1;
 
-  const kbTaken = head === 'ROYAL' ? 0.85 : head === 'LIGHTWEIGHT' ? 1.1 : 1;
+  const kbTaken = head === 'ROYAL' ? 0.9 : head === 'LIGHTWEIGHT' ? 1.1 : 1;
   const anomaly = affinity === 'ANOMALY' ? 0.85 : 1;
 
   return {

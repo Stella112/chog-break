@@ -115,6 +115,11 @@ export class BotSource implements ControlSource {
       }
     }
     if (this.state !== 'RECOVER' && this.state !== 'SPACE') this.abilities(c, dx, dy);
+    // GUARD heads hold K when the opponent swings close by.
+    if (me.kit.head === 'GUARD' && me.grounded && Math.abs(dx) < 130 && Math.abs(dy) < 80 && (this.foe.state === 'attack' || this.foe.state === 'action' || this.foe.state === 'dash') && this.rand() < this.L.ability + 0.25) {
+      c.dashHeld = true;
+      c.dash = false;
+    }
     this.guardEdges(c);
     return c;
   }

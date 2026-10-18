@@ -82,7 +82,7 @@ export function startSpecial(f: Fighter, now: number) {
             done = true;
             const dealt = ctx.hit(f, foe, spec, f.facing);
             if (dealt > 0) {
-              const heal = dealt * 0.5;
+              const heal = dealt * 0.35;
               f.score.damage = Math.max(0, f.score.damage - heal);
               ctx.fx('text', f.x, f.y - 80, 0x8aff4f, 18, `+${Math.round(heal)} HEAL`);
               ctx.sfx('heal');
@@ -176,7 +176,7 @@ export function startClose(f: Fighter, now: number) {
 
     case 'DROOL': {
       const gy = ctx.groundAt(f.x, f.y);
-      if (gy !== null) ctx.spawnZone({ owner: f, x: f.x - 70, y: gy - 10, w: 140, h: 10, kind: 'puddle', durationMs: 5000, affects: 'opponent' });
+      if (gy !== null) ctx.spawnZone({ owner: f, x: f.x - 110, y: gy - 10, w: 220, h: 10, kind: 'puddle', durationMs: 5000, affects: 'opponent' });
       if (f.kit.recipe === 'SHARK_WEEK' && gy !== null) ctx.spawnZone({ owner: f, x: f.x - 70, y: gy - 30, w: 140, h: 30, kind: 'fire', durationMs: 5000, armMs: 300, affects: 'opponent' });
       recoveryAction(f, now, 200);
       break;
