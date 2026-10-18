@@ -39,7 +39,7 @@ export class ArenaScene extends Phaser.Scene {
   private suddenDeath = false;
   private lastAttacker: [Fighter | null, Fighter | null] = [null, null];
   private hud!: { timer: Phaser.GameObjects.Text; panels: { dmg: Phaser.GameObjects.Text; pips: Phaser.GameObjects.Graphics }[]; banner: Phaser.GameObjects.Text };
-  private scan!: Phaser.GameObjects.Graphics;
+  private scanImg!: Phaser.GameObjects.Image;
   private trailAt = 0;
   private elapsedMs = 0;
 
@@ -119,7 +119,7 @@ export class ArenaScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number) {
-    this.scan.y = (time / 40) % 6;
+    this.scanImg.y = -6 + ((time / 40) % 6);
     if (!this.live || this.ended) return;
     const dt = Math.min(delta, 50);
 
@@ -225,8 +225,28 @@ export class ArenaScene extends Phaser.Scene {
 
   // ---------- visuals ----------
 
+  /** Draws static vector art once and replaces it with a single baked image (cheap per frame). */
+  private bake(key: string, w: number, h: number, draw: (g: Phaser.GameObjects.Graphics) => void) {
+    if (!this.textures.exists(key)) {
+      const g = this.make.graphics({}, false);
+      draw(g);
+      g.generateTexture(key, w, h);
+      g.destroy();
+    }
+    return this.add.image(0, 0, key).setOrigin(0, 0);
+  }
+
   private drawBackground() {
-    const g = this.add.graphics().setDepth(DEPTH.bg);
+    this.bake('arena-bg', STAGE.width, STAGE.height, (g) => this.paintBackground(g)).setDepth(DEPTH.bg);
+    const scanImg = this.bake('arena-scan', STAGE.width, STAGE.height + 12, (g) => {
+      g.fillStyle(0xffffff, 1);
+      for (let y = 0; y < STAGE.height + 12; y += 6) g.fillRect(0, y, STAGE.width, 2);
+    });
+    scanImg.setDepth(DEPTH.hud - 1).setAlpha(0.06).setY(-6);
+    this.scanImg = scanImg;
+  }
+
+  private paintBackground(g: Phaser.GameObjects.Graphics) {
     g.fillGradientStyle(0x1a1530, 0x1a1530, 0x07060b, 0x07060b, 1);
     g.fillRect(0, 0, STAGE.width, STAGE.height);
     g.lineStyle(1, 0x2e2a3d, 0.5);
@@ -237,9 +257,6 @@ export class ArenaScene extends Phaser.Scene {
       g.fillStyle(0x0f2a2a, 0.6).fillRoundedRect(x - 34, STAGE.height - h - 40, 68, h, 18);
       g.lineStyle(2, 0x2e6a6a, 0.6).strokeRoundedRect(x - 34, STAGE.height - h - 40, 68, h, 18);
     }
-    this.scan = this.add.graphics().setDepth(DEPTH.hud - 1).setAlpha(0.06);
-    this.scan.fillStyle(0xffffff, 1);
-    for (let y = -6; y < STAGE.height + 6; y += 6) this.scan.fillRect(0, y, STAGE.width, 2);
   }
 
   private buildStage() {
@@ -344,10 +361,18 @@ export class ArenaScene extends Phaser.Scene {
         const f = this.fighters[i];
         f.body.reset(STAGE.blast.right + 50, 300);
       },
-      launch: (i: 0 | 1, vx: number, vy: number) => {
+      launch: (i: 0 | 1, x: number, y: number, vx: number, vy: number) => {
         const f = this.fighters[i];
         f.state = 'free';
+        f.jumpsUsed = 1;
+        f.recoveryUsed = false;
+        f.airDashUsed = false;
+        f.body.reset(x, y);
         f.body.setVelocity(vx, vy);
+      },
+      idle: (i: 0 | 1, x = 640) => {
+        this.sources[i] = { read: () => EMPTY_CONTROLS };
+        this.fighters[i].body.reset(x, STAGE.mainY - 60);
       },
       state: () => ({
         live: this.live,
