@@ -1,0 +1,10 @@
+node_modules
+dist
+.env*
+!.env.example
+.cache
+contracts/out
+contracts/cache
+broadcast
+test-results
+playwright-report
