@@ -13,11 +13,19 @@ test('capture screens', async ({ page }) => {
   await shot('01-home');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await page.waitForTimeout(800);
+  for (const [q, slot] of [['18', 'A'], ['66', 'B']] as const) {
+    await page.getByPlaceholder('Name, #number or token ID').fill(q);
+    await page.locator('.cell').first().click();
+    await page.getByRole('button', { name: `LOAD INTO ${slot}` }).click();
+  }
+  await page.waitForTimeout(500);
   await shot('02-lab');
   await page.goto('/?a=18&b=66&test=1');
-  await page.waitForTimeout(1500);
-  await shot('03-reveal-mid');
-  await page.waitForTimeout(3500);
+  await page.waitForTimeout(1150);
+  await shot('03-reveal-spike');
+  await page.waitForTimeout(1300);
+  await shot('03b-reveal-drain');
+  await page.waitForTimeout(2600);
   await shot('04-reveal-done');
   await page.getByRole('button', { name: 'FIGHT ▸' }).click();
   await page.waitForTimeout(800);

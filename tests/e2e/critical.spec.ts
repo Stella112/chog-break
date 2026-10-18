@@ -108,3 +108,13 @@ test('375px: lab, reveal and pre-match fit without horizontal scroll', async ({ 
   }
   await expect(page.getByText('Best on desktop with a keyboard.')).toHaveCount(0); // desktop UA here; touch shows it
 });
+
+test('reduced motion: reveal is a short crossfade with no flash or lightning', async ({ browser }) => {
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await page.goto('/?a=18&b=66');
+  await expect(page.locator('.mutant-name')).toHaveText('KING BEAM', { timeout: 2500 });
+  expect(await page.locator('.reveal-flash').count()).toBe(0);
+  expect(await page.locator('.arcs').count()).toBe(0);
+  await ctx.close();
+});

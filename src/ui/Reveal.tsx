@@ -9,6 +9,43 @@ import { ChogImage } from './ChogImage';
 import { geneForSlot } from './traitGenes';
 import { ShareButtons } from './ShareButtons';
 
+/** Jittering lightning arcs from both parent tubes into the chamber (redrawn every 70 ms). */
+function Arcs({ active }: { active: boolean }) {
+  const [seed, setSeed] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    const t = setInterval(() => setSeed((n) => n + 1), 70);
+    return () => clearInterval(t);
+  }, [active]);
+  if (!active) return null;
+  const bolt = (x0: number, x1: number) => {
+    const pts: string[] = [];
+    const n = 9;
+    for (let i = 0; i <= n; i++) {
+      const x = x0 + ((x1 - x0) * i) / n;
+      const y =
+        50 +
+        (i === 0 || i === n
+          ? 0
+          : (Math.sin(seed * 7.3 + i * 12.9) * 0.5 + (Math.random() - 0.5)) * 26);
+      pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    }
+    return pts.join(' ');
+  };
+  return (
+    <svg className="arcs" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+      {[0, 1].map((k) => (
+        <g key={k}>
+          <polyline points={bolt(10, 38)} className={`bolt bolt-${k ? 'b' : 'a'}`} />
+          <polyline points={bolt(90, 62)} className={`bolt bolt-${k ? 'a' : 'b'}`} />
+          <polyline points={bolt(10, 38)} className="bolt-core" />
+          <polyline points={bolt(90, 62)} className="bolt-core" />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 // §D6 reveal timeline (ms). Reduced motion → 1 s crossfade.
 const STEPS = [
   ['lock', 0],
@@ -77,7 +114,10 @@ export function Reveal({
       setTimeout(() => {
         setStep(s);
         if (s === 'warning') sfx.alarm();
-        if (s === 'spike') sfx.electricity();
+        if (s === 'spike') {
+          sfx.electricity();
+          sfx.spinUp(1.4);
+        }
         if (s === 'open') sfx.impact();
         if (s === 'done' && mutant.recipe) sfx.discovery();
       }, at),
@@ -88,37 +128,60 @@ export function Reveal({
   const opened = step === 'open' || step === 'done';
   const done = step === 'done';
   const flashA = step === 'flash' || step === 'glitch';
+  const charging = step === 'spike' || step === 'flash' || step === 'glitch';
+  // tubes drain into the chamber, then refill at the end so A + B sit beside the result
+  const drained = step === 'glitch' || step === 'smoke' || step === 'open';
 
   return (
     <section className={`reveal step-${step}${reducedMotion ? ' reduced' : ''}`} aria-live="polite">
       <div className="reveal-stage">
-        <div className="chamber-frame">
-          <div className="warning-light" aria-hidden />
-          <div className="reveal-window">
-            {!opened && (
-              <div className="flasher" aria-hidden>
-                <div className={`flash-img ${flashA ? 'flash-a' : ''}`}>
-                  <ChogImage tokenId={mutant.lo} alt="" />
-                </div>
-                <div className={`flash-img ${flashA ? 'flash-b' : ''}`}>
-                  <ChogImage tokenId={mutant.hi} alt="" />
-                </div>
-              </div>
-            )}
-            <canvas
-              ref={canvas}
-              className={`mutant-canvas${opened && artReady ? ' visible' : ''}${mutant.unstable ? ' holo' : ''}`}
-              role="img"
-              aria-label={`Mutant ${mutant.name}, spliced from ${lo.displayName} and ${hi.displayName}`}
-            />
-            {mutant.unstable && opened && <div className="stamp stamp-unstable">UNSTABLE</div>}
-            <div className="doors" aria-hidden>
-              <span />
-              <span />
-            </div>
-            <div className="smoke" aria-hidden />
+        {step === 'open' && !reducedMotion && <div className="reveal-flash" aria-hidden />}
+        <div className="splice-rig">
+          <div
+            className={`tube tube-a${charging ? ' charging' : ''}${drained ? ' drained' : ''}`}
+            aria-hidden
+          >
+            <div className="tube-liquid" />
+            <ChogImage tokenId={mutant.lo} alt="" thumb />
+            <span className="tube-label mono">A</span>
           </div>
-          <div className="specimen-label mono">{mutant.experimentLabel}</div>
+          <Arcs active={charging && !reducedMotion} />
+          <div className="chamber-frame">
+            <div className="warning-light" aria-hidden />
+            <div className="reveal-window">
+              {!opened && (
+                <div className="flasher" aria-hidden>
+                  <div className={`flash-img ${flashA ? 'flash-a' : ''}`}>
+                    <ChogImage tokenId={mutant.lo} alt="" />
+                  </div>
+                  <div className={`flash-img ${flashA ? 'flash-b' : ''}`}>
+                    <ChogImage tokenId={mutant.hi} alt="" />
+                  </div>
+                </div>
+              )}
+              <canvas
+                ref={canvas}
+                className={`mutant-canvas${opened && artReady ? ' visible' : ''}${mutant.unstable ? ' holo' : ''}`}
+                role="img"
+                aria-label={`Mutant ${mutant.name}, spliced from ${lo.displayName} and ${hi.displayName}`}
+              />
+              {mutant.unstable && opened && <div className="stamp stamp-unstable">UNSTABLE</div>}
+              <div className="doors" aria-hidden>
+                <span />
+                <span />
+              </div>
+              <div className="smoke" aria-hidden />
+            </div>
+            <div className="specimen-label mono">{mutant.experimentLabel}</div>
+          </div>
+          <div
+            className={`tube tube-b${charging ? ' charging' : ''}${drained ? ' drained' : ''}`}
+            aria-hidden
+          >
+            <div className="tube-liquid" />
+            <ChogImage tokenId={mutant.hi} alt="" thumb />
+            <span className="tube-label mono">B</span>
+          </div>
         </div>
         {!done && canSkip && (
           <button className="btn btn-ghost skip" onClick={() => setStep('done')}>
@@ -136,7 +199,9 @@ export function Reveal({
               <span className="small">{mutant.recipe.perk}</span>
             </div>
           )}
-          <h2 className="mutant-name">{mutant.name}</h2>
+          <h2 className="mutant-name glitch-in" data-text={mutant.name}>
+            {mutant.name}
+          </h2>
           <p className="mono dim">
             {lo.displayName} (ID {lo.tokenId}) × {hi.displayName} (ID {hi.tokenId})
             {isNewDiscovery ? ' · NEW ENTRY IN NOTEBOOK' : ' · ALREADY IN NOTEBOOK'}
@@ -152,14 +217,18 @@ export function Reveal({
               </tr>
             </thead>
             <tbody>
-              {INHERITED_SLOTS.map((slot) => {
+              {INHERITED_SLOTS.map((slot, rowIndex) => {
                 const inh = mutant.inherited[slot];
                 const src = inh.from === lo.tokenId ? lo : hi;
                 const raw = src.attributes.find((a) => a.trait_type === slot)?.value;
                 const gene = slot === 'Body' ? mutant.physics : geneForSlot(slot, src.traits);
                 const side = inh.from === lo.tokenId ? 'a' : 'b';
                 return (
-                  <tr key={slot}>
+                  <tr
+                    key={slot}
+                    className="row-in"
+                    style={{ animationDelay: `${120 + rowIndex * 80}ms` }}
+                  >
                     <th>{slot}</th>
                     <td>{inh.value === NONE ? <span className="dim">none</span> : String(raw)}</td>
                     <td>
