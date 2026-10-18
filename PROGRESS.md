@@ -4,7 +4,7 @@
 2026-10-18 by the BUILDER (Claude Code)
 
 ## Current phase
-**Phase 5: P0 polish + release candidate.** Release candidate built and tested locally. **HUMAN CHECKPOINT: Maris deploys to Vercel** (see below). P0 DONE needs the §G1 checklist re-run on the live URL.
+**Phase 6: P1, game features first** (Maris, 2026-10-18: "the main thing is a working game"; deploy is the last step). Done: local 2P, 6 P1 modifiers, 8 P1 recipes, share card. Not started: wallet/MY CHOGS, Recorded Splice (needs the Reviewer's registry). Vercel deploy deferred to the end.
 
 ## Phase 0: setup, facts, data
 - [x] `npm run build`, `typecheck`, `lint` and `test` pass
@@ -130,6 +130,15 @@ Done:
 - [x] Playwright critical flow + failure cases pass against the production build (locally)
 - [x] No console errors in the full guest flow
 
+## Phase 6: P1 (game features first)
+- [x] **Local 2P:** VS BOT / LOCAL 2P switch on pre-match; P2 plays today's opponent mutant with ←/→/↑/↓ , . / M; pre-match shows both control columns; results say "PLAYER N WINS"; 2P matches don't touch the notebook W–L. Verified with real key events: both fighters moved at the same time (181 px / 174 px).
+- [x] **6 P1 modifiers** (all with telegraph · effect · counterplay; `tests/e2e/p1.spec.ts`): OVERCLOCK (+20% speed for both) · BOUNCY FLOOR (pink edge; hard landings bounce, hold S to stick) · SHRINKING STAGE (banner at 57 s; −120 px per side from 60–75 s; verified 352–928) · METEOR SHOWER (red target + visible falling rock 1.2 s before impact; 8 dmg; step aside) · COIN RAIN (falling coins heal 5%) · GLITCH (a new random implemented modifier every 20 s, announced by banner).
+- [x] **8 P1 recipes live** (`recipeTiers` default now P0+P1; P0 still win ties). Perks: LASER SHOW two beams in both parents' colours (verified) · GOLDEN BULL dash super armor (verified) · BEAR MARKET +5% damage while above 100% (verified 10.5 vs 10) · SKULL & BONES combo ender launches up · SHARK WEEK drool puddle bites · HONK LORD +0.2 s stun · DOUBLE RAINBOW longer puke · BTC MAXI +10% speed. TRY A SECRET MUTATION now covers all 16 (`src/config/secretPairs.json`). The 20-pair stability snapshot is unchanged.
+- [x] **Share card:** DOWNLOAD PNG (1200×675; mutant art, name, both parents, genes, recipe/Unstable badge, W–L, wordmark, deep link) + POST ON X (intent link; never auto-posts) on reveal and results. Verified: a real pair exported a valid 1200×675 PNG in Chromium.
+- [ ] Wallet + MY CHOGS (holder mode)
+- [ ] Recorded Splice UI (needs `contracts/` registry from the Reviewer + Maris's mainnet deploy)
+- Bug fixed: a key tapped down and up within one frame was lost (Phaser clears JustDown on keyup). Presses are now queued from keydown, which also buffers inputs during hitstop.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 
@@ -143,7 +152,9 @@ Done:
 4. Paste the production URL to the Builder. The Builder then makes the og:image URL absolute and runs the §G1 checklist against the live site.
 
 ## Next
-- After the deploy: §G1 on the live URL → P0 DONE → Phase 6 (P1: wallet + MY CHOGS, Recorded Splice if the registry is deployed, share card, local 2P, P1 recipes/modifiers).
+- Re-run the balance sim with the P1 modifiers and recipes live.
+- Wallet + MY CHOGS, then Recorded Splice if the registry exists.
+- Last: Vercel deploy → §G1 on the live URL → P0 DONE.
 
 
 ## Unverified facts (all in `src/config/chain.ts`)

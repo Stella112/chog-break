@@ -250,7 +250,7 @@ test('P0 arena modifiers: telegraph, effect', async ({ page }) => {
   test.setTimeout(120_000);
   await arena(page, '/?a=18&b=66&fight=1&test=1&mods=TOXIC_FLOOR,SLIPPERY_FLOOR,UNSTABLE_KNOCKBACK');
   const mods = await page.evaluate(() => (window as any).__arena.state().mods);
-  expect(mods).toEqual({ gravity: 1, friction: 0.3, kb: 1.35 });
+  expect(mods).toMatchObject({ gravity: 1, friction: 0.3, kb: 1.35 });
   // TOXIC FLOOR: a segment arms (telegraph) within ~3 s, then hurts a fighter standing on it
   await page.evaluate(() => {
     const A = (window as any).__arena;

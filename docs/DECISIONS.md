@@ -19,3 +19,11 @@
 - **Arena renders static art once:** the background, grid, tanks and scanlines are baked into textures. Software WebGL showed 9 fps with per-frame Graphics; baked textures + GPU run at 60 fps.
 - **Arena keeps Arcade Physics (§B):** headless checks run in Playwright through `?test=1` hooks rather than a custom physics sim.
 - **$CHOG is an EIP-1167 minimal proxy** (45-byte runtime) → implementation `0x7f64ccfeb3e3afd7691ea0ef404e947786cefae8`. The implementation bytecode contains the `burn(uint256)` and `burnFrom(address,uint256)` selectors (heuristic scan only, verified source not read). Per spec the registry keeps sending 10% to the dead address; switching to `burn()` is a Reviewer proposal + STOP 5 for Maris.
+
+## 2026-10-18 — Phase 6
+
+- **P1 order changed by Maris:** game features first (2P, P1 modifiers, P1 recipes, share card); wallet/Recorded Splice after; Vercel deploy last ("the main thing is a working game").
+- **All 16 recipes live:** `recipeTiers` defaults to P0+P1 in core. P0 recipes are listed first, so they still win ties. The 20-pair stability snapshot did not change.
+- **Live stage edges:** SHRINKING STAGE moves the main platform's edges at runtime; `groundAt`, the bot and UNDEAD revive read the live edges (`ArenaScene.edges`).
+- **Input buffering:** keyboard presses are queued from keydown and consumed on the next read (no lost taps; presses during hitstop fire right after).
+- **2P notebook rule:** local 2P matches don't change the mutant's W–L record (the record is "your mutant vs the lab bot").
