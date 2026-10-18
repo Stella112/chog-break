@@ -30,3 +30,9 @@ kbd { font-family: var(--mono); background: var(--bg); border: 1px solid var(--t
 @media (max-width: 820px) {
   .pm-versus, .pm-row { grid-template-columns: 1fr; }
 }
+.pm-moves { list-style: none; padding: 0; margin: 0.5rem 0 0; text-align: left; width: 100%; font-size: 0.85rem; }
+.pm-moves li { padding: 0.15rem 0; border-bottom: 1px dashed var(--line); }
+.pm-mods { border: 2px solid var(--hazard); background: repeating-linear-gradient(-45deg, rgba(255, 212, 0, 0.07) 0 12px, transparent 12px 24px); padding: 0.7rem 1rem; margin: 1rem 0; }
+.pm-mods p { margin: 0.2rem 0; }
+.pm-mods ul { margin: 0.4rem 0; padding-left: 1.2rem; }
+.pm-mods strong { color: var(--hazard); }

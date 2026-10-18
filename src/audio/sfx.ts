@@ -95,5 +95,18 @@ export const sfx = {
   countdown: (go = false) => tone(go ? 880 : 440, go ? 0.3 : 0.12, 'square', 0.1),
   victory: () => [392, 523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 'square', 0.08, undefined, i * 0.11)),
   defeat: () => [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, 'triangle', 0.1, undefined, i * 0.16)),
+  move: (kind: 'special' | 'close' | 'heal' | 'block' | 'zap' | 'honk' | 'warp') => {
+    if (kind === 'special') tone(520, 0.12, 'sawtooth', 0.07, 1040);
+    else if (kind === 'close') tone(260, 0.1, 'square', 0.07, 180);
+    else if (kind === 'heal') [660, 880].forEach((f, i) => tone(f, 0.12, 'sine', 0.08, undefined, i * 0.07));
+    else if (kind === 'block') tone(1200, 0.06, 'triangle', 0.08, 900);
+    else if (kind === 'zap') {
+      noise(0.18, 0.15, 0, 7000);
+      tone(1400, 0.18, 'sawtooth', 0.06, 300);
+    } else if (kind === 'honk') {
+      tone(330, 0.25, 'square', 0.12);
+      tone(415, 0.25, 'square', 0.08);
+    } else if (kind === 'warp') tone(200, 0.2, 'sine', 0.1, 1600);
+  },
   discovery: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 'triangle', 0.12, undefined, i * 0.09)),
 };

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PairError, makePair } from '../core/pair';
 import { createMutant, type Mutant } from '../core/splice';
 import { dailyOpponentPair, utcDateString } from '../core/daily';
+import { createArenaRules } from '../core/arenaRules';
+import { buildKit } from '../arena/kit';
 import { SECRET_PAIRS } from '../config/game';
 import { loadManifest, type Manifest } from '../data/manifest';
 import { isMuted, setMuted, sfx } from '../audio/sfx';
@@ -82,6 +84,12 @@ export function App() {
     if (mutant && Math.min(x, y) === mutant.lo && Math.max(x, y) === mutant.hi) y = ids[(ids.indexOf(y) + 1) % ids.length]!;
     return createMutant({ parentA: manifest.byId.get(x)!, parentB: manifest.byId.get(y)! });
   }, [manifest, mutant]);
+
+  // §D7: the arena mutates too — modifiers from all four parents' Backgrounds + tier/Unstable rule.
+  const arenaRules = useMemo(
+    () => (mutant && opponent ? createArenaRules({ mutants: [mutant, opponent] }) : null),
+    [mutant, opponent],
+  );
 
   const splice = useCallback((m: Manifest, x: number, y: number, toFight = false) => {
     try {
@@ -284,6 +292,7 @@ export function App() {
           <PreMatch
             player={mutant}
             opponent={opponent}
+            modifiers={arenaRules?.modifiers ?? []}
             difficulty={difficulty}
             onDifficulty={setDifficulty}
             onFight={startFight}
@@ -297,9 +306,10 @@ export function App() {
           <Arena
             matchKey={matchKey}
             fighters={[
-              { name: mutant.name, canvas: canvases[0], color: 0x4ff0ff },
-              { name: opponent.name, canvas: canvases[1], color: 0xff4fd8 },
+              { name: mutant.name, canvas: canvases[0], color: 0x4ff0ff, kit: buildKit(mutant) },
+              { name: opponent.name, canvas: canvases[1], color: 0xff4fd8, kit: buildKit(opponent) },
             ]}
+            modifiers={arenaRules?.modifiers ?? []}
             drivers={['human', 'bot']}
             difficulty={difficulty}
             reducedMotion={reducedMotion}

@@ -34,7 +34,7 @@ Built: Phaser 3 arena (Arcade Physics), 1280×720 logical stage, main platform p
 - [x] Bot recovers in 9/10 scripted off-stage launches (meets the bar but borderline; will harden in Phase 4)
 - [x] 60 fps measured: 60.6–60.7 fps in Chromium with the GPU on. Without the GPU (software WebGL) it was 9 fps; baking the static art into textures fixed the per-frame cost.
 - [x] Keyboard verified with real KeyboardEvents (D moved 186 px in 0.5 s, W jumped ≈200 px, J punched). The browser pane's synthetic keys omit `keyCode`, so test with a real keyboard.
-- [ ] **FUN GATE (HARD), HUMAN CHECKPOINT:** Maris plays 5 matches and answers "would I press rematch?". Verdict goes here.
+- [x] **FUN GATE (HARD), HUMAN CHECKPOINT: PASSED.** Maris played 5 matches (2026-10-18): "Yes, I'd press rematch."
 
 ## Broken
 - Nothing known.

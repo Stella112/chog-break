@@ -7,5 +7,5 @@ export default defineConfig({
     // Use the real GPU where available so arena timing reflects a laptop, not software WebGL.
     launchOptions: { args: ['--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=d3d11'] },
   },
-  webServer: { command: 'npm run build && npm run preview', port: 4173, reuseExistingServer: true },
+  webServer: { command: 'npm run build && npm run preview', port: 4173, reuseExistingServer: true, timeout: 240_000 },
 });

@@ -8,11 +8,11 @@ export type BotState = 'APPROACH' | 'ATTACK' | 'SPACE' | 'RECOVER' | 'EDGEGUARD'
 
 export const BOT_LEVELS: Record<
   Difficulty,
-  { reactionMs: number; attackGapMs: number; mistake: number; dashChance: number; lateRecovery: number; spaceMs: number }
+  { reactionMs: number; attackGapMs: number; mistake: number; dashChance: number; lateRecovery: number; spaceMs: number; ability: number }
 > = {
-  easy: { reactionMs: 400, attackGapMs: 650, mistake: 0.3, dashChance: 0.05, lateRecovery: 0.35, spaceMs: 0 },
-  normal: { reactionMs: 220, attackGapMs: 330, mistake: 0.1, dashChance: 0.2, lateRecovery: 0.05, spaceMs: 250 },
-  hard: { reactionMs: 110, attackGapMs: 170, mistake: 0.03, dashChance: 0.35, lateRecovery: 0, spaceMs: 380 },
+  easy: { reactionMs: 400, attackGapMs: 650, mistake: 0.3, dashChance: 0.05, lateRecovery: 0.35, spaceMs: 0, ability: 0.12 },
+  normal: { reactionMs: 220, attackGapMs: 330, mistake: 0.1, dashChance: 0.2, lateRecovery: 0.05, spaceMs: 250, ability: 0.35 },
+  hard: { reactionMs: 110, attackGapMs: 170, mistake: 0.03, dashChance: 0.35, lateRecovery: 0, spaceMs: 380, ability: 0.65 },
 };
 
 /** Tiny seeded PRNG so bot behaviour is reproducible in headless tests. */
@@ -26,6 +26,7 @@ export class BotSource implements ControlSource {
   private rand: () => number;
   private history: { t: number; x: number; y: number }[] = [];
   private lastAttackAt = -9999;
+  private lastAbilityThink = 0;
   private lastJumpAt = -9999;
   private spaceUntil = 0;
   private stuckSince = 0;
@@ -57,7 +58,7 @@ export class BotSource implements ControlSource {
 
   read(): Controls {
     this.now = this.clock();
-    this.history.push({ t: this.now, x: this.foe.x, y: this.foe.y });
+    if (this.now >= this.foe.hiddenUntil || this.history.length === 0) this.history.push({ t: this.now, x: this.foe.x, y: this.foe.y });
     while (this.history.length > 2 && this.history[1]!.t < this.now - 600) this.history.shift();
 
     const c: Controls = { ...EMPTY_CONTROLS };
@@ -113,8 +114,39 @@ export class BotSource implements ControlSource {
         break;
       }
     }
+    if (this.state !== 'RECOVER' && this.state !== 'SPACE') this.abilities(c, dx, dy);
     this.guardEdges(c);
     return c;
+  }
+
+  /** Uses the mutant's real moves: Eyes special (L) and Mouth close move (I). */
+  private abilities(c: Controls, dx: number, dy: number) {
+    const me = this.self;
+    if (me.state !== 'free' || this.now - this.lastAbilityThink < 250) return;
+    this.lastAbilityThink = this.now;
+    if (this.rand() > this.L.ability) return;
+    const facingFoe = Math.sign(dx) === me.facing;
+    const adx = Math.abs(dx);
+    const ady = Math.abs(dy);
+    if (this.now >= me.specialReadyAt) {
+      const sp = me.kit.special;
+      const ranged = (sp === 'SPIT' || sp === 'BEAM' || sp === 'CHAOS_ORB') && facingFoe && ady < 60 && adx > 140 && adx < 800;
+      const lob = sp === 'TEARS' && facingFoe && adx > 150 && adx < 450;
+      const close = (sp === 'LEECH' || sp === 'RAGE') && facingFoe && adx < 220 && ady < 70;
+      const blink = sp === 'BLINK' && facingFoe && adx > 250 && adx < 500 && ady < 60;
+      if (ranged || lob || close || blink) {
+        c.special = true;
+        return;
+      }
+    }
+    if (this.now >= me.closeReadyAt) {
+      const cl = me.kit.close;
+      const near = adx < 110 && ady < 70;
+      const shield = cl === 'BUBBLE' && adx < 140 && (this.foe.state === 'attack' || this.foe.state === 'action');
+      const coin = cl === 'COIN_TOSS' && facingFoe && adx > 250 && adx < 420;
+      const melee = (cl === 'HEADBUTT' || cl === 'PUKE' || cl === 'HONK' || cl === 'DROOL') && near && (cl === 'HONK' || cl === 'DROOL' || facingFoe);
+      if (shield || coin || melee) c.close = true;
+    }
   }
 
   private moveTo(c: Controls, x: number, dead: number) {
@@ -157,6 +189,10 @@ export class BotSource implements ControlSource {
     const below = me.y > STAGE.mainY - 30;
     const farX = me.x < STAGE.mainLeft - 220 || me.x > STAGE.mainRight + 220;
     if (this.skipRecoveryThisFall && me.y < STAGE.mainY + 80) return; // easy: waits too long
+    if (me.kit.special === 'BLINK' && this.now >= me.specialReadyAt && me.state === 'free' && me.y < STAGE.mainY + 60 && Math.sign(centre - me.x) === me.facing && (me.x < STAGE.mainLeft - 120 || me.x > STAGE.mainRight + 120)) {
+      c.special = true;
+      return;
+    }
     if (falling && me.jumpsUsed < 2) this.jump(c);
     else if (falling && below && !me.recoveryUsed) this.jump(c);
     else if (farX && !me.airDashUsed && this.difficulty !== 'easy' && falling && me.state === 'free') {
