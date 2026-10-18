@@ -4,7 +4,7 @@
 2026-10-18 by the BUILDER (Claude Code)
 
 ## Current phase
-**Phase 4: mutant gameplay (4A + 4B together).** Every gene, all 8 P0 recipe perks and all 4 P0 modifiers are implemented and verified; balance tuning in progress.
+**Phase 5: P0 polish + release candidate.** Release candidate built and tested locally. **HUMAN CHECKPOINT: Maris deploys to Vercel** (see below). P0 DONE needs the §G1 checklist re-run on the live URL.
 
 ## Phase 0: setup, facts, data
 - [x] `npm run build`, `typecheck`, `lint` and `test` pass
@@ -118,14 +118,32 @@ No gene with n ≥ 30 above 65% (highest: ROYAL and SHIELD at 64.7%). Known skew
 - Grounded flicker: Arcade only flags contact on frames with a collision step, so a resting fighter sometimes read as airborne. That cancelled GUARD and puddles and occasionally jump resets. Fixed with a geometric ground check; bot recovery went from 9/10 to 10/10.
 - Headless sims crashed baking textures (no renderer); baked art is now skipped in headless mode.
 
+## Phase 5: P0 polish + release candidate
+Done:
+- **Performance:** Phaser is lazy-loaded only for the arena (prefetched on reveal/pre-match). Main bundle 1.7 MB → 210 KB (71 KB gzip); grid loads 96 px thumbs only; arena 60 fps.
+- **Error states:** React error boundary per screen ("THE EXPERIMENT MALFUNCTIONED" + BACK TO THE LAB, never a stack trace); archive load failure → RETRY; malformed records dropped; missing art → fallback; bad deep links → friendly message.
+- **Accessibility:** skip link, visible focus on all controls, aria labels (arena, mute, canvases), reduced motion (1 s reveal crossfade, ¼ screen shake), controls shown before every fight, "Best on desktop with a keyboard" on touch devices.
+- **Look:** screen transitions, code-drawn favicon, OG/Twitter share image from real sprites (`scripts/build-og.ts` → `public/og.png`), meta tags, `vercel.json` with long caching for art.
+- **Critical-flow e2e** (`tests/e2e/critical.spec.ts`, production build), all pass: home → lab → A → B → splice → reveal → fight → forced KO ×2 → results → notebook (W 1 – L 0, survives refresh) with no console errors · malformed metadata record · missing image · all external network blocked (0 Monad RPC calls in the guest flow) · archive 500 → retry · 375 px on home, reveal and pre-match.
+
+- [ ] §G1 P0 Definition of Done on the **live URL** (after the deploy)
+- [x] Playwright critical flow + failure cases pass against the production build (locally)
+- [x] No console errors in the full guest flow
+
 ## Broken
-- Nothing known.
+- Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 
 ## Blockers
-- None.
+- HUMAN CHECKPOINT: Vercel production deploy (Maris).
+
+## What Maris must do (deploy)
+1. Push the repo to GitHub (`git remote add origin <your repo URL>` then `git push -u origin main`).
+2. Vercel → Add New → Project → import the repo → Deploy (settings come from `vercel.json`; no env vars needed).
+3. Open the live URL: home → ENTER THE LAB → splice two Chogs → FIGHT.
+4. Paste the production URL to the Builder. The Builder then makes the og:image URL absolute and runs the §G1 checklist against the live site.
 
 ## Next
-- Phase 5: polish pass, accessibility pass, meta/OG/favicon, production build check, Vercel deploy (Maris).
+- After the deploy: §G1 on the live URL → P0 DONE → Phase 6 (P1: wallet + MY CHOGS, Recorded Splice if the registry is deployed, share card, local 2P, P1 recipes/modifiers).
 
 
 ## Unverified facts (all in `src/config/chain.ts`)

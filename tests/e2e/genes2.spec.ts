@@ -264,7 +264,8 @@ test('P0 arena modifiers: telegraph, effect', async ({ page }) => {
   });
   expect(zone.armedIn).toBeGreaterThan(500); // visible telegraph before it hurts
   await page.evaluate((x) => (window as any).__arena.idle(0, x), zone.x + zone.w / 2);
-  await page.waitForTimeout(2600);
+  // Wait on game time, not wall time: under load the game clock runs slower than real time.
+  await page.waitForFunction(() => (window as any).__arena.scene.fighters[0].score.damage > 0, null, { timeout: 15_000 }).catch(() => {});
   const dmg = await page.evaluate(() => (window as any).__arena.scene.fighters[0].score.damage);
   console.log(`TOXIC FLOOR damage while standing on the segment: ${dmg}%`);
   expect(dmg).toBeGreaterThan(0);
