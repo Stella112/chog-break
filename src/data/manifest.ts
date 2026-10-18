@@ -35,17 +35,14 @@ export function buildManifest(chogs: ChogRecord[], sprites: Record<string, Sprit
 }
 
 export async function loadManifest(): Promise<Manifest> {
-  const res = await fetch('/data/chogs.json');
+  // Both files load in parallel; the slim client manifest omits tokenUri/image (unused in the browser).
+  const spritesP = fetch('/data/sprites.json')
+    .then((s) => (s.ok ? (s.json() as Promise<Record<string, SpriteInfo>>) : {}))
+    .catch(() => ({}) as Record<string, SpriteInfo>); // optional; art falls back per image
+  const res = await fetch('/data/chogs.min.json');
   if (!res.ok) throw new Error(`manifest HTTP ${res.status}`);
   const chogs = (await res.json()) as ChogRecord[];
-  let sprites: Record<string, SpriteInfo> = {};
-  try {
-    const s = await fetch('/data/sprites.json');
-    if (s.ok) sprites = await s.json();
-  } catch {
-    // sprites.json is optional; art falls back per image.
-  }
-  return buildManifest(chogs, sprites);
+  return buildManifest(chogs, await spritesP);
 }
 
 export function searchChogs(

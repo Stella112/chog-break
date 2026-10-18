@@ -74,6 +74,11 @@ const records = await pool(
 const good = records.filter((r): r is ChogRecord => !('error' in r)).sort((a, b) => a.tokenId - b.tokenId);
 const bad = records.filter((r) => 'error' in r);
 writeFileSync('public/data/chogs.json', JSON.stringify(good));
+// Client copy without fields the browser never uses (tokenUri, IPFS image): smaller first load.
+writeFileSync(
+  'public/data/chogs.min.json',
+  JSON.stringify(good.map((r) => ({ tokenId: r.tokenId, displayName: r.displayName, displayNumber: r.displayNumber, attributes: r.attributes, traits: r.traits }))),
+);
 console.log(`wrote public/data/chogs.json: ${good.length} records; failed metadata ${bad.length}; failed tokenURI ${failedUri.length}`);
 for (const b of bad.slice(0, 20)) console.log('  FAIL', b);
 

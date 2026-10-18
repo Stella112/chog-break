@@ -46,7 +46,7 @@ test('critical flow: home → lab → A → B → splice → reveal → fight �
 
 test('malformed metadata record is dropped, app still works', async ({ page }) => {
   const errors = trackErrors(page);
-  await page.route('**/data/chogs.json', async (route) => {
+  await page.route('**/data/chogs.min.json', async (route) => {
     const res = await route.fetch();
     const data = await res.json();
     data.push({ tokenId: 'broken', displayName: null });
@@ -90,7 +90,7 @@ test('RPC offline / no external network: guest flow still works', async ({ page 
 
 test('archive failure shows a recoverable error', async ({ page }) => {
   let fail = true;
-  await page.route('**/data/chogs.json', (route) => (fail ? route.fulfill({ status: 500, body: 'x' }) : route.continue()));
+  await page.route('**/data/chogs.min.json', (route) => (fail ? route.fulfill({ status: 500, body: 'x' }) : route.continue()));
   await page.goto('/');
   await expect(page.getByText(/failed to load/i)).toBeVisible();
   fail = false;
