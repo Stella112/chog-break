@@ -13,6 +13,8 @@ export default tseslint.config(
     plugins: { 'react-hooks': reactHooks },
     rules: { ...reactHooks.configs.recommended.rules },
   },
+  // e2e tests reach into the ?test=1 runtime hooks on window.
+  { files: ['tests/e2e/**/*.ts'], rules: { '@typescript-eslint/no-explicit-any': 'off' } },
   // §B: src/core must stay pure.
   {
     files: ['src/core/**/*.ts'],
