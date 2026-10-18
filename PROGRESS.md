@@ -38,9 +38,16 @@
 - Still to do: RECIPE_EXAMPLES.md, curated pairs in config/game.ts, gene and recipe sections in TRAIT_REPORT.
 - Decision: sfc32 discards 12 outputs after seeding (deterministic warm-up).
 
+## Phase 2 (in progress): the Lab
+- Done and checked in the browser (dev server, partial data): Home, Lab chambers, collection browser (windowed grid, search by name/#number/token ID, filters built from the manifest, Random, detail panel with genes), SPLICE, reveal timeline with SFX (alarm, electricity, impact, discovery), SKIP after the first reveal, reduced-motion crossfade, mutant canvas compositor (jagged seam, glitch bands, hue shift, tint, chromatic aberration, recipe glow, unstable holo), art-offline fallback, notebook (localStorage with try/catch), deep links `/?a=&b=`, mute toggle, 375 px layout (no horizontal scroll).
+- Fixed during the browser check: React dev double-effect showed "ALREADY IN NOTEBOOK" on first view (now a once-only guard); grid clipped its last column on mobile.
+- **Core change:** recipes now pin their ingredient slots to the parent that supplied them (KING BEAM always has BEAM + ROYAL). Without this, a recipe perk could have no move to modify. Recorded in DECISIONS.md.
+- TRY A SECRET MUTATION is hidden until `src/config/secretPairs.json` is generated from the real manifest (`npx tsx scripts/recipe-examples.ts`).
+- Not done yet: Playwright e2e, the second-profile deep-link check, compositor tuning against real sprites (needs ≥25 sprites inspected).
+
 ## Next
-- Finish the manifest, run validation (any mismatch = STOP 6), then the trait report, then the sprites.
-- Finish Phase 1 against real data, then Phase 2 (the Lab UI).
+- Finish the manifest, run validation (any mismatch = STOP 6), then the trait report, recipe examples and sprites.
+- Phase 2: compositor tuning with real sprites, then Playwright.
 
 ## Unverified facts (all in `src/config/chain.ts`)
 - RPC URL works but is not yet confirmed in the official Monad docs.

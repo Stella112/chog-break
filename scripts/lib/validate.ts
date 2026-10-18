@@ -21,9 +21,12 @@ export function validateManifest(records: ChogRecord[]): string[] {
     const got = records.filter((r) => r.traits[cat as TraitCategory] !== NONE).length;
     if (got !== n) problems.push(`${cat} present: expected ${n}, got ${got}`);
   }
+  // §C3 counts raw spellings (e.g. "Boob Cap" and "BOOB Cap" are listed separately), so compare raw values.
   for (const [cat, n] of Object.entries(EXPECTED.distinctValues)) {
-    const vals = new Set(records.map((r) => r.traits[cat as TraitCategory]).filter((v) => v !== NONE));
-    if (vals.size !== n) problems.push(`${cat} distinct normalized values: expected ${n}, got ${vals.size}`);
+    const vals = new Set(
+      records.flatMap((r) => r.attributes.filter((a) => a.trait_type === cat).map((a) => String(a.value))),
+    );
+    if (vals.size !== n) problems.push(`${cat} distinct raw values: expected ${n}, got ${vals.size}`);
   }
   return problems;
 }

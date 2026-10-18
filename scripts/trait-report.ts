@@ -2,7 +2,20 @@
 // Phase 1 extends this with gene mapping per value and recipe pair counts.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { NONE, TRAIT_CATEGORIES, type ChogRecord } from '../src/core/types';
+import { accessoryGene, auraGene, baseGene, bodyGene, eyesGene, headGene, mouthGene } from '../src/core/genes';
+import { RECIPES } from '../src/core/recipes';
+import { countRecipePairs } from './lib/recipeCounts';
 import { validateManifest } from './lib/validate';
+
+const GENE_OF: Partial<Record<string, (v: string) => string>> = {
+  Eyes: eyesGene,
+  Head: headGene,
+  Mouth: mouthGene,
+  Body: (v) => bodyGene(v, false),
+  Base: baseGene,
+  Accessory: accessoryGene,
+  Aura: auraGene,
+};
 
 const records = JSON.parse(readFileSync('public/data/chogs.json', 'utf8')) as ChogRecord[];
 const validIds = JSON.parse(readFileSync('public/data/valid-token-ids.json', 'utf8')) as number[];
@@ -39,9 +52,23 @@ for (const cat of TRAIT_CATEGORIES) {
   const absent = counts.get(NONE) ?? 0;
   const values = [...counts.entries()].filter(([v]) => v !== NONE).sort((a, b) => b[1] - a[1]);
   lines.push(`### ${cat} — ${values.length} normalized values · on ${records.length - absent} · absent on ${absent}`, '');
-  lines.push('| Normalized value | Count | Raw spellings |', '|---|---|---|');
-  for (const [v, n] of values) lines.push(`| ${v} | ${n} | ${[...(rawForms.get(v) ?? [])].join(' / ')} |`);
+  const gene = GENE_OF[cat];
+  lines.push(`| Normalized value | Count | Raw spellings |${gene ? ' Gene |' : ''}`, `|---|---|---|${gene ? '---|' : ''}`);
+  for (const [v, n] of values)
+    lines.push(`| ${v} | ${n} | ${[...(rawForms.get(v) ?? [])].join(' / ')} |${gene ? ` ${gene(v)} |` : ''}`);
+  if (gene) lines.push(`| *(absent → none)* | ${absent} | — | ${gene(NONE)} |`);
   lines.push('');
 }
+lines.push(
+  '_Body gene shown without the Naked rule; a naked parent always gives LIGHT._',
+  '',
+  '## Recipe pair counts',
+  '',
+  '| Recipe | Tier | Real pairs |',
+  '|---|---|---|',
+);
+const counts = countRecipePairs(records);
+for (const r of RECIPES) lines.push(`| ${r.name} | ${r.tier} | ${counts.get(r.id)!.count} |`);
+lines.push('');
 writeFileSync('docs/TRAIT_REPORT.md', lines.join('\n'));
 console.log(`wrote docs/TRAIT_REPORT.md (${problems.length} validation problems)`);
