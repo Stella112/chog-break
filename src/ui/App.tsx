@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PairError, makePair } from '../core/pair';
 import { createMutant, type Mutant } from '../core/splice';
 import { dailyOpponentPair, utcDateString } from '../core/daily';
-import { createArenaRules } from '../core/arenaRules';
+import { createArenaRules, type ModifierId } from '../core/arenaRules';
 import { buildKit } from '../arena/kit';
 import { SECRET_PAIRS } from '../config/game';
 import { loadManifest, type Manifest } from '../data/manifest';
@@ -37,7 +37,11 @@ function useReducedMotion() {
 
 function setUrl(params: Record<string, string> | null) {
   const q = new URLSearchParams(params ?? {});
-  if (TEST_MODE) q.set('test', '1');
+  if (TEST_MODE) {
+    q.set('test', '1');
+    const mods = new URLSearchParams(location.search).get('mods');
+    if (mods !== null) q.set('mods', mods);
+  }
   const s = q.toString();
   history.replaceState(null, '', s ? `/?${s}` : '/');
 }
@@ -86,10 +90,16 @@ export function App() {
   }, [manifest, mutant]);
 
   // §D7: the arena mutates too — modifiers from all four parents' Backgrounds + tier/Unstable rule.
-  const arenaRules = useMemo(
-    () => (mutant && opponent ? createArenaRules({ mutants: [mutant, opponent] }) : null),
-    [mutant, opponent],
-  );
+  const arenaRules = useMemo(() => {
+    if (!mutant || !opponent) return null;
+    // Test-only override (?test=1&mods=LOW_GRAVITY,TOXIC_FLOOR) so e2e can exercise each modifier.
+    const forced = TEST_MODE ? new URLSearchParams(location.search).get('mods') : null;
+    if (forced !== null) {
+      const modifiers = forced.split(',').filter(Boolean) as ModifierId[];
+      return { modifiers, stable: modifiers.length === 0 };
+    }
+    return createArenaRules({ mutants: [mutant, opponent] });
+  }, [mutant, opponent]);
 
   const splice = useCallback((m: Manifest, x: number, y: number, toFight = false) => {
     try {

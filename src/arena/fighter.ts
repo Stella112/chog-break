@@ -122,8 +122,16 @@ export class Fighter {
   get y() {
     return this.body.center.y;
   }
+  /**
+   * Arcade sets blocked/touching only on frames with a collision step, so a resting body can
+   * read as airborne for a frame. Back it up with geometry: feet within 4 px of a platform top.
+   */
   get grounded() {
-    return this.body.blocked.down || this.body.touching.down;
+    const b = this.body;
+    if (b.blocked.down || b.touching.down) return true;
+    if (b.velocity.y < -1 || !this.ctx) return false;
+    const gy = this.ctx.groundAt(this.x, b.bottom - 8);
+    return gy !== null && Math.abs(b.bottom - gy) <= 4;
   }
   /** Current weight including PUMP/DUMP pulses. */
   get weight() {
