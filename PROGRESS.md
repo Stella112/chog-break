@@ -162,6 +162,11 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
   - Bot grace period: in the first coached fight the bot wanders and does not attack for 8 s.
 - **Rule fix:** blast zones are now checked right after the physics step and before fighters act. Previously a bot past the line could BLINK back out on the same frame (found by the forced-KO e2e tests).
 
+## Polish pass 3: sound, reveal, lab
+- **Sound engine rewrite** (`src/audio/sfx.ts`, all synthesized): master bus → compressor (no clipping on big hits) + a code-generated reverb send; slight random pitch variation; layered sounds (punch = thump + snap, combo finisher heavier; big hit + crunch; KO = boom + falling shriek + rumble; chamber-door impact with metal ring; two-tone lab siren; electric crackle + mains buzz; new splice spin-up whine; bell arpeggio for secret mutations; victory and defeat stingers). All 16 sounds verified to play without errors in the browser (not audibly checked by the Builder; human ear needed).
+- **Reveal:** a three-part splice rig. Parent A and B sit in glowing glass tubes either side of the chamber; jittering lightning arcs jump into the chamber during the spike; the parents drain out, the doors open with a white flash, the mutant pops in; then the tubes refill so A + B sit beside the result. The name glitches in, the recipe banner slams, gene rows stagger in. Reduced motion: no flash, no lightning, 1 s crossfade (e2e test).
+- **Lab:** chambers are liquid glass tanks with rising bubbles; loaded Chogs float gently and the tank glows in its parent colour; SPLICE pulses once two Chogs are loaded; a hint says what to do when it isn't ready; grid tiles lift on hover and picked tiles glow.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 
@@ -191,6 +196,7 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - $CHOG fee-on-transfer: needs the Reviewer fork test.
 
 ## Proposals
+- **P-2, background music:** §D13 lists specific sound effects but no music. A short synthesized loop for the lab and arena (code-generated, no files) would make fights feel less empty. Needs Maris's OK (new feature).
 - **P-1, mutant art matches the genes:** §D6 picks the top/bottom parent of the art from the "visual" stream, independent of inheritance. So a KING BEAM can show parent A's wizard hat while the gene table says the head (Crown) came from parent B. Proposal: put the parent that gave the inherited **Head** on top (fall back to the visual stream when Head is `none`), so the picture matches "from #A / from #B". Needs Maris's OK because it changes §D6 wording.
 
 ## Do not touch
