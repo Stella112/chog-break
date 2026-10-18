@@ -195,3 +195,10 @@ table.genes { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-s
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.2s !important; }
   .mutant-canvas { transition-duration: 1s !important; }
 }
+
+/* ---------- transitions & a11y ---------- */
+.screen { animation: screen-in 0.22s ease-out; }
+@keyframes screen-in { from { opacity: 0; transform: translateY(6px); } }
+.skip-link { position: absolute; left: -9999px; top: 0; background: var(--hazard); color: #000; padding: 0.5rem 1rem; font-family: var(--mono); z-index: 10; }
+.skip-link:focus { left: 16px; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--hazard); outline-offset: 2px; }

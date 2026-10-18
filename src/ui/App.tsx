@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PairError, makePair } from '../core/pair';
 import { createMutant, type Mutant } from '../core/splice';
 import { dailyOpponentPair, utcDateString } from '../core/daily';
@@ -11,16 +11,21 @@ import { readNotebook, recordDiscovery, recordResult } from '../state/notebook';
 import { needsJar, renderMutant } from '../art/mutantRenderer';
 import type { Difficulty } from '../arena/bot';
 import type { MatchResult } from '../arena/ArenaScene';
-import { Arena } from './Arena';
 import { Lab } from './Lab';
 import { Notebook } from './Notebook';
 import { PreMatch } from './PreMatch';
 import { Results } from './Results';
 import { Reveal } from './Reveal';
+import { ErrorBoundary } from './ErrorBoundary';
+
+// Phaser is only needed in the arena: load it lazily so the Lab is interactive fast (§D13).
+const loadArena = () => import('./Arena');
+const Arena = lazy(() => loadArena().then((m) => ({ default: m.Arena })));
 
 type Screen = 'home' | 'lab' | 'reveal' | 'notebook' | 'prematch' | 'arena' | 'results';
 
-const TEST_MODE = typeof location !== 'undefined' && new URLSearchParams(location.search).get('test') === '1';
+const TEST_MODE =
+  typeof location !== 'undefined' && new URLSearchParams(location.search).get('test') === '1';
 const IS_TOUCH = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
 
 function useReducedMotion() {
@@ -96,7 +101,8 @@ export function App() {
     const ids = manifest.chogs.map((c) => c.tokenId);
     const [x, y0] = dailyOpponentPair(utcDateString(new Date()), ids);
     let y = y0;
-    if (mutant && Math.min(x, y) === mutant.lo && Math.max(x, y) === mutant.hi) y = ids[(ids.indexOf(y) + 1) % ids.length]!;
+    if (mutant && Math.min(x, y) === mutant.lo && Math.max(x, y) === mutant.hi)
+      y = ids[(ids.indexOf(y) + 1) % ids.length]!;
     return createMutant({ parentA: manifest.byId.get(x)!, parentB: manifest.byId.get(y)! });
   }, [manifest, mutant]);
 
@@ -117,7 +123,8 @@ export function App() {
       makePair(x, y);
       const pa = m.byId.get(x);
       const pb = m.byId.get(y);
-      if (!pa || !pb) throw new PairError(`No Chog with token ID ${!pa ? x : y}. Pick one from the collection.`);
+      if (!pa || !pb)
+        throw new PairError(`No Chog with token ID ${!pa ? x : y}. Pick one from the collection.`);
       const mt = createMutant({ parentA: pa, parentB: pb });
       setIsNew(
         recordDiscovery({
@@ -136,7 +143,9 @@ export function App() {
       setScreen(toFight ? 'prematch' : 'reveal');
       setUrl({ a: String(mt.lo), b: String(mt.hi), ...(toFight ? { fight: '1' } : {}) });
     } catch (e) {
-      setLabError(e instanceof PairError ? e.message : 'That experiment failed to start. Try another pair.');
+      setLabError(
+        e instanceof PairError ? e.message : 'That experiment failed to start. Try another pair.',
+      );
       setScreen('lab');
     }
   }, []);
@@ -179,12 +188,21 @@ export function App() {
     setScreen(s);
   };
 
+  useEffect(() => {
+    if (screen === 'prematch' || screen === 'reveal') void loadArena();
+  }, [screen]);
+
   const startFight = async () => {
     if (!mutant || !opponent || !manifest || starting) return;
     setStarting(true);
     sfx.click();
     try {
-      setCanvases(await Promise.all([fighterCanvas(mutant, manifest.sprites), fighterCanvas(opponent, manifest.sprites)]));
+      setCanvases(
+        await Promise.all([
+          fighterCanvas(mutant, manifest.sprites),
+          fighterCanvas(opponent, manifest.sprites),
+        ]),
+      );
       setResult(null);
       setMatchKey((k) => k + 1);
       setScreen('arena');
@@ -216,6 +234,9 @@ export function App() {
 
   return (
     <div className="app">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <header className="topbar">
         <button className="wordmark" onClick={() => go('home')} aria-label="CHOG//BREAK home">
           CHOG<span>//</span>BREAK
@@ -232,6 +253,7 @@ export function App() {
           <button
             className="btn btn-ghost small"
             aria-pressed={muted}
+            aria-label="Mute sound"
             onClick={() => {
               setMuted(!muted);
               setMutedState(!muted);
@@ -242,122 +264,148 @@ export function App() {
         </nav>
       </header>
 
-      <main>
-        {loadError && (
-          <div className="panel error-panel" role="alert">
-            <p>{loadError}</p>
-            <button className="btn" onClick={load}>
-              RETRY
-            </button>
-          </div>
-        )}
-
-        {screen === 'home' && (
-          <section className="home">
-            <div className="hazard" aria-hidden />
-            <h1 className="hero">
-              CHOG<span>//</span>BREAK
-            </h1>
-            <p className="subline">Pick two Chogs. Splice them. See what goes wrong. Then fight it.</p>
-            <div className="home-actions">
-              <button className="btn btn-primary" disabled={!manifest} onClick={() => go('lab')}>
-                ENTER THE LAB
-              </button>
-              {SECRET_PAIRS.length > 0 && (
-                <button className="btn btn-ghost" disabled={!manifest} onClick={secretMutation}>
-                  TRY A SECRET MUTATION
+      <main id="main">
+        <ErrorBoundary key={screen} onReset={() => setScreen('lab')}>
+          <div className="screen">
+            {loadError && (
+              <div className="panel error-panel" role="alert">
+                <p>{loadError}</p>
+                <button className="btn" onClick={load}>
+                  RETRY
                 </button>
-              )}
-            </div>
-            <p className="mono dim small">
-              {manifest ? '1,969 real Chogs. 1,937,496 possible pairings.' : loadError ? '' : 'LOADING SPECIMENS…'}
-            </p>
-          </section>
-        )}
+              </div>
+            )}
 
-        {manifest && screen === 'lab' && (
-          <Lab
-            manifest={manifest}
-            a={a}
-            b={b}
-            error={labError}
-            onLoad={(slot, id) => {
-              setLabError(null);
-              if (slot === 'A') setA(id);
-              else setB(id);
-            }}
-            onClear={(slot) => (slot === 'A' ? setA(null) : setB(null))}
-            onSplice={() => a !== null && b !== null && splice(manifest, a, b)}
-          />
-        )}
+            {screen === 'home' && (
+              <section className="home">
+                <div className="hazard" aria-hidden />
+                <h1 className="hero">
+                  CHOG<span>//</span>BREAK
+                </h1>
+                <p className="subline">
+                  Pick two Chogs. Splice them. See what goes wrong. Then fight it.
+                </p>
+                <div className="home-actions">
+                  <button
+                    className="btn btn-primary"
+                    disabled={!manifest}
+                    onClick={() => go('lab')}
+                  >
+                    ENTER THE LAB
+                  </button>
+                  {SECRET_PAIRS.length > 0 && (
+                    <button className="btn btn-ghost" disabled={!manifest} onClick={secretMutation}>
+                      TRY A SECRET MUTATION
+                    </button>
+                  )}
+                </div>
+                <p className="mono dim small">
+                  {manifest
+                    ? '1,969 real Chogs. 1,937,496 possible pairings.'
+                    : loadError
+                      ? ''
+                      : 'LOADING SPECIMENS…'}
+                </p>
+              </section>
+            )}
 
-        {manifest && screen === 'reveal' && mutant && (
-          <Reveal
-            key={mutant.pairKey}
-            mutant={mutant}
-            manifest={manifest}
-            canSkip={revealsSeen > 0}
-            reducedMotion={reducedMotion}
-            isNewDiscovery={isNew}
-            onChange={changeParent}
-            onNew={newExperiment}
-            onNotebook={() => go('notebook')}
-            onFight={() => {
-              go('prematch');
-              setUrl({ a: String(mutant.lo), b: String(mutant.hi), fight: '1' });
-            }}
-          />
-        )}
+            {manifest && screen === 'lab' && (
+              <Lab
+                manifest={manifest}
+                a={a}
+                b={b}
+                error={labError}
+                onLoad={(slot, id) => {
+                  setLabError(null);
+                  if (slot === 'A') setA(id);
+                  else setB(id);
+                }}
+                onClear={(slot) => (slot === 'A' ? setA(null) : setB(null))}
+                onSplice={() => a !== null && b !== null && splice(manifest, a, b)}
+              />
+            )}
 
-        {manifest && screen === 'prematch' && mutant && opponent && (
-          <PreMatch
-            player={mutant}
-            opponent={opponent}
-            modifiers={arenaRules?.modifiers ?? []}
-            difficulty={difficulty}
-            onDifficulty={setDifficulty}
-            onFight={startFight}
-            onBack={() => go('reveal')}
-            touch={IS_TOUCH}
-            sprites={manifest.sprites}
-          />
-        )}
+            {manifest && screen === 'reveal' && mutant && (
+              <Reveal
+                key={mutant.pairKey}
+                mutant={mutant}
+                manifest={manifest}
+                canSkip={revealsSeen > 0}
+                reducedMotion={reducedMotion}
+                isNewDiscovery={isNew}
+                onChange={changeParent}
+                onNew={newExperiment}
+                onNotebook={() => go('notebook')}
+                onFight={() => {
+                  go('prematch');
+                  setUrl({ a: String(mutant.lo), b: String(mutant.hi), fight: '1' });
+                }}
+              />
+            )}
 
-        {screen === 'arena' && mutant && opponent && canvases && (
-          <Arena
-            matchKey={matchKey}
-            fighters={[
-              { name: mutant.name, canvas: canvases[0], color: 0x4ff0ff, kit: buildKit(mutant) },
-              { name: opponent.name, canvas: canvases[1], color: 0xff4fd8, kit: buildKit(opponent) },
-            ]}
-            modifiers={arenaRules?.modifiers ?? []}
-            drivers={['human', 'bot']}
-            difficulty={difficulty}
-            reducedMotion={reducedMotion}
-            testMode={TEST_MODE}
-            onEnd={onMatchEnd}
-            onQuit={() => go('prematch')}
-          />
-        )}
+            {manifest && screen === 'prematch' && mutant && opponent && (
+              <PreMatch
+                player={mutant}
+                opponent={opponent}
+                modifiers={arenaRules?.modifiers ?? []}
+                difficulty={difficulty}
+                onDifficulty={setDifficulty}
+                onFight={startFight}
+                onBack={() => go('reveal')}
+                touch={IS_TOUCH}
+                sprites={manifest.sprites}
+              />
+            )}
 
-        {screen === 'results' && result && mutant && (
-          <Results
-            result={result}
-            onRematch={() => {
-              setResult(null);
-              setMatchKey((k) => k + 1);
-              setScreen('arena');
-            }}
-            onChange={changeParent}
-            onNew={newExperiment}
-            loLabel={label(mutant.lo)}
-            hiLabel={label(mutant.hi)}
-          />
-        )}
+            {screen === 'arena' && mutant && opponent && canvases && (
+              <Suspense fallback={<p className="empty">POWERING UP THE ARENA…</p>}>
+                <Arena
+                  matchKey={matchKey}
+                  fighters={[
+                    {
+                      name: mutant.name,
+                      canvas: canvases[0],
+                      color: 0x4ff0ff,
+                      kit: buildKit(mutant),
+                    },
+                    {
+                      name: opponent.name,
+                      canvas: canvases[1],
+                      color: 0xff4fd8,
+                      kit: buildKit(opponent),
+                    },
+                  ]}
+                  modifiers={arenaRules?.modifiers ?? []}
+                  drivers={['human', 'bot']}
+                  difficulty={difficulty}
+                  reducedMotion={reducedMotion}
+                  testMode={TEST_MODE}
+                  onEnd={onMatchEnd}
+                  onQuit={() => go('prematch')}
+                />
+              </Suspense>
+            )}
 
-        {manifest && screen === 'notebook' && (
-          <Notebook manifest={manifest} onOpen={(lo, hi) => splice(manifest, lo, hi)} />
-        )}
+            {screen === 'results' && result && mutant && (
+              <Results
+                result={result}
+                onRematch={() => {
+                  setResult(null);
+                  setMatchKey((k) => k + 1);
+                  setScreen('arena');
+                }}
+                onChange={changeParent}
+                onNew={newExperiment}
+                loLabel={label(mutant.lo)}
+                hiLabel={label(mutant.hi)}
+              />
+            )}
+
+            {manifest && screen === 'notebook' && (
+              <Notebook manifest={manifest} onOpen={(lo, hi) => splice(manifest, lo, hi)} />
+            )}
+          </div>
+        </ErrorBoundary>
       </main>
     </div>
   );
