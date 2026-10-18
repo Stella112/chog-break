@@ -29,10 +29,11 @@ type Props = {
   onChange: (slot: 'A' | 'B') => void;
   onNew: () => void;
   onNotebook: () => void;
+  onFight: () => void;
   isNewDiscovery: boolean;
 };
 
-export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onNew, onNotebook, isNewDiscovery }: Props) {
+export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onNew, onNotebook, onFight, isNewDiscovery }: Props) {
   const [step, setStep] = useState<Step>(reducedMotion ? 'open' : 'lock');
   const canvas = useRef<HTMLCanvasElement>(null);
   const [artReady, setArtReady] = useState(false);
@@ -163,6 +164,9 @@ export function Reveal({ mutant, manifest, canSkip, reducedMotion, onChange, onN
           {mutant.metal && <p className="small dim">Metal skin in the bloodline → heavier.</p>}
 
           <div className="reveal-actions">
+            <button className="btn btn-primary" onClick={onFight}>
+              FIGHT ▸
+            </button>
             <button className="btn btn-a" onClick={() => onChange('A')}>
               CHANGE #{lo.displayNumber}
             </button>

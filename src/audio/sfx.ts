@@ -78,5 +78,22 @@ export const sfx = {
     tone(120, 0.4, 'sine', 0.35, 40);
     noise(0.3, 0.25, 0, 900);
   },
+  punch: (step = 1) => {
+    noise(0.07, 0.18, 0, 1800 + step * 400);
+    tone(180 + step * 40, 0.08, 'square', 0.08, 90);
+  },
+  bigHit: () => {
+    noise(0.25, 0.3, 0, 1200);
+    tone(140, 0.3, 'sawtooth', 0.18, 45);
+  },
+  whoosh: () => noise(0.12, 0.08, 0, 4000),
+  jump: () => tone(300, 0.1, 'triangle', 0.06, 600),
+  ko: () => {
+    tone(900, 0.5, 'sawtooth', 0.15, 60);
+    noise(0.6, 0.3, 0.05, 700);
+  },
+  countdown: (go = false) => tone(go ? 880 : 440, go ? 0.3 : 0.12, 'square', 0.1),
+  victory: () => [392, 523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 'square', 0.08, undefined, i * 0.11)),
+  defeat: () => [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, 'triangle', 0.1, undefined, i * 0.16)),
   discovery: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 'triangle', 0.12, undefined, i * 0.09)),
 };

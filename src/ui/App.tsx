@@ -1,15 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PairError, makePair } from '../core/pair';
 import { createMutant, type Mutant } from '../core/splice';
+import { dailyOpponentPair, utcDateString } from '../core/daily';
 import { SECRET_PAIRS } from '../config/game';
 import { loadManifest, type Manifest } from '../data/manifest';
 import { isMuted, setMuted, sfx } from '../audio/sfx';
-import { readNotebook, recordDiscovery } from '../state/notebook';
+import { readNotebook, recordDiscovery, recordResult } from '../state/notebook';
+import { renderMutant } from '../art/mutantRenderer';
+import type { Difficulty } from '../arena/bot';
+import type { MatchResult } from '../arena/ArenaScene';
+import { Arena } from './Arena';
 import { Lab } from './Lab';
 import { Notebook } from './Notebook';
+import { PreMatch } from './PreMatch';
+import { Results } from './Results';
 import { Reveal } from './Reveal';
 
-type Screen = 'home' | 'lab' | 'reveal' | 'notebook';
+type Screen = 'home' | 'lab' | 'reveal' | 'notebook' | 'prematch' | 'arena' | 'results';
+
+const TEST_MODE = typeof location !== 'undefined' && new URLSearchParams(location.search).get('test') === '1';
+const IS_TOUCH = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
 
 function useReducedMotion() {
   const q = '(prefers-reduced-motion: reduce)';
@@ -24,8 +34,16 @@ function useReducedMotion() {
 }
 
 function setUrl(params: Record<string, string> | null) {
-  const url = params ? `/?${new URLSearchParams(params)}` : '/';
-  history.replaceState(null, '', url);
+  const q = new URLSearchParams(params ?? {});
+  if (TEST_MODE) q.set('test', '1');
+  const s = q.toString();
+  history.replaceState(null, '', s ? `/?${s}` : '/');
+}
+
+async function fighterCanvas(m: Mutant): Promise<HTMLCanvasElement> {
+  const c = document.createElement('canvas');
+  await renderMutant(c, m.visualRecipe, 256);
+  return c;
 }
 
 export function App() {
@@ -39,6 +57,11 @@ export function App() {
   const [labError, setLabError] = useState<string | null>(null);
   const [muted, setMutedState] = useState(isMuted());
   const [revealsSeen, setRevealsSeen] = useState(0);
+  const [difficulty, setDifficulty] = useState<Difficulty>('normal');
+  const [canvases, setCanvases] = useState<[HTMLCanvasElement, HTMLCanvasElement] | null>(null);
+  const [matchKey, setMatchKey] = useState(0);
+  const [result, setResult] = useState<MatchResult | null>(null);
+  const [starting, setStarting] = useState(false);
   const reducedMotion = useReducedMotion();
   const deepLinkHandled = useRef(false);
 
@@ -50,39 +73,46 @@ export function App() {
   }, []);
   useEffect(load, [load]);
 
-  const splice = useCallback(
-    (m: Manifest, x: number, y: number) => {
-      try {
-        makePair(x, y);
-        const pa = m.byId.get(x);
-        const pb = m.byId.get(y);
-        if (!pa || !pb) throw new PairError(`No Chog with token ID ${!pa ? x : y}. Pick one from the collection.`);
-        const mt = createMutant({ parentA: pa, parentB: pb });
-        setIsNew(
-          recordDiscovery({
-            pairKey: mt.pairKey,
-            lo: mt.lo,
-            hi: mt.hi,
-            name: mt.name,
-            recipeId: mt.recipe?.id,
-            unstable: mt.unstable,
-          }),
-        );
-        setA(x);
-        setB(y);
-        setMutant(mt);
-        setLabError(null);
-        setScreen('reveal');
-        setUrl({ a: String(mt.lo), b: String(mt.hi) });
-      } catch (e) {
-        setLabError(e instanceof PairError ? e.message : 'That experiment failed to start. Try another pair.');
-        setScreen('lab');
-      }
-    },
-    [],
-  );
+  // §D7 default opponent: a mutant from a pair seeded by the UTC date (same for everyone today).
+  const opponent = useMemo(() => {
+    if (!manifest) return null;
+    const ids = manifest.chogs.map((c) => c.tokenId);
+    const [x, y0] = dailyOpponentPair(utcDateString(new Date()), ids);
+    let y = y0;
+    if (mutant && Math.min(x, y) === mutant.lo && Math.max(x, y) === mutant.hi) y = ids[(ids.indexOf(y) + 1) % ids.length]!;
+    return createMutant({ parentA: manifest.byId.get(x)!, parentB: manifest.byId.get(y)! });
+  }, [manifest, mutant]);
 
-  // Deep links: /?a=1053&b=88 (token IDs). Invalid → friendly error, Lab still works.
+  const splice = useCallback((m: Manifest, x: number, y: number, toFight = false) => {
+    try {
+      makePair(x, y);
+      const pa = m.byId.get(x);
+      const pb = m.byId.get(y);
+      if (!pa || !pb) throw new PairError(`No Chog with token ID ${!pa ? x : y}. Pick one from the collection.`);
+      const mt = createMutant({ parentA: pa, parentB: pb });
+      setIsNew(
+        recordDiscovery({
+          pairKey: mt.pairKey,
+          lo: mt.lo,
+          hi: mt.hi,
+          name: mt.name,
+          recipeId: mt.recipe?.id,
+          unstable: mt.unstable,
+        }),
+      );
+      setA(x);
+      setB(y);
+      setMutant(mt);
+      setLabError(null);
+      setScreen(toFight ? 'prematch' : 'reveal');
+      setUrl({ a: String(mt.lo), b: String(mt.hi), ...(toFight ? { fight: '1' } : {}) });
+    } catch (e) {
+      setLabError(e instanceof PairError ? e.message : 'That experiment failed to start. Try another pair.');
+      setScreen('lab');
+    }
+  }, []);
+
+  // Deep links: /?a=1053&b=88 (token IDs), &fight=1 → pre-match. Invalid → friendly error, Lab still works.
   useEffect(() => {
     if (!manifest || deepLinkHandled.current) return;
     deepLinkHandled.current = true;
@@ -101,7 +131,7 @@ export function App() {
       setScreen('lab');
       return;
     }
-    splice(manifest, x, y);
+    splice(manifest, x, y, p.get('fight') === '1');
   }, [manifest, splice]);
 
   const secretMutation = () => {
@@ -119,6 +149,41 @@ export function App() {
     if (screen === 'reveal') setRevealsSeen((n) => n + 1);
     setScreen(s);
   };
+
+  const startFight = async () => {
+    if (!mutant || !opponent || starting) return;
+    setStarting(true);
+    sfx.click();
+    try {
+      setCanvases(await Promise.all([fighterCanvas(mutant), fighterCanvas(opponent)]));
+      setResult(null);
+      setMatchKey((k) => k + 1);
+      setScreen('arena');
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  const onMatchEnd = (r: MatchResult) => {
+    if (mutant) recordResult(mutant.pairKey, r.winner === 0);
+    setResult(r);
+    setScreen('results');
+  };
+
+  const changeParent = (slot: 'A' | 'B') => {
+    if (!mutant) return;
+    setA(slot === 'B' ? mutant.lo : null);
+    setB(slot === 'A' ? mutant.hi : null);
+    go('lab');
+  };
+
+  const newExperiment = () => {
+    setA(null);
+    setB(null);
+    go('lab');
+  };
+
+  const label = (id: number) => `#${manifest?.byId.get(id)?.displayNumber ?? id}`;
 
   return (
     <div className="app">
@@ -205,20 +270,56 @@ export function App() {
             canSkip={revealsSeen > 0}
             reducedMotion={reducedMotion}
             isNewDiscovery={isNew}
-            onChange={(slot) => {
-              // keep the other parent; empty the chosen chamber
-              const keepA = slot === 'B' ? mutant.lo : null;
-              const keepB = slot === 'A' ? mutant.hi : null;
-              setA(keepA);
-              setB(keepB);
-              go('lab');
-            }}
-            onNew={() => {
-              setA(null);
-              setB(null);
-              go('lab');
-            }}
+            onChange={changeParent}
+            onNew={newExperiment}
             onNotebook={() => go('notebook')}
+            onFight={() => {
+              go('prematch');
+              setUrl({ a: String(mutant.lo), b: String(mutant.hi), fight: '1' });
+            }}
+          />
+        )}
+
+        {manifest && screen === 'prematch' && mutant && opponent && (
+          <PreMatch
+            player={mutant}
+            opponent={opponent}
+            difficulty={difficulty}
+            onDifficulty={setDifficulty}
+            onFight={startFight}
+            onBack={() => go('reveal')}
+            touch={IS_TOUCH}
+          />
+        )}
+
+        {screen === 'arena' && mutant && opponent && canvases && (
+          <Arena
+            matchKey={matchKey}
+            fighters={[
+              { name: mutant.name, canvas: canvases[0], color: 0x4ff0ff },
+              { name: opponent.name, canvas: canvases[1], color: 0xff4fd8 },
+            ]}
+            drivers={['human', 'bot']}
+            difficulty={difficulty}
+            reducedMotion={reducedMotion}
+            testMode={TEST_MODE}
+            onEnd={onMatchEnd}
+            onQuit={() => go('prematch')}
+          />
+        )}
+
+        {screen === 'results' && result && mutant && (
+          <Results
+            result={result}
+            onRematch={() => {
+              setResult(null);
+              setMatchKey((k) => k + 1);
+              setScreen('arena');
+            }}
+            onChange={changeParent}
+            onNew={newExperiment}
+            loLabel={label(mutant.lo)}
+            hiLabel={label(mutant.hi)}
           />
         )}
 
