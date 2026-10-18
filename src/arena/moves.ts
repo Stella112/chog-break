@@ -70,7 +70,7 @@ export function startSpecial(f: Fighter, now: number) {
     case 'LEECH': {
       let done = false;
       f.body.setVelocityX(f.facing * 700);
-      const spec: HitSpec = { damage: 8, base: 260, scaling: 5, angleDeg: 30, hitstunMs: 300, hitstopMs: 60, kind: 'melee' };
+      const spec: HitSpec = { damage: 7, base: 260, scaling: 5, angleDeg: 30, hitstunMs: 300, hitstopMs: 60, kind: 'melee' };
       f.startAction({
         until: now + 260,
         control: 0,
@@ -82,7 +82,7 @@ export function startSpecial(f: Fighter, now: number) {
             done = true;
             const dealt = ctx.hit(f, foe, spec, f.facing);
             if (dealt > 0) {
-              const heal = dealt * 0.35;
+              const heal = dealt * 0.25;
               f.score.damage = Math.max(0, f.score.damage - heal);
               ctx.fx('text', f.x, f.y - 80, 0x8aff4f, 18, `+${Math.round(heal)} HEAL`);
               ctx.sfx('heal');
@@ -162,7 +162,7 @@ export function startClose(f: Fighter, now: number) {
       // Short rainbow cone, multi-hit: 4 ticks over 0.4 s.
       const hits = new Set<number>();
       const len = f.kit.recipe === 'DOUBLE_RAINBOW' ? 200 : 140;
-      const spec: HitSpec = { damage: 2, base: 90, scaling: 1.2, angleDeg: 25, hitstunMs: 160, hitstopMs: 20, kind: 'melee' };
+      const spec: HitSpec = { damage: 1.5, base: 90, scaling: 1.2, angleDeg: 25, hitstunMs: 140, hitstopMs: 20, kind: 'melee' };
       f.startAction({
         until: now + 420,
         control: 0.2,

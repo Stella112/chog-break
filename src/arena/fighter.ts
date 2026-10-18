@@ -453,7 +453,8 @@ export class Fighter {
       this.nextPassiveTick = now + 1000;
       const second = Math.floor(now / 1000);
       const heals = (k.trinket === 'REGEN' ? 1 : 0) + (k.element === 'BLOOM' ? 1 : 0);
-      if (heals && second % 2 === 0 && this.score.damage > 0) {
+      // §D4 says 1% every 2 s; tuned to every 3 s (healing dominated 120 s time-outs in the balance sim).
+      if (heals && second % 3 === 0 && this.score.damage > 0) {
         this.score.damage = Math.max(0, this.score.damage - heals);
         this.ctx.fx('text', this.x, this.y - 70, 0x8aff4f, 16, `-${heals}%`);
       }

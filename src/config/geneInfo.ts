@@ -51,7 +51,7 @@ export const GENE_INFO: Record<string, { label: string; desc: string }> = {
   FWOG: { label: 'FWOG', desc: 'A frog helper attacks' },
   PUMP: { label: 'PUMP', desc: 'Grows bigger every 10 s' },
   DUMP: { label: 'DUMP', desc: 'Shrinks and speeds up every 10 s' },
-  REGEN: { label: 'REGEN', desc: 'Slowly heals' },
+  REGEN: { label: 'REGEN', desc: 'Heals 1% every 3 s' },
   CHARM: { label: 'CHARM', desc: 'Cosmetic sparkle' },
   // Aura
   BURN: { label: 'BURN', desc: 'Dashes leave fire' },
@@ -60,7 +60,7 @@ export const GENE_INFO: Record<string, { label: string; desc: string }> = {
   SMOKE: { label: 'SMOKE', desc: 'Dashes leave smoke cover' },
   SHOCK: { label: 'SHOCK', desc: 'Combo finisher stuns' },
   SHIELD: { label: 'SHIELD', desc: 'First hit each life is halved' },
-  BLOOM: { label: 'BLOOM', desc: 'Slowly heals' },
+  BLOOM: { label: 'BLOOM', desc: 'Heals 1% every 3 s' },
   GLOW: { label: 'GLOW', desc: 'Cosmetic glow' },
   NONE: { label: '—', desc: 'Nothing' },
 };

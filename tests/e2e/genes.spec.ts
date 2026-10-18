@@ -79,7 +79,7 @@ test('Mouth close moves', async ({ page }) => {
   await arena(page);
   for (const [close, x1, check] of [
     ['HEADBUTT', 580, (s: S) => s.fighters[1]!.damage >= 7],
-    ['PUKE', 600, (s: S) => s.fighters[1]!.damage >= 4],
+    ['PUKE', 600, (s: S) => s.fighters[1]!.damage >= 3],
     ['HONK', 600, (s: S) => s.fighters[1]!.damage >= 3],
     ['COIN_TOSS', 880, (s: S) => s.fighters[1]!.damage >= 7],
     ['DROOL', 900, (s: S) => s.entities.zones.includes('puddle')],

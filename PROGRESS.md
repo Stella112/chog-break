@@ -137,6 +137,7 @@ Done:
 - [x] **Share card:** DOWNLOAD PNG (1200×675; mutant art, name, both parents, genes, recipe/Unstable badge, W–L, wordmark, deep link) + POST ON X (intent link; never auto-posts) on reveal and results. Verified: a real pair exported a valid 1200×675 PNG in Chromium.
 - [ ] Wallet + MY CHOGS (holder mode)
 - [ ] Recorded Splice UI (needs `contracts/` registry from the Reviewer + Maris's mainnet deploy)
+- Balance with P1 live (300 matches, seed 2026): the first run FAILED (PUKE 72% at n=50; LEECH 80%; healing genes ~80% because bot matches reach the 120 s timer). Tuned: PUKE 2→1.5 dmg/tick and cooldown 3→3.5 s; LEECH 8→7 dmg, heal 35→25%; REGEN/BLOOM heal 1% every 3 s (was 2 s). Re-run PASSES; highest with n ≥ 30 is FROST 59.3%. Small samples are still noisy (UNDEAD 89% at n=19; it was 63–68% in earlier runs). Weakest: SHIV 20% (n=10), DROOL 29%, TEARS 31%, FLOATY 32%.
 - Bug fixed: a key tapped down and up within one frame was lost (Phaser clears JustDown on keyup). Presses are now queued from keydown, which also buffers inputs during hitstop.
 
 ## Broken
@@ -152,7 +153,6 @@ Done:
 4. Paste the production URL to the Builder. The Builder then makes the og:image URL absolute and runs the §G1 checklist against the live site.
 
 ## Next
-- Re-run the balance sim with the P1 modifiers and recipes live.
 - Wallet + MY CHOGS, then Recorded Splice if the registry exists.
 - Last: Vercel deploy → §G1 on the live URL → P0 DONE.
 
