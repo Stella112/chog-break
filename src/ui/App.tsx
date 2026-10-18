@@ -105,11 +105,12 @@ export function App() {
   // Test mode only: headless balance simulator for e2e (§F Phase 4 balance smoke test).
   useEffect(() => {
     if (!TEST_MODE || !manifest) return;
-    void import('../arena/sim').then(({ runBalanceSim, runHeadlessMatch }) => {
+    void import('../arena/sim').then(({ runBalanceSim, runHeadlessMatch, runLadder }) => {
       (window as unknown as { __sim: unknown }).__sim = {
         run: (n: number, seed: number, difficulty?: 'easy' | 'normal' | 'hard') =>
           runBalanceSim(manifest.chogs, n, seed, undefined, difficulty),
         match: runHeadlessMatch,
+        ladder: (n: number, a: 'easy' | 'normal' | 'hard', b: 'easy' | 'normal' | 'hard') => runLadder(manifest.chogs, n, a, b),
       };
     });
   }, [manifest]);
@@ -443,7 +444,7 @@ export function App() {
               </Suspense>
             )}
 
-            {manifest && screen === 'results' && result && mutant && (
+            {manifest && screen === 'results' && result && mutant && opponent && (
               <Results
                 result={result}
                 onRematch={() => {
@@ -456,6 +457,7 @@ export function App() {
                 onNew={newExperiment}
                 twoPlayer={mode === '2p'}
                 mutant={mutant}
+                opponent={opponent}
                 manifest={manifest}
                 loLabel={label(mutant.lo)}
                 hiLabel={label(mutant.hi)}
@@ -463,7 +465,11 @@ export function App() {
             )}
 
             {manifest && screen === 'notebook' && (
-              <Notebook manifest={manifest} onOpen={(lo, hi) => splice(manifest, lo, hi)} />
+              <Notebook
+                manifest={manifest}
+                onOpen={(lo, hi) => splice(manifest, lo, hi)}
+                onFight={(lo, hi) => splice(manifest, lo, hi, true)}
+              />
             )}
           </div>
         </ErrorBoundary>

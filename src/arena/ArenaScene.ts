@@ -23,6 +23,8 @@ export type MatchResult = {
 export type ArenaConfig = {
   fighters: [FighterSetup, FighterSetup];
   difficulty: Difficulty;
+  /** Per-fighter bot difficulty (headless ladder sims); defaults to `difficulty`. */
+  difficulties?: [Difficulty, Difficulty];
   /** 'human' uses keyboard (P1 keys for fighter 0, P2 keys for fighter 1); 'bot' uses the FSM. */
   drivers: ['human' | 'bot', 'human' | 'bot'];
   reducedMotion: boolean;
@@ -125,7 +127,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
     });
 
     this.sources = this.cfg.drivers.map((d, i) => {
-      if (d === 'bot') return new BotSource(this.fighters[i as 0 | 1], this.fighters[(1 - i) as 0 | 1], this.cfg.difficulty, (this.cfg.botSeed ?? 7) + i);
+      if (d === 'bot') return new BotSource(this.fighters[i as 0 | 1], this.fighters[(1 - i) as 0 | 1], this.cfg.difficulties?.[i] ?? this.cfg.difficulty, (this.cfg.botSeed ?? 7) + i);
       const kb = this.input.keyboard;
       if (!kb) return { read: () => EMPTY_CONTROLS };
       return new KeyboardSource(kb, i === 0 ? KEYMAP.p1 : KEYMAP.p2);
@@ -383,6 +385,17 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
   sfx(kind: 'special' | 'close' | 'heal' | 'block' | 'zap' | 'honk' | 'warp') {
     if (this.instant) return;
     sfx.move(kind);
+  }
+
+  threats(f: Fighter) {
+    const now = this.time.now;
+    const zones = this.zones
+      .filter((z) => z.alive && z.affects(f) && z.o.kind !== 'puddle' && z.o.kind !== 'smoke' && z.activeAt - now < 1000)
+      .map((z) => ({ x: z.rect.x, y: z.rect.y, w: z.rect.width, h: z.rect.height }));
+    const shots = this.projectiles
+      .filter((p) => p.alive && p.o.owner !== f)
+      .map((p) => ({ x: p.x, y: p.y, vx: p.vx, vy: p.vy }));
+    return { zones, shots };
   }
 
   /** Top of the nearest platform at or below y under x. */

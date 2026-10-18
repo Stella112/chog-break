@@ -5,7 +5,15 @@ import { needsJar } from '../art/mutantRenderer';
 import { deepLink, downloadShareCard, tweetUrl } from '../art/shareCard';
 import { readNotebook } from '../state/notebook';
 
-export function ShareButtons({ mutant, manifest }: { mutant: Mutant; manifest: Manifest }) {
+export function ShareButtons({
+  mutant,
+  manifest,
+  compact = false,
+}: {
+  mutant: Mutant;
+  manifest: Manifest;
+  compact?: boolean;
+}) {
   const [state, setState] = useState<'idle' | 'busy' | 'error'>('idle');
   const url = deepLink(mutant);
   const name = (id: number) => manifest.byId.get(id)?.displayName ?? `#${id}`;
@@ -31,11 +39,22 @@ export function ShareButtons({ mutant, manifest }: { mutant: Mutant; manifest: M
 
   return (
     <>
-      <button className="btn btn-ghost" onClick={download} disabled={state === 'busy'}>
-        {state === 'busy' ? 'DRAWING CARD…' : 'DOWNLOAD PNG'}
+      <button
+        className={`btn btn-ghost${compact ? ' small' : ''}`}
+        onClick={download}
+        disabled={state === 'busy'}
+        aria-label={compact ? 'Download share card PNG' : undefined}
+      >
+        {state === 'busy' ? 'DRAWING…' : compact ? 'PNG' : 'DOWNLOAD PNG'}
       </button>
-      <a className="btn btn-ghost" href={tweetUrl(mutant, url)} target="_blank" rel="noopener noreferrer">
-        POST ON X
+      <a
+        className={`btn btn-ghost${compact ? ' small' : ''}`}
+        href={tweetUrl(mutant, url)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={compact ? 'Post on X' : undefined}
+      >
+        {compact ? 'POST' : 'POST ON X'}
       </a>
       {state === 'error' && <span className="error-text">Couldn't draw the card. Try again.</span>}
     </>

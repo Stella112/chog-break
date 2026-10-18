@@ -72,5 +72,7 @@ export interface ArenaCtx {
   /** Ground y under a point (main platform or a float), or null if none. */
   groundAt(x: number, y: number): number | null;
   mods: { gravity: number; friction: number; kb: number; speed: number; bounce: boolean };
+  /** What could hurt this fighter soon: damaging zones (active or arming within 1 s) and incoming projectiles. */
+  threats(f: Fighter): { zones: { x: number; y: number; w: number; h: number }[]; shots: { x: number; y: number; vx: number; vy: number }[] };
   instant: boolean;
 }

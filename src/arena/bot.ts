@@ -8,11 +8,11 @@ export type BotState = 'APPROACH' | 'ATTACK' | 'SPACE' | 'RECOVER' | 'EDGEGUARD'
 
 export const BOT_LEVELS: Record<
   Difficulty,
-  { reactionMs: number; attackGapMs: number; mistake: number; dashChance: number; lateRecovery: number; spaceMs: number; ability: number }
+  { reactionMs: number; attackGapMs: number; mistake: number; dashChance: number; lateRecovery: number; spaceMs: number; ability: number; awareness: number }
 > = {
-  easy: { reactionMs: 400, attackGapMs: 650, mistake: 0.3, dashChance: 0.05, lateRecovery: 0.35, spaceMs: 0, ability: 0.12 },
-  normal: { reactionMs: 220, attackGapMs: 330, mistake: 0.1, dashChance: 0.2, lateRecovery: 0.05, spaceMs: 250, ability: 0.35 },
-  hard: { reactionMs: 110, attackGapMs: 170, mistake: 0.03, dashChance: 0.35, lateRecovery: 0, spaceMs: 380, ability: 0.65 },
+  easy: { reactionMs: 400, attackGapMs: 650, mistake: 0.3, dashChance: 0.05, lateRecovery: 0.35, spaceMs: 0, ability: 0.12, awareness: 0.2 },
+  normal: { reactionMs: 220, attackGapMs: 330, mistake: 0.1, dashChance: 0.2, lateRecovery: 0.05, spaceMs: 250, ability: 0.35, awareness: 0.55 },
+  hard: { reactionMs: 110, attackGapMs: 170, mistake: 0.03, dashChance: 0.35, lateRecovery: 0, spaceMs: 380, ability: 0.65, awareness: 0.9 },
 };
 
 /** Tiny seeded PRNG so bot behaviour is reproducible in headless tests. */
@@ -27,6 +27,10 @@ export class BotSource implements ControlSource {
   private history: { t: number; x: number; y: number }[] = [];
   private lastAttackAt = -9999;
   private lastAbilityThink = 0;
+  private lastThreatThink = 0;
+  private dodgeUntil = 0;
+  private dodgeDir = 0;
+  private antiAirAt = 0;
   /** First coached fight: the bot moves around but doesn't attack until this time. */
   graceUntil = 0;
   private lastJumpAt = -9999;
@@ -130,6 +134,10 @@ export class BotSource implements ControlSource {
       }
     }
     if (this.state !== 'RECOVER' && this.state !== 'SPACE') this.abilities(c, dx, dy);
+    if (this.state !== 'RECOVER') {
+      this.antiAir(c, dx, dy);
+      this.avoidThreats(c);
+    }
     // GUARD heads hold K when the opponent swings close by.
     if (me.kit.head === 'GUARD' && me.grounded && Math.abs(dx) < 130 && Math.abs(dy) < 80 && (this.foe.state === 'attack' || this.foe.state === 'action' || this.foe.state === 'dash') && this.rand() < this.L.ability + 0.25) {
       c.dashHeld = true;
@@ -137,6 +145,62 @@ export class BotSource implements ControlSource {
     }
     this.guardEdges(c);
     return c;
+  }
+
+  /** Anti-air: jump into an opponent hovering above, then punch on the way up. */
+  private antiAir(c: Controls, dx: number, dy: number) {
+    const me = this.self;
+    if (me.state !== 'free') return;
+    if (this.antiAirAt && this.now - this.antiAirAt < 220 && this.now - this.antiAirAt > 90) {
+      c.punch = true;
+      this.antiAirAt = 0;
+      return;
+    }
+    if (me.grounded && dy < -80 && dy > -220 && Math.abs(dx) < 110 && this.foe.state !== 'ko' && this.now - this.lastAttackAt > this.L.attackGapMs && this.rand() < this.L.awareness * 0.25) {
+      this.jump(c);
+      this.antiAirAt = this.now;
+      this.lastAttackAt = this.now;
+    }
+  }
+
+  /** Step off arming/active hazards and hop over incoming projectiles. */
+  private avoidThreats(c: Controls) {
+    const me = this.self;
+    const { zones, shots } = me.ctx.threats(me);
+    const hb = me.hurtbox();
+    const inZone = (z: { x: number; y: number; w: number; h: number }) =>
+      hb.right > z.x - 20 && hb.x < z.x + z.w + 20 && hb.bottom > z.y - 10 && hb.y < z.y + z.h + 10;
+    // Keep running the chosen way until clear of every hazard (or the dodge times out).
+    if (this.now < this.dodgeUntil && zones.some(inZone)) {
+      c.left = this.dodgeDir < 0;
+      c.right = this.dodgeDir > 0;
+      return;
+    }
+    if (this.now - this.lastThreatThink < 120) return;
+    this.lastThreatThink = this.now;
+    if (this.rand() > this.L.awareness) return;
+    for (const z of zones) {
+      if (inZone(z)) {
+        const toLeft = me.x - (z.x - 40);
+        const toRight = z.x + z.w + 40 - me.x;
+        const E = this.E;
+        let dir = toLeft < toRight ? -1 : 1;
+        if (dir < 0 && z.x - 40 < E.left + 20) dir = 1;
+        if (dir > 0 && z.x + z.w + 40 > E.right - 20) dir = -1;
+        this.dodgeDir = dir;
+        this.dodgeUntil = this.now + 900;
+        c.left = dir < 0;
+        c.right = dir > 0;
+        return;
+      }
+    }
+    for (const s of shots) {
+      const towards = (s.vx > 0 && s.x < me.x) || (s.vx < 0 && s.x > me.x);
+      if (towards && Math.abs(s.x - me.x) < 260 && Math.abs(s.y - me.y) < 70 && me.grounded) {
+        this.jump(c);
+        return;
+      }
+    }
   }
 
   /** Edge-guard: fire a ranged special at an opponent struggling back to the stage. */

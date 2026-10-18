@@ -5,7 +5,7 @@ import { test } from '@playwright/test';
 test.skip(!process.env.SHOTS, 'set SHOTS=1 to capture screenshots');
 
 test('capture screens', async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   const shot = (name: string) => page.screenshot({ path: `test-results/shots/${name}.png` });
   await page.goto('/?test=1');
@@ -53,4 +53,16 @@ test('capture screens', async ({ page }) => {
   await shot('08-arena-beam');
   await page.waitForTimeout(80);
   await shot('09-arena-beam-hit');
+  // results + notebook
+  for (let k = 0; k < 2; k++) {
+    await page.waitForFunction(() => (window as any).__arena.state().fighters[1].state !== 'ko');
+    await page.evaluate(() => (window as any).__arena.forceKO(1));
+    await page.waitForTimeout(300);
+  }
+  await page.getByText('EXPERIMENT SURVIVED').waitFor({ timeout: 10_000 });
+  await page.waitForTimeout(600);
+  await shot('10-results');
+  await page.getByRole('button', { name: /^NOTEBOOK/ }).click();
+  await page.waitForTimeout(800);
+  await shot('11-notebook');
 });

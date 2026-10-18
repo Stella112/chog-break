@@ -15,7 +15,7 @@ const MAX_STEPS = 60 * 140; // 120 s + sudden death headroom
 
 function lcg(seed: number) {
   let s = seed >>> 0 || 1;
-  return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
+  return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
 }
 
 function blankCanvas(tint: string) {
@@ -26,7 +26,13 @@ function blankCanvas(tint: string) {
 }
 
 /** One headless match. Resolves with the result (or a draw if it never ends). */
-export function runHeadlessMatch(kits: [FighterKit, FighterKit], modifiers: ArenaConfig['modifiers'], seed: number, difficulty: Difficulty = 'normal'): Promise<MatchResult & { steps: number }> {
+export function runHeadlessMatch(
+  kits: [FighterKit, FighterKit],
+  modifiers: ArenaConfig['modifiers'],
+  seed: number,
+  difficulty: Difficulty = 'normal',
+  difficulties?: [Difficulty, Difficulty],
+): Promise<MatchResult & { steps: number }> {
   return new Promise((resolve) => {
     const host = document.createElement('div');
     host.style.cssText = 'position:absolute;left:-9999px;width:10px;height:10px';
@@ -38,6 +44,7 @@ export function runHeadlessMatch(kits: [FighterKit, FighterKit], modifiers: Aren
         { name: kits[1].name, canvas: blankCanvas('#ff4fd8'), color: 0xff4fd8, kit: kits[1] },
       ],
       difficulty,
+      difficulties,
       drivers: ['bot', 'bot'],
       reducedMotion: true,
       modifiers,
@@ -50,7 +57,10 @@ export function runHeadlessMatch(kits: [FighterKit, FighterKit], modifiers: Aren
       parent: host,
       width: STAGE.width,
       height: STAGE.height,
-      physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 1900 }, fps: 60, overlapBias: 20, fixedStep: true } },
+      physics: {
+        default: 'arcade',
+        arcade: { gravity: { x: 0, y: 1900 }, fps: 60, overlapBias: 20, fixedStep: true },
+      },
       banner: false,
       audio: { noAudio: true },
       scene: [],
@@ -65,7 +75,12 @@ export function runHeadlessMatch(kits: [FighterKit, FighterKit], modifiers: Aren
         game.headlessStep(t, STEP);
         steps++;
       }
-      const r: MatchResult = result ?? { winner: null, reason: 'time', timeMs: steps * STEP, fighters: [] };
+      const r: MatchResult = result ?? {
+        winner: null,
+        reason: 'time',
+        timeMs: steps * STEP,
+        fighters: [],
+      };
       game.destroy(true);
       host.remove();
       resolve({ ...r, steps });
@@ -76,7 +91,13 @@ export function runHeadlessMatch(kits: [FighterKit, FighterKit], modifiers: Aren
 export type GeneRow = { slot: string; gene: string; n: number; wins: number; rate: number };
 
 /** ≥200 seeded matches between random real mutants; per-gene win rates. */
-export async function runBalanceSim(chogs: ChogRecord[], matches = 200, seed = 143, onProgress?: (i: number) => void, difficulty: Difficulty = 'normal') {
+export async function runBalanceSim(
+  chogs: ChogRecord[],
+  matches = 200,
+  seed = 143,
+  onProgress?: (i: number) => void,
+  difficulty: Difficulty = 'normal',
+) {
   const rand = lcg(seed);
   const pick = () => chogs[Math.floor(rand() * chogs.length)]!;
   const tally = new Map<string, GeneRow>();
@@ -122,6 +143,64 @@ export async function runBalanceSim(chogs: ChogRecord[], matches = 200, seed = 1
     });
     onProgress?.(i + 1);
   }
-  const rows = [...tally.values()].map((r) => ({ ...r, rate: r.n ? r.wins / r.n : 0 })).sort((a, b) => b.rate - a.rate);
-  return { matches, draws, kos, timeouts, livesLostPerMatch: totalLivesLost / matches, avgMatchMs: Math.round(totalMs / matches), rows };
+  const rows = [...tally.values()]
+    .map((r) => ({ ...r, rate: r.n ? r.wins / r.n : 0 }))
+    .sort((a, b) => b.rate - a.rate);
+  return {
+    matches,
+    draws,
+    kos,
+    timeouts,
+    livesLostPerMatch: totalLivesLost / matches,
+    avgMatchMs: Math.round(totalMs / matches),
+    rows,
+  };
+}
+
+/** Difficulty ladder: random real mutants, A's difficulty vs B's, sides swapped every match. */
+export async function runLadder(
+  chogs: ChogRecord[],
+  matches: number,
+  a: Difficulty,
+  b: Difficulty,
+  seed = 7,
+) {
+  const rand = lcg(seed);
+  const pick = () => chogs[Math.floor(rand() * chogs.length)]!;
+  const pair = () => {
+    const x = pick();
+    let y = pick();
+    while (y.tokenId === x.tokenId) y = pick();
+    return createMutant({ parentA: x, parentB: y });
+  };
+  let aWins = 0;
+  let bWins = 0;
+  let livesLost = 0;
+  for (let i = 0; i < matches; i++) {
+    const m1 = pair();
+    const m2 = pair();
+    const swap = i % 2 === 1;
+    const diffs: [Difficulty, Difficulty] = swap ? [b, a] : [a, b];
+    const r = await runHeadlessMatch(
+      [buildKit(m1), buildKit(m2)],
+      createArenaRules({ mutants: [m1, m2] }).modifiers,
+      seed + i,
+      'normal',
+      diffs,
+    );
+    livesLost += r.fighters.reduce((n, f) => n + (2 - f.livesLeft), 0);
+    if (r.winner === null) continue;
+    const aSide = swap ? 1 : 0;
+    if (r.winner === aSide) aWins++;
+    else bWins++;
+  }
+  return {
+    a,
+    b,
+    matches,
+    aWins,
+    bWins,
+    aRate: aWins / matches,
+    livesLostPerMatch: livesLost / matches,
+  };
 }
