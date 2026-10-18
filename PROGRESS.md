@@ -149,6 +149,9 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - **Lethality (bot matches mostly timed out):** knockback unit 1.0 → 1.2 and hitstun air drag 520 → 420. Hard bot-vs-bot, 20 matches: lives lost per match 0.85 → 1.55 (×1.1) → **1.8** (×1.2), KO finishes 2/20 → 8/20, average match 118 s → 107 s. The early-kill guard is now physics-based: at 60% no move carries a normal-weight fighter from mid-stage to the blast zone (unit test).
 - **Bot:** edge-guards with ranged specials (SPIT/BEAM/CHAOS ORB/TEARS) at an opponent recovering from off-stage.
 - Refactor: fighter tuning constants moved to `src/arena/tuning.ts` (Phaser-free, unit-testable).
+- **Bug fixed: fighters fell through the floor at low frame rates.** At about 20 fps (long frames ≈ 50 ms) a resting fighter sank further into the floor than Arcade's default overlap tolerance (4 px + the distance moved), so separation was skipped and both fighters dropped through and lost a life about 3 s in. Set `overlapBias: 20` (game + headless sim). Regression test: 10 s of idle fighters with the CPU throttled 20× (it fails with the old value and passes with the fix).
+- Balance after polish + fix (300 matches): first run FAILED on BUBBLE 68.6% (n=51) → BUBBLE shield 1.2 → 1.0 s and cooldown 4 → 5.5 s; LEECH heal 25 → 15%, cooldown 4 → 5 s. Re-run PASSES (no gene with n ≥ 30 above 65%; the high rates left are small samples: TOXIC/SHIV n=10, UNDEAD n=19, LASER SHOW n=14).
+- Full e2e: 29/29 pass (bot recovery 10/10, 60 fps).
 
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
