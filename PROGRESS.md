@@ -4,7 +4,7 @@
 2026-10-18 by the BUILDER (Claude Code)
 
 ## Current phase
-**Phase 6: P1, game features first** (Maris, 2026-10-18: "the main thing is a working game"; deploy is the last step). Done: local 2P, 6 P1 modifiers, 8 P1 recipes, share card. Not started: wallet/MY CHOGS, Recorded Splice (needs the Reviewer's registry). Vercel deploy deferred to the end.
+**Phase 6/7: P1 game features done + submission package drafted.** (Maris, 2026-10-18: "the main thing is a working game"; deploy is the last step). Done: local 2P, 6 P1 modifiers, 8 P1 recipes, share card. Not started: wallet/MY CHOGS, Recorded Splice (needs the Reviewer's registry). Vercel deploy deferred to the end.
 
 ## Phase 0: setup, facts, data
 - [x] `npm run build`, `typecheck`, `lint` and `test` pass
@@ -177,6 +177,15 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - **Bot:** steps off arming/active hazards (toxic segments, meteor targets, fire, runes) and keeps running until clear; hops over incoming projectiles; anti-air jump + punch at an opponent above it. All gated by a new per-difficulty `awareness` (Easy 0.2, Normal 0.55, Hard 0.9).
 - Balance after the smarter bot: PUKE rose to 72% (n=50) because bots walk into its cone more → PUKE 1.5 → 1.2 dmg/tick, cone 140 → 120 px, cooldown 3.5 → 4 s. Re-run (300 matches) PASSES.
 - **Verified** (`tests/e2e/bot.spec.ts`): difficulty ladder, 30 headless matches each with real mutants: **Hard beat Easy 29–1, Normal beat Easy 29–1, Hard beat Normal 27–3**. The bot escaped an arming hazard in 4/4 trials (moved 117–351 px).
+
+## Phase 7 prep (submission package)
+- **Load time:** the browser now loads a slim manifest (`public/data/chogs.min.json`, no tokenUri/image; written by `build-manifest`) in parallel with sprite info, preloaded from the HTML. e2e on a simulated 10 Mbit/s / 40 ms cold load: Lab interactive with first thumbnails in **2.0–2.3 s** (spec < 3 s) (`tests/e2e/perf.spec.ts`). Before: 1.9–3.4 s.
+- **Honesty and placeholder audit (§G3):** no "coming soon", TODOs, lorem, fake data or overclaims in visible UI. Removed "NFTs" jargon from the home strip. `npm run docs:check` checks the description length and flags forbidden claims (secure randomness, burns, online multiplayer, decentralization, copyright/royalties) in README and SUBMISSION. It currently flags nothing.
+- **README** rewritten for judges: pitch, 60-second no-wallet quick start with deep links (incl. a recipe), why the NFTs are essential (each point mapped to code), what is and isn't in this build (no wallet, registry or payouts, stated plainly), run/test, architecture, determinism, data provenance, security, limitations, licenses.
+- **docs/SUBMISSION.md:** text for every field; description 2,996 / 8,000 chars. `<APP_URL>` to fill after the deploy.
+- **docs/DEMO_SCRIPT.md:** ≤ 3:00 shot list matching this build (no wallet or on-chain segment).
+- **All 16 recipe perks now tested** (added SKULL & BONES 38° → 80°, SHARK WEEK bite zone, HONK LORD stun +0.2 s, DOUBLE RAINBOW reach, BTC MAXI +10% speed).
+- **Fresh clone → `npm ci` → `npm run build`: succeeds** (built in 30 s). npm 11 warns that esbuild/sharp install scripts were not run; the build works regardless.
 
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
