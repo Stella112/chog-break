@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyKO, isOutside, knockback, KNOCKBACK, MATCH, newScore, resolveMatch, respawn } from '../../src/arena/rules';
 import { ATTACKS } from '../../src/arena/attacks';
+import { TUNING } from '../../src/arena/tuning';
 
 describe('KO handler', () => {
   it('decrements lives exactly once per KO even if called every frame', () => {
@@ -40,11 +41,15 @@ describe('knockback', () => {
     expect(knockback(atk, 50, 1.3)).toBeLessThan(knockback(atk, 50, 1));
     expect(knockback(atk, 9999, 0.5, 2)).toBe(KNOCKBACK.cap);
   });
-  it('no single hit can launch past a blast zone below ~60% damage', () => {
-    // Rough ballistic bound: launch speed v reaches about v²/(2·decel) px horizontally under air drag.
-    // The strongest base move at 60% must stay under the speed that crosses 640 px of air.
-    const strongest = Math.max(...Object.values(ATTACKS).map((a) => knockback(a, 60, 0.8, 1.35)));
-    expect(strongest).toBeLessThan(1500);
+  it('no single hit can carry a normal-weight fighter from mid-stage to the blast zone below 60%', () => {
+    // During hitstun horizontal speed decays at TUNING.hitstunDrag px/s², so travel = vx² / (2·drag).
+    // Mid-stage (x = 640) to the side blast zone (x = 1480) is 840 px.
+    const drag = TUNING.hitstunDrag;
+    for (const a of Object.values(ATTACKS)) {
+      const v = knockback(a, 60, 1, 1);
+      const vx = v * Math.cos((a.angleDeg * Math.PI) / 180);
+      expect(vx ** 2 / (2 * drag), JSON.stringify(a)).toBeLessThan(840);
+    }
   });
 });
 

@@ -129,6 +129,51 @@ export function PreMatch({
           framed={needsJar(sprites, opponent.visualRecipe)}
         />
       </div>
+      <div className="panel pm-setup pm-bar">
+        <div className="pm-bar-group">
+          <span className="label">MODE</span>
+          <div className="seg" role="radiogroup" aria-label="Mode">
+            {(['bot', '2p'] as const).map((m) => (
+              <button
+                key={m}
+                role="radio"
+                aria-checked={mode === m}
+                className={mode === m ? 'on' : ''}
+                onClick={() => onMode(m)}
+              >
+                {m === 'bot' ? 'VS BOT' : 'LOCAL 2P'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {mode === 'bot' && (
+          <div className="pm-bar-group">
+            <span className="label">BOT DIFFICULTY</span>
+            <div className="seg" role="radiogroup" aria-label="Bot difficulty">
+              {(['easy', 'normal', 'hard'] as const).map((d) => (
+                <button
+                  key={d}
+                  role="radio"
+                  aria-checked={difficulty === d}
+                  className={difficulty === d ? 'on' : ''}
+                  onClick={() => onDifficulty(d)}
+                >
+                  {d.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="pm-bar-go">
+          {touch && <p className="error-text">Best on desktop with a keyboard.</p>}
+          <button className="btn btn-primary" onClick={onFight}>
+            FIGHT ▸
+          </button>
+          <button className="link" onClick={onBack}>
+            back to the reveal
+          </button>
+        </div>
+      </div>
       {modifiers.length === 0 ? (
         <p className="stable mono">STABLE… FOR NOW</p>
       ) : (
@@ -147,7 +192,7 @@ export function PreMatch({
           </p>
         </div>
       )}
-      <div className="pm-row">
+      <div className="pm-row pm-row-single">
         <div className="panel pm-controls">
           <h3 className="mono">CONTROLS</h3>
           <table>
@@ -180,45 +225,6 @@ export function PreMatch({
             Knock your opponent past the edge of the screen. 2 lives each. The more damage, the
             further they fly.
           </p>
-        </div>
-        <div className="panel pm-setup">
-          <h3 className="mono">MODE</h3>
-          <div className="seg" role="radiogroup" aria-label="Mode">
-            {(['bot', '2p'] as const).map((m) => (
-              <button
-                key={m}
-                role="radio"
-                aria-checked={mode === m}
-                className={mode === m ? 'on' : ''}
-                onClick={() => onMode(m)}
-              >
-                {m === 'bot' ? 'VS BOT' : 'LOCAL 2P'}
-              </button>
-            ))}
-          </div>
-          {mode === 'bot' && <h3 className="mono">BOT DIFFICULTY</h3>}
-          {mode === 'bot' && (
-            <div className="seg" role="radiogroup" aria-label="Bot difficulty">
-              {(['easy', 'normal', 'hard'] as const).map((d) => (
-                <button
-                  key={d}
-                  role="radio"
-                  aria-checked={difficulty === d}
-                  className={difficulty === d ? 'on' : ''}
-                  onClick={() => onDifficulty(d)}
-                >
-                  {d.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          )}
-          {touch && <p className="error-text">Best on desktop with a keyboard.</p>}
-          <button className="btn btn-primary" onClick={onFight}>
-            FIGHT ▸
-          </button>
-          <button className="link" onClick={onBack}>
-            back to the reveal
-          </button>
         </div>
       </div>
     </section>

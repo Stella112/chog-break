@@ -5,32 +5,11 @@ import type { Controls } from './input';
 import { baselineKit, type FighterKit, type PhysicsProfile } from './kit';
 import { MATCH, newScore, type FighterScore } from './rules';
 import { startClose, startSpecial } from './moves';
+import { TUNING } from './tuning';
 
 export type { PhysicsProfile };
 
-export const TUNING = {
-  gravity: 1900,
-  runSpeed: 390,
-  groundAccel: 3600,
-  airAccel: 1700,
-  groundFriction: 2800,
-  airDrag: 260,
-  hitstunDrag: 520,
-  jumpVelocity: 780,
-  doubleJumpVelocity: 720,
-  recoveryVelocity: 860,
-  recoveryDrift: 260,
-  fastFall: 1300,
-  maxFall: 1150,
-  dashSpeed: 820,
-  dashMs: 160,
-  dashCooldownMs: 650,
-  comboWindowMs: 380,
-  bodyW: 58,
-  bodyH: 78,
-  displaySize: 112,
-  guardHp: 25,
-};
+export { TUNING };
 
 type State = 'free' | 'attack' | 'dash' | 'hitstun' | 'action' | 'ko';
 
@@ -90,6 +69,9 @@ export class Fighter {
   private pulseEndAt = 0;
   private volatilityGrow = true;
   private baseScale = 1;
+  private shadow: Phaser.GameObjects.Ellipse;
+  private ring: Phaser.GameObjects.Ellipse;
+  private tag: Phaser.GameObjects.Text;
   private lastFallSpeed = 0;
 
   constructor(
@@ -112,6 +94,17 @@ export class Fighter {
     this.body.setMaxVelocityY(TUNING.maxFall * 1.8);
     this.body.setAllowGravity(true);
     this.applyFacing();
+    // Readability: ground shadow, player-colour ring under the feet, and a P1/P2/CPU tag.
+    this.shadow = scene.add.ellipse(spawn.x, spawn.y, 76, 16, 0x000000, 0.35).setDepth(9);
+    this.ring = scene.add.ellipse(spawn.x, spawn.y, 84, 20).setStrokeStyle(3, color, 0.9).setDepth(9);
+    this.tag = scene.add
+      .text(spawn.x, spawn.y - 80, '', { fontFamily: '"JetBrains Mono", monospace', fontSize: '14px', color: '#' + color.toString(16).padStart(6, '0'), stroke: '#000', strokeThickness: 4 })
+      .setOrigin(0.5)
+      .setDepth(11);
+  }
+
+  setTag(text: string) {
+    this.tag.setText(text);
   }
 
   get profile(): PhysicsProfile {
@@ -342,7 +335,7 @@ export class Fighter {
     this.attackStart = now;
     this.attackHit = false;
     this.state = 'attack';
-    this.scene.events.emit('fx:swing', this, this.comboStep);
+    this.scene.events.emit('fx:swing', this, this.comboStep, this.attackId);
   }
 
   private startDash(now: number) {
@@ -492,6 +485,18 @@ export class Fighter {
 
   private visuals(now: number) {
     const b = this.body;
+    const gy = this.ctx.groundAt(this.x, b.bottom - 4);
+    const visible = this.state !== 'ko';
+    if (gy !== null && visible) {
+      const h = Math.max(0, gy - b.bottom);
+      const s = Phaser.Math.Clamp(1 - h / 400, 0.3, 1);
+      this.shadow.setPosition(this.x, gy).setScale(s * this.sizeMul).setAlpha(0.35 * s).setVisible(true);
+      this.ring.setPosition(this.x, gy).setScale(s * this.sizeMul).setVisible(h < 6);
+    } else {
+      this.shadow.setVisible(false);
+      this.ring.setVisible(false);
+    }
+    this.tag.setPosition(this.x, b.y - 22 * this.sizeMul - 10).setVisible(visible);
     const lean = this.state === 'hitstun' ? b.velocity.x * 0.02 : (b.velocity.x / TUNING.runSpeed) * 7;
     this.sprite.setAngle(Phaser.Math.Clamp(lean, -25, 25));
     let alpha = 1;
@@ -512,6 +517,9 @@ export class Fighter {
     this.body.setVelocity(0, 0);
     this.body.setAllowGravity(false);
     this.sprite.setVisible(false);
+    this.shadow.setVisible(false);
+    this.ring.setVisible(false);
+    this.tag.setVisible(false);
   }
 
   respawnAt(now: number, x = this.spawn.x, y = this.spawn.y - 220) {

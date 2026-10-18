@@ -36,3 +36,8 @@ kbd { font-family: var(--mono); background: var(--bg); border: 1px solid var(--t
 .pm-mods p { margin: 0.2rem 0; }
 .pm-mods ul { margin: 0.4rem 0; padding-left: 1.2rem; }
 .pm-mods strong { color: var(--hazard); }
+.pm-setup.pm-bar { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 1.4rem; margin: 1rem 0 0; }
+.pm-bar-group { display: flex; flex-direction: column; gap: 0.35rem; }
+.pm-bar-go { margin-left: auto; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.pm-row-single { grid-template-columns: 1fr; }
+.pm-card canvas { width: min(180px, 100%); }

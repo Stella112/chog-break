@@ -64,6 +64,10 @@ export interface ArenaCtx {
   spawnFrog(owner: Fighter): void;
   beam(owner: Fighter, opts: { y: number; color: number; width: number; spec: HitSpec; pierce: boolean; fireTrail: boolean }): void;
   fx(kind: 'burst' | 'ring' | 'text' | 'shake', x: number, y: number, color?: number, size?: number, text?: string): void;
+  /** Visible swing arc in front of a fighter (punch, headbutt, horn charge). */
+  slash(f: Fighter, reach: number, color: number, delayMs?: number): void;
+  /** Growing glow at the eyes while a beam charges. */
+  charge(f: Fighter, color: number, ms: number): void;
   sfx(kind: 'special' | 'close' | 'heal' | 'block' | 'zap' | 'honk' | 'warp'): void;
   /** Ground y under a point (main platform or a float), or null if none. */
   groundAt(x: number, y: number): number | null;

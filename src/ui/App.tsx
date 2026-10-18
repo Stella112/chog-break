@@ -74,6 +74,7 @@ export function App() {
   const [matchKey, setMatchKey] = useState(0);
   const [result, setResult] = useState<MatchResult | null>(null);
   const [starting, setStarting] = useState(false);
+  const [fightsStarted, setFightsStarted] = useState(0);
   const reducedMotion = useReducedMotion();
   const deepLinkHandled = useRef(false);
 
@@ -90,7 +91,7 @@ export function App() {
     if (!TEST_MODE || !manifest) return;
     void import('../arena/sim').then(({ runBalanceSim, runHeadlessMatch }) => {
       (window as unknown as { __sim: unknown }).__sim = {
-        run: (n: number, seed: number) => runBalanceSim(manifest.chogs, n, seed),
+        run: (n: number, seed: number, difficulty?: 'easy' | 'normal' | 'hard') => runBalanceSim(manifest.chogs, n, seed, undefined, difficulty),
         match: runHeadlessMatch,
       };
     });
@@ -206,6 +207,7 @@ export function App() {
       );
       setResult(null);
       setMatchKey((k) => k + 1);
+      setFightsStarted((n) => n + 1);
       setScreen('arena');
     } finally {
       setStarting(false);
@@ -385,6 +387,7 @@ export function App() {
                   reducedMotion={reducedMotion}
                   testMode={TEST_MODE}
                   onEnd={onMatchEnd}
+                  showControls={fightsStarted <= 1}
                   onQuit={() => go('prematch')}
                   twoPlayer={mode === '2p'}
                 />
@@ -396,6 +399,7 @@ export function App() {
                 result={result}
                 onRematch={() => {
                   setResult(null);
+                  setFightsStarted((n) => n + 1);
                   setMatchKey((k) => k + 1);
                   setScreen('arena');
                 }}

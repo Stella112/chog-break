@@ -76,12 +76,15 @@ export function runHeadlessMatch(kits: [FighterKit, FighterKit], modifiers: Aren
 export type GeneRow = { slot: string; gene: string; n: number; wins: number; rate: number };
 
 /** ≥200 seeded matches between random real mutants; per-gene win rates. */
-export async function runBalanceSim(chogs: ChogRecord[], matches = 200, seed = 143, onProgress?: (i: number) => void) {
+export async function runBalanceSim(chogs: ChogRecord[], matches = 200, seed = 143, onProgress?: (i: number) => void, difficulty: Difficulty = 'normal') {
   const rand = lcg(seed);
   const pick = () => chogs[Math.floor(rand() * chogs.length)]!;
   const tally = new Map<string, GeneRow>();
   let draws = 0;
   let totalMs = 0;
+  let kos = 0;
+  let timeouts = 0;
+  let totalLivesLost = 0;
   const slots = ['special', 'head', 'close', 'physics', 'affinity', 'trinket', 'element'] as const;
   for (let i = 0; i < matches; i++) {
     const pair = () => {
@@ -94,9 +97,12 @@ export async function runBalanceSim(chogs: ChogRecord[], matches = 200, seed = 1
     const m2 = pair();
     const rules = createArenaRules({ mutants: [m1, m2] });
     const kits: [FighterKit, FighterKit] = [buildKit(m1), buildKit(m2)];
-    const r = await runHeadlessMatch(kits, rules.modifiers, seed + i);
+    const r = await runHeadlessMatch(kits, rules.modifiers, seed + i, difficulty);
     totalMs += r.timeMs;
     if (r.winner === null) draws++;
+    if (r.reason === 'stocks') kos++;
+    else timeouts++;
+    totalLivesLost += r.fighters.reduce((n, f) => n + (2 - f.livesLeft), 0);
     kits.forEach((k, side) => {
       for (const slot of slots) {
         const gene = String(k[slot]);
@@ -117,5 +123,5 @@ export async function runBalanceSim(chogs: ChogRecord[], matches = 200, seed = 1
     onProgress?.(i + 1);
   }
   const rows = [...tally.values()].map((r) => ({ ...r, rate: r.n ? r.wins / r.n : 0 })).sort((a, b) => b.rate - a.rate);
-  return { matches, draws, avgMatchMs: Math.round(totalMs / matches), rows };
+  return { matches, draws, kos, timeouts, livesLostPerMatch: totalLivesLost / matches, avgMatchMs: Math.round(totalMs / matches), rows };
 }

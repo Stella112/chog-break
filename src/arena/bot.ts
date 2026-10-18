@@ -92,6 +92,7 @@ export class BotSource implements ControlSource {
         const edge = foe.x < this.E.left ? this.E.left + 40 : this.E.right - 40;
         this.moveTo(c, edge, 12);
         if (Math.abs(dx) < 100 && Math.abs(dy) < 90) this.attack(c, dx);
+        else this.edgeShot(c, dx, dy);
         break;
       }
       case 'SPACE':
@@ -127,6 +128,21 @@ export class BotSource implements ControlSource {
     }
     this.guardEdges(c);
     return c;
+  }
+
+  /** Edge-guard: fire a ranged special at an opponent struggling back to the stage. */
+  private edgeShot(c: Controls, dx: number, dy: number) {
+    const me = this.self;
+    if (me.state !== 'free' || this.now < me.specialReadyAt || this.rand() > this.L.ability) return;
+    const sp = me.kit.special;
+    const ranged = sp === 'SPIT' || sp === 'BEAM' || sp === 'CHAOS_ORB' || sp === 'TEARS';
+    if (!ranged || Math.abs(dy) > 70 || Math.abs(dx) > 700) return;
+    if (Math.sign(dx) !== me.facing) {
+      if (dx > 0) c.right = true;
+      else c.left = true;
+      return;
+    }
+    c.special = true;
   }
 
   /** Uses the mutant's real moves: Eyes special (L) and Mouth close move (I). */

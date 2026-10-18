@@ -1,14 +1,15 @@
 import Phaser from 'phaser';
 import { sfx } from '../audio/sfx';
 import type { ModifierId } from '../core/arenaRules';
-import { MODIFIER_INFO } from '../config/geneInfo';
 import { BotSource, type Difficulty } from './bot';
 import type { ArenaCtx, HitSpec, ProjectileOpts, ZoneOpts } from './ctx';
 import { Coin, Frog, Projectile, Zone } from './entities';
 import { Fighter, TUNING } from './fighter';
+import { HudScene } from './HudScene';
 import { EMPTY_CONTROLS, KEYMAP, KeyboardSource, type ControlSource } from './input';
 import type { FighterKit } from './kit';
 import { ModifierRuntime, modifierPhysics, type ModifierHost } from './modifiers';
+import { ATTACKS } from './attacks';
 import { applyKO, isOutside, knockback, knockbackVector, MATCH, resolveMatch, respawn, STAGE } from './rules';
 
 export type FighterSetup = { name: string; canvas: HTMLCanvasElement; color: number; kit?: FighterKit };
@@ -28,6 +29,8 @@ export type ArenaConfig = {
   modifiers?: ModifierId[];
   testMode?: boolean;
   botSeed?: number;
+  /** Flash a controls card during the countdown (first match of the session). */
+  showControls?: boolean;
   /** Skip countdown, effects and end-of-match pause (headless sims). */
   instant?: boolean;
 };
@@ -56,13 +59,13 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
   private hitstopUntil = 0;
   private live = false;
   private ended = false;
-  private suddenDeath = false;
+  suddenDeath = false;
   private lastAttacker: [Fighter | null, Fighter | null] = [null, null];
-  private hud!: { timer: Phaser.GameObjects.Text; panels: { dmg: Phaser.GameObjects.Text; pips: Phaser.GameObjects.Graphics }[]; banner: Phaser.GameObjects.Text };
+  private hudScene: HudScene | null = null;
   private scanImg: Phaser.GameObjects.Image | null = null;
   private trailAt = 0;
-  private modText: Phaser.GameObjects.Text | null = null;
-  private elapsedMs = 0;
+  elapsedMs = 0;
+  private camZoom = 1;
 
   constructor() {
     super('arena');
@@ -102,6 +105,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
       const f = new Fighter(this, i as 0 | 1, `fighter-${i}`, spawns[i]!, setup.color, setup.kit);
       f.ctx = this;
       f.sprite.setDepth(DEPTH.fighter);
+      f.setTag(this.cfg.drivers[i] === 'bot' ? 'CPU' : this.cfg.drivers[0] === 'human' && this.cfg.drivers[1] === 'human' ? `P${i + 1}` : 'YOU');
       return f;
     }) as [Fighter, Fighter];
 
@@ -122,7 +126,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
 
     this.modRuntime = new ModifierRuntime(this, this.cfg.modifiers ?? [], (this.cfg.botSeed ?? 7) * 7919);
 
-    this.buildHud();
+    this.launchHud();
     this.wireFx();
     if (this.cfg.testMode) this.exposeTestHooks();
     if (this.instant) this.go();
@@ -137,13 +141,9 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
     const labels = ['3', '2', '1', 'GO!'];
     labels.forEach((l, i) =>
       this.time.delayedCall(i * 450, () => {
-        this.hud.banner.setText(l).setAlpha(1).setScale(1.4);
-        this.tweens.add({ targets: this.hud.banner, scale: 1, duration: 200 });
+        this.hudScene?.banner(l, 1.4, l === 'GO!' ? 350 : 0);
         sfx.countdown(l === 'GO!');
-        if (l === 'GO!') {
-          this.go();
-          this.tweens.add({ targets: this.hud.banner, alpha: 0, delay: 350, duration: 250 });
-        }
+        if (l === 'GO!') this.go();
       }),
     );
   }
@@ -188,7 +188,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
         this.tweens.add({ targets: dot, alpha: 0, scale: 0.2, duration: 260, onComplete: () => dot.destroy() });
       }
     }
-    this.updateHud();
+    this.updateCamera(dt);
     const outcome = resolveMatch([a.score, b.score], this.elapsedMs, this.suddenDeath);
     if (outcome.over) this.finish(outcome.winner, outcome.reason);
     else if ('suddenDeath' in outcome) this.startSuddenDeath();
@@ -343,6 +343,32 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
     }
   }
 
+  slash(f: Fighter, reach: number, color: number, delayMs = 0) {
+    if (this.instant) return;
+    this.time.delayedCall(delayMs, () => {
+      if (f.state === 'ko') return;
+      const cx = f.x + f.facing * (reach * 0.55);
+      const start = f.facing === 1 ? -70 : 110;
+      const arc = this.add.arc(cx, f.y - 6, reach, start, start + 140, false, color, 0.75).setDepth(DEPTH.fxTop);
+      arc.setStrokeStyle(5, f.color, 1);
+      this.tweens.add({ targets: arc, scale: 1.3, alpha: 0, duration: 170, ease: 'Quad.Out', onComplete: () => arc.destroy() });
+    });
+  }
+
+  charge(f: Fighter, color: number, ms: number) {
+    if (this.instant) return;
+    const glow = this.add.circle(f.x + f.facing * 26, f.y - 14, 6, color, 0.9).setDepth(DEPTH.fxTop);
+    glow.setStrokeStyle(3, 0xffffff, 0.9);
+    this.tweens.add({
+      targets: glow,
+      radius: 26,
+      duration: ms,
+      ease: 'Quad.In',
+      onUpdate: () => glow.setPosition(f.x + f.facing * 26, f.y - 14).setAlpha(Math.floor(this.time.now / 40) % 2 ? 0.6 : 1),
+      onComplete: () => glow.destroy(),
+    });
+  }
+
   sfx(kind: 'special' | 'close' | 'heal' | 'block' | 'zap' | 'honk' | 'warp') {
     if (this.instant) return;
     sfx.move(kind);
@@ -409,7 +435,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
       f.score.koPending = false;
       f.respawnAt(this.time.now);
     }
-    this.flashBanner('SUDDEN DEATH');
+    this.hudScene?.banner('SUDDEN DEATH');
   }
 
   private finish(winner: 0 | 1 | null, reason: 'stocks' | 'time') {
@@ -434,8 +460,9 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
     const humanWon = winner !== null && this.cfg.drivers[winner] === 'human';
     if (humanWon) sfx.victory();
     else sfx.defeat();
-    this.hud.banner.setText('GAME!').setAlpha(1).setScale(1.6);
-    this.tweens.add({ targets: this.hud.banner, scale: 1, duration: 300, ease: 'Back.Out' });
+    this.hudScene?.banner('GAME!', 1.6, 0);
+    this.cameras.main.zoomTo(1, 400);
+    this.cameras.main.pan(STAGE.width / 2, STAGE.height / 2, 400);
     this.time.delayedCall(1300, () => this.cfg.onEnd(result));
   }
 
@@ -519,61 +546,45 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
   }
 
   banner(text: string) {
-    if (!this.instant) this.flashBanner(text);
+    if (!this.instant) this.hudScene?.banner(text);
   }
 
   applyModifiers(mods: ModifierId[]) {
     this.mods = modifierPhysics(mods);
-    if (this.modText) this.modText.setText(mods.length ? mods.map((m) => `⚠ ${MODIFIER_INFO[m]?.label ?? m}`).join('   ') : 'STABLE… FOR NOW');
+    this.hudScene?.setModifiers(mods);
   }
 
-  private buildHud() {
-    const font = { fontFamily: 'Bungee, Impact, sans-serif' };
-    const mono = { fontFamily: '"JetBrains Mono", monospace' };
-    const timer = this.add.text(STAGE.width / 2, 34, '2:00', { ...font, fontSize: '36px', color: '#f1eef7', stroke: '#000', strokeThickness: 6 }).setOrigin(0.5).setDepth(DEPTH.hud);
-    const panels = this.cfg.fighters.map((f, i) => {
-      const x = i === 0 ? 300 : STAGE.width - 300;
-      const bg = this.add.graphics().setDepth(DEPTH.hud);
-      bg.fillStyle(0x000000, 0.55).fillRect(x - 150, 640, 300, 70);
-      bg.fillStyle(f.color, 1).fillRect(x - 150, 640, 6, 70);
-      this.add.text(x - 136, 646, f.name.toUpperCase(), { ...mono, fontSize: '14px', color: '#a59fb8' }).setDepth(DEPTH.hud);
-      const dmg = this.add.text(x + 136, 676, '0%', { ...font, fontSize: '40px', color: '#ffffff', stroke: '#000', strokeThickness: 6 }).setOrigin(1, 0.5).setDepth(DEPTH.hud);
-      const pips = this.add.graphics().setDepth(DEPTH.hud);
-      const who = this.cfg.drivers[i] === 'bot' ? `BOT · ${this.cfg.difficulty.toUpperCase()}` : i === 0 ? 'P1' : 'P2';
-      this.add.text(x - 136, 690, who, { ...mono, fontSize: '11px', color: '#a59fb8' }).setDepth(DEPTH.hud);
-      return { dmg, pips, x };
-    });
-    const mods = this.cfg.modifiers ?? [];
-    const modText = mods.length ? mods.map((m) => `⚠ ${MODIFIER_INFO[m]?.label ?? m}`).join('   ') : 'STABLE… FOR NOW';
-    this.modText = this.add.text(STAGE.width / 2, 70, modText, { ...mono, fontSize: '14px', color: mods.length ? '#ffd400' : '#a59fb8', stroke: '#000', strokeThickness: 4 }).setOrigin(0.5).setDepth(DEPTH.hud);
-    const banner = this.add.text(STAGE.width / 2, STAGE.height / 2 - 60, '', { ...font, fontSize: '96px', color: '#ffd400', stroke: '#000', strokeThickness: 10 }).setOrigin(0.5).setDepth(DEPTH.hud).setAlpha(0);
-    this.hud = { timer, panels, banner };
-    this.updateHud();
+  /** HUD lives in its own scene so the arena camera can zoom without moving it. */
+  private launchHud() {
+    if (this.instant) return;
+    if (!this.scene.get('hud')) this.scene.add('hud', HudScene, false);
+    this.scene.launch('hud', { arena: this });
+    this.hudScene = this.scene.get('hud') as HudScene;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scene.stop('hud'));
   }
 
-  private updateHud() {
-    const left = Math.max(0, MATCH.durationMs - this.elapsedMs);
-    this.hud.timer.setText(this.suddenDeath ? 'SUDDEN DEATH' : `${Math.floor(left / 60000)}:${String(Math.floor((left % 60000) / 1000)).padStart(2, '0')}`);
-    this.hud.timer.setColor(left < 10_000 && !this.suddenDeath ? '#ff4f4f' : '#f1eef7');
-    this.fighters?.forEach((f, i) => {
-      const p = this.hud.panels[i]!;
-      const d = Math.round(f.score.damage);
-      p.dmg.setText(`${d}%`);
-      const t = Math.min(1, d / 150);
-      const col = Phaser.Display.Color.Interpolate.ColorWithColor(new Phaser.Display.Color(255, 255, 255), new Phaser.Display.Color(255, 60, 60), 100, t * 100);
-      p.dmg.setColor(Phaser.Display.Color.RGBToString(col.r, col.g, col.b));
-      p.pips.clear();
-      const x0 = (i === 0 ? 300 : STAGE.width - 300) - 136;
-      for (let l = 0; l < MATCH.lives; l++) {
-        p.pips.fillStyle(l < f.score.lives ? this.cfg.fighters[i]!.color : 0x333333, 1).fillCircle(x0 + 6 + l * 18 + 80, 696, 6);
-      }
-    });
-  }
-
-  private flashBanner(text: string) {
-    this.hud.banner.setText(text).setAlpha(1).setScale(1.3);
-    this.tweens.add({ targets: this.hud.banner, scale: 1, duration: 200 });
-    this.tweens.add({ targets: this.hud.banner, alpha: 0, delay: 1000, duration: 300 });
+  /** Smash-style camera: frame both live fighters, zoom 1–1.35, eased. */
+  private updateCamera(dt: number) {
+    if (this.instant) return;
+    const cam = this.cameras.main;
+    const live = this.fighters.filter((f) => f.state !== 'ko');
+    const pts = live.length ? live : this.fighters;
+    const minX = Math.min(...pts.map((f) => f.x), STAGE.mainLeft + 60) - 220;
+    const maxX = Math.max(...pts.map((f) => f.x), STAGE.mainRight - 60) + 220;
+    const minY = Math.min(...pts.map((f) => f.y)) - 220;
+    const maxY = Math.max(STAGE.mainY + 120, Math.max(...pts.map((f) => f.y)) + 120);
+    const target = Phaser.Math.Clamp(Math.min(STAGE.width / (maxX - minX), STAGE.height / (maxY - minY)), 1, 1.35);
+    const k = Math.min(1, dt / 220);
+    this.camZoom += (target - this.camZoom) * k;
+    cam.setZoom(this.camZoom);
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    // keep the view inside the logical stage so the edges never show void
+    const halfW = STAGE.width / 2 / this.camZoom;
+    const halfH = STAGE.height / 2 / this.camZoom;
+    const tx = Phaser.Math.Clamp(cx, halfW, STAGE.width - halfW);
+    const ty = Phaser.Math.Clamp(cy, halfH, STAGE.height - halfH);
+    cam.centerOn(cam.midPoint.x + (tx - cam.midPoint.x) * k, cam.midPoint.y + (ty - cam.midPoint.y) * k);
   }
 
   private burst(x: number, y: number, n: number, color: number) {
@@ -598,11 +609,24 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
   }
 
   private wireFx() {
-    this.events.on('fx:swing', () => !this.instant && sfx.whoosh());
+    this.events.on('fx:swing', (f: Fighter, step: number, attackId: keyof typeof ATTACKS) => {
+      if (this.instant) return;
+      sfx.whoosh();
+      const a = ATTACKS[attackId];
+      if (a) this.slash(f, a.box.w * f.reach * (step === 3 ? 1.1 : 0.9), step === 3 ? 0xffd400 : 0xffffff, a.startupMs);
+    });
     this.events.on('fx:dash', (f: Fighter) => {
       if (this.instant) return;
       sfx.whoosh();
       this.burst(f.x - f.facing * 30, f.y + 30, 6, 0xa59fb8);
+      // afterimages along the dash
+      for (let i = 0; i < 4; i++) {
+        this.time.delayedCall(i * 35, () => {
+          if (f.state === 'ko') return;
+          const ghost = this.add.image(f.x, f.y - 6, f.sprite.texture.key).setDisplaySize(f.sprite.displayWidth, f.sprite.displayHeight).setFlipX(f.facing === -1).setAlpha(0.4).setTint(f.color).setDepth(DEPTH.fighter - 1);
+          this.tweens.add({ targets: ghost, alpha: 0, duration: 220, onComplete: () => ghost.destroy() });
+        });
+      }
     });
     this.events.on('fx:recovery', (f: Fighter) => {
       if (this.instant) return;

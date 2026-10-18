@@ -106,7 +106,7 @@ export function startSpecial(f: Fighter, now: number) {
       const king = k.recipe === 'KING_BEAM';
       const width = king ? 26 * 1.2 : 26;
       const spec: HitSpec = { damage: 9, base: 300, scaling: 6, angleDeg: 15, hitstunMs: 320, hitstopMs: 60, kind: 'beam', pierce: king };
-      ctx.fx('text', f.x, f.y - 80, k.beamColor, 16, 'CHARGING');
+      ctx.charge(f, k.beamColor, 300);
       let fired = false;
       let fired2 = false;
       const laserShow = k.recipe === 'LASER_SHOW';
@@ -142,6 +142,7 @@ export function startClose(f: Fighter, now: number) {
       let done = false;
       f.body.setVelocityX(f.facing * 260);
       const spec: HitSpec = { damage: 7, base: 280, scaling: 6, angleDeg: 45, hitstunMs: 320, hitstopMs: 60, kind: 'melee' };
+      ctx.slash(f, 60, 0xffd400, 60);
       f.startAction({
         until: now + 240,
         control: 0.2,

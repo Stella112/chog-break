@@ -27,8 +27,8 @@ export type AttackSpec = { damage: number; base: number; scaling: number; angleD
 
 export const KNOCKBACK = {
   cap: 2600,
-  /** Global multiplier mapping formula units → px/s. */
-  unit: 1,
+  /** Global multiplier mapping formula units → px/s. Tuned 1 → 1.2: bot-vs-bot lost 0.85 lives per 120 s at 1.0, 1.55 at 1.1. */
+  unit: 1.2,
 };
 
 /**
