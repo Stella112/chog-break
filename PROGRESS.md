@@ -10,7 +10,7 @@
 - [x] `npm run build`, `typecheck`, `lint` and `test` pass
 - [x] `docs/CHAIN_CHECK.md`: every automatable §C2 row passes. MANUAL rows: $CHOG burn source, fee-on-transfer (Reviewer fork test), explorer docs.
 - [x] `public/data/chogs.json`: 1,969 records, validated against §C3 (tiers, presence counts, distinct raw values). §C3 counts raw spellings: Head has 66 raw values and 64 normalized ('Boob Cap'/'BOOB Cap', 'JEET Cap'/'Jeet Cap'). `docs/TRAIT_REPORT.md` generated.
-- [ ] Sprites: `npm run data:sprites` running (resumable); size to report when done
+- [x] Sprites: all 1,969 built (256 px + 96 px thumbs), 41.7 MB, bgRemoved 1,295/1,969; others framed in a specimen jar
 
 ## Phase 1: deterministic core (done)
 - [x] Every real trait value maps to exactly one gene per slot. The gene distributions on the real manifest equal the §D4 counts exactly.
@@ -25,7 +25,7 @@
 - [x] Same deep link → identical mutant after reload and in a second browser context, also with A/B reversed
 - [x] Lab usable at 375 px (no horizontal scroll); missing art shows the fallback, no crash
 - [x] Reveal shows "from #A / from #B" and the gene for every inherited slot
-- [ ] Compositor tuning against ≥25 real sprites (after the download)
+- [x] 25-sprite survey recorded in DECISIONS.md; specimen jar added for kept backgrounds
 
 ## Phase 3: base fight
 Built: Phaser 3 arena (Arcade Physics), 1280×720 logical stage, main platform plus 3 pass-through platforms, blast zones 200 px out, move / jump / double jump / recovery / drop-through / fast fall, 3-hit punch combo, dash attack, damage %, knockback formula (§D7) with cap, hitstun, hitstop, hit flash, particles, knockback trail, screen shake on big hits, floating damage numbers, squash and stretch, run lean, synthesized fight SFX, 2 lives, 2 s respawn invulnerability, 120 s timer, time-out rules and sudden death at 150%, HUD, results (winner, KOs, damage dealt, time), rematch, Change parent, New experiment, notebook W–L. Bot: FSM (APPROACH/ATTACK/SPACE/RECOVER/EDGEGUARD) with Easy/Normal/Hard reaction times of 400/220/110 ms. Default opponent: a pair seeded by the UTC date.
