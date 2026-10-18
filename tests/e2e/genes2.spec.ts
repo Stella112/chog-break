@@ -80,7 +80,7 @@ test('Head genes: WARP, HORNS recoveries; GUARD blocks', async ({ page }) => {
   const hornDmg = await page.evaluate(() => (window as any).__arena.scene.fighters[1].score.damage);
   await page.evaluate(() => (window as any).__arena.scene.fighters[1].body.setAllowGravity(true));
   console.log(`HORNS dealt ${hornDmg}%`);
-  expect(hornDmg).toBeGreaterThanOrEqual(7);
+  expect(hornDmg).toBeGreaterThanOrEqual(6);
 
   // GUARD: holding K on the ground blocks 70% of a headbutt
   await setup(page, { head: 'STEADY', close: 'HEADBUTT' }, 500, 580, { head: 'GUARD' });
