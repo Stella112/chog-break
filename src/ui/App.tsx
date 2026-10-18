@@ -7,6 +7,7 @@ import { buildKit } from '../arena/kit';
 import { SECRET_PAIRS } from '../config/game';
 import { loadManifest, type Manifest } from '../data/manifest';
 import { isMuted, setMuted, sfx } from '../audio/sfx';
+import { isMusicMuted, music, setMusicMuted } from '../audio/music';
 import { readNotebook, recordDiscovery, recordResult } from '../state/notebook';
 import { needsJar, renderMutant } from '../art/mutantRenderer';
 import { SKIN_TINT } from '../config/geneInfo';
@@ -76,6 +77,7 @@ export function App() {
   const [isNew, setIsNew] = useState(false);
   const [labError, setLabError] = useState<string | null>(null);
   const [muted, setMutedState] = useState(isMuted());
+  const [musicOff, setMusicOff] = useState(isMusicMuted());
   const [revealsSeen, setRevealsSeen] = useState(0);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [mode, setMode] = useState<'bot' | '2p'>('bot');
@@ -86,6 +88,11 @@ export function App() {
   const [fightsStarted, setFightsStarted] = useState(0);
   const reducedMotion = useReducedMotion();
   const deepLinkHandled = useRef(false);
+
+  // Background music: driving loop in the arena, mellow lab loop everywhere else.
+  useEffect(() => {
+    music.setTrack(screen === 'arena' ? 'arena' : 'lab');
+  }, [screen]);
 
   const load = useCallback(() => {
     setLoadError(null);
@@ -263,6 +270,19 @@ export function App() {
           )}
           <button className="btn btn-ghost small" onClick={() => go('notebook')}>
             NOTEBOOK{notebookCount ? ` (${notebookCount})` : ''}
+          </button>
+          <button
+            className="btn btn-ghost small"
+            aria-pressed={musicOff}
+            aria-label="Mute music"
+            disabled={muted}
+            title={muted ? 'Sound is off' : undefined}
+            onClick={() => {
+              setMusicMuted(!musicOff);
+              setMusicOff(!musicOff);
+            }}
+          >
+            {musicOff || muted ? 'MUSIC OFF' : 'MUSIC ON'}
           </button>
           <button
             className="btn btn-ghost small"

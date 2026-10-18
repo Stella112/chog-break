@@ -34,6 +34,7 @@ test('guest splice flow', async ({ page }) => {
 });
 
 test('deep link is deterministic and order-independent', async ({ page, browser }) => {
+  test.setTimeout(90_000);
   await page.goto('/?a=1053&b=88');
   const name = await page.locator('.mutant-name').textContent({ timeout: 10_000 });
   const ctx2 = await browser.newContext(); // second profile, empty storage

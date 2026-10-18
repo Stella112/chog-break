@@ -15,8 +15,15 @@ let muted = (() => {
 })();
 
 export const isMuted = () => muted;
+const muteListeners = new Set<(m: boolean) => void>();
+export const onMuteChange = (fn: (m: boolean) => void) => {
+  muteListeners.add(fn);
+  return () => muteListeners.delete(fn);
+};
+
 export function setMuted(m: boolean) {
   muted = m;
+  muteListeners.forEach((fn) => fn(m));
   try {
     localStorage.setItem(MUTE_KEY, m ? '1' : '0');
   } catch {
@@ -67,6 +74,16 @@ function audio(): AudioContext | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Shared audio graph for the music engine. Returns null while SOUND is muted
+ * (music obeys the master mute) or before the browser allows audio.
+ */
+export function audioGraph(): { ctx: AudioContext; master: GainNode; reverb: GainNode; noise: AudioBuffer } | null {
+  const a = audio();
+  if (!a || !master || !reverbIn || !noiseBuf) return null;
+  return { ctx: a, master, reverb: reverbIn, noise: noiseBuf };
 }
 
 /** Small random detune so repeated sounds don't feel robotic. */

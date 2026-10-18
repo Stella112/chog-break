@@ -118,3 +118,17 @@ test('reduced motion: reveal is a short crossfade with no flash or lightning', a
   expect(await page.locator('.arcs').count()).toBe(0);
   await ctx.close();
 });
+
+test('music toggle persists across reloads and SOUND OFF disables it', async ({ page }) => {
+  await page.goto('/');
+  const musicBtn = page.getByRole('button', { name: 'Mute music' });
+  await expect(musicBtn).toHaveText('MUSIC ON');
+  await musicBtn.click();
+  await expect(musicBtn).toHaveText('MUSIC OFF');
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Mute music' })).toHaveText('MUSIC OFF');
+  await page.getByRole('button', { name: 'Mute music' }).click();
+  await page.getByRole('button', { name: 'Mute sound' }).click();
+  await expect(page.getByRole('button', { name: 'Mute music' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Mute music' })).toHaveText('MUSIC OFF');
+});
