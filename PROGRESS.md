@@ -153,6 +153,15 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - Balance after polish + fix (300 matches): first run FAILED on BUBBLE 68.6% (n=51) → BUBBLE shield 1.2 → 1.0 s and cooldown 4 → 5.5 s; LEECH heal 25 → 15%, cooldown 4 → 5 s. Re-run PASSES (no gene with n ≥ 30 above 65%; the high rates left are small samples: TOXIC/SHIV n=10, UNDEAD n=19, LASER SHOW n=14).
 - Full e2e: 29/29 pass (bot recovery 10/10, 60 fps).
 
+## Feel pass 2 (Maris, after playing: "I don't even know how to play, and it looks like moving static pictures")
+- **Animated fighters** (`src/arena/rig.ts`): the spliced mutant is cropped into a round portrait head on a code-drawn body tinted by both parents' skins, with a player-colour belt, legs and fists. Idle breathing, run cycle with leg and fist swing, jump tuck, landing squash, dash stretch, jab / cross / uppercut punches, guard pose, head wobble in hitstun, tumble spin on big launches, hit flash. Drawn 25% larger than the hitbox; physics unchanged. Headless sims skip the rig.
+- **Learn while playing:**
+  - Home: "1 Pick two Chogs · 2 Splice · 3 Fight" strip.
+  - Pre-match: HOW TO WIN (3 lines) + a visual keyboard (move keys cyan, punch/dash white, gene keys yellow and labelled with this mutant's actual moves, e.g. L = BEAM, I = HEADBUTT). The old controls table was removed.
+  - First fight: a step-by-step coach (`src/arena/coach.ts`): A/D → W double jump → J combo → L special → I close move → K dash → knock them off. Each step clears when done (or after 9 s); shows "HOW TO PLAY n/7".
+  - Bot grace period: in the first coached fight the bot wanders and does not attack for 8 s.
+- **Rule fix:** blast zones are now checked right after the physics step and before fighters act. Previously a bot past the line could BLINK back out on the same frame (found by the forced-KO e2e tests).
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 

@@ -108,8 +108,8 @@ test('Passives: element, trinket, affinity, head', async ({ page }) => {
 
   // REGEN heals over time
   await setup(page, { affinity: 'NORMAL', trinket: 'REGEN' }, 400, 1000);
-  await page.waitForTimeout(2300);
-  expect((await state(page)).fighters[0]!.damage).toBeLessThan(30);
+  // heals 1% every 3 s (Phase 6 tuning)
+  await page.waitForFunction(() => (window as any).__arena.state().fighters[0].damage < 30, null, { timeout: 5000 });
 
   // FWOG spawns a frog within 6 s that damages the opponent
   await setup(page, { trinket: 'FWOG' }, 500, 800);

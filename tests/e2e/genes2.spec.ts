@@ -139,8 +139,8 @@ test('More passives: GUST, SHOCK, DUMP, SHIV, BLOOM, UNDEAD', async ({ page }) =
   // BLOOM heals over time
   await setup(page, { element: 'BLOOM' }, 400, 1000);
   await page.evaluate(() => ((window as any).__arena.scene.fighters[0].score.damage = 30));
-  await page.waitForTimeout(2300);
-  expect(await page.evaluate(() => (window as any).__arena.scene.fighters[0].score.damage)).toBeLessThan(30);
+  // heals 1% every 3 s (Phase 6 tuning)
+  await page.waitForFunction(() => (window as any).__arena.scene.fighters[0].score.damage < 30, null, { timeout: 5000 });
 
   // DUMP shrinks within 10 s
   await setup(page, { element: 'NONE', trinket: 'DUMP' }, 400, 1000);
