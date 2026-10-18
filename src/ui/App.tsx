@@ -87,6 +87,10 @@ export function App() {
     if (!manifest || deepLinkHandled.current) return;
     deepLinkHandled.current = true;
     const p = new URLSearchParams(location.search);
+    if (p.get('view') === 'notebook') {
+      setScreen('notebook');
+      return;
+    }
     const qa = p.get('a');
     const qb = p.get('b');
     if (qa === null && qb === null) return;
@@ -110,7 +114,8 @@ export function App() {
 
   const go = (s: Screen) => {
     sfx.click();
-    if (s === 'home' || s === 'notebook') setUrl(null);
+    if (s === 'home' || s === 'lab') setUrl(null);
+    if (s === 'notebook') setUrl({ view: 'notebook' });
     if (screen === 'reveal') setRevealsSeen((n) => n + 1);
     setScreen(s);
   };

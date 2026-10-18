@@ -16,7 +16,7 @@
 ### Phase 0 acceptance
 - [x] `npm run build`, `typecheck`, `lint` and `test` pass on the scaffold (10 tests)
 - [x] `docs/CHAIN_CHECK.md` exists. Every automatable §C2 row passes. MANUAL rows: burn source, fee-on-transfer (Reviewer fork test), explorer docs.
-- [ ] `public/data/chogs.json` has 1,969 records and matches §C3 (pending the fetch)
+- [x] `public/data/chogs.json` has 1,969 records and matches §C3: tiers 1279/590/60/30/10, presence counts and distinct values all pass. Note: §C3 counts raw spellings, so Head has 66 raw values and 64 normalized ('Boob Cap'/'BOOB Cap', 'JEET Cap'/'Jeet Cap'); the validator compares raw counts. `TRAIT_REPORT.md` generated.
 - [ ] Sprites built and size reported
 
 ## Working
@@ -34,8 +34,16 @@
 ## Phase 1 (started early, allowed by §E): deterministic core
 - Done: pair/pairKey, sfc32 streams, gene tables for every slot, splice (createMutant), the 16 recipes (P1 tier off by default), naming, unstable, arena rules, power budget.
 - Tests pass: order independence (1,000 pairs), tier changes no stat, power budget over all 3.6M gene combos (range −1..+5), recipe order independence, unstable ≈5%, arena rules order-independent and capped at 3.
-- Waiting on the real manifest: `tests/unit/manifest.test.ts` (gene distributions must equal the §D4 counts, ≥1 real pair per recipe, snapshot of 20 pairs) is skipped until chogs.json is complete.
-- Still to do: RECIPE_EXAMPLES.md, curated pairs in config/game.ts, gene and recipe sections in TRAIT_REPORT.
+- Real-manifest checks pass: every gene distribution equals the §D4 counts exactly; every recipe has a resolving real pair; the 20-pair stability snapshot is recorded.
+- All 16 recipe pair counts equal the spec exactly (docs/RECIPE_EXAMPLES.md). The 8 P0 example pairs are in `src/config/secretPairs.json` and power TRY A SECRET MUTATION.
+
+### Phase 1 acceptance
+- [x] Every real trait value maps to exactly one gene per slot (distribution test on the real manifest)
+- [x] createMutant(A,B) deep-equals createMutant(B,A) for 1,000 seeded pairs; 20-pair snapshot
+- [x] pairKey vectors file created; Vitest parity passes (Foundry side: Reviewer)
+- [x] Power budget passes over every combination; Tier never affects stats
+- [x] Every recipe has ≥1 real pair; counts in TRAIT_REPORT; RECIPE_EXAMPLES.md; curated pairs
+- [x] Core purity (lint rule + test)
 - Decision: sfc32 discards 12 outputs after seeding (deterministic warm-up).
 
 ## Phase 2 (in progress): the Lab
@@ -46,7 +54,7 @@
 - Not done yet: Playwright e2e, the second-profile deep-link check, compositor tuning against real sprites (needs ≥25 sprites inspected).
 
 ## Next
-- Finish the manifest, run validation (any mismatch = STOP 6), then the trait report, recipe examples and sprites.
+- Sprites downloading (`npm run data:sprites`), then inspect 25 sprites and tune the compositor.
 - Phase 2: compositor tuning with real sprites, then Playwright.
 
 ## Unverified facts (all in `src/config/chain.ts`)
