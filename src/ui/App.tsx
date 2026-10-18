@@ -338,7 +338,7 @@ export function App() {
                   <li>
                     <span className="step-n">1</span>
                     <strong>PICK TWO CHOGS</strong>
-                    <span>Any of the 1,969 real Chog NFTs.</span>
+                    <span>Any of the 1,969 real Chogs.</span>
                   </li>
                   <li>
                     <span className="step-n">2</span>

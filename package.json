@@ -18,7 +18,8 @@
     "data:verify": "tsx scripts/verify-chain.ts",
     "data:manifest": "tsx scripts/build-manifest.ts",
     "data:report": "tsx scripts/trait-report.ts",
-    "data:sprites": "tsx scripts/build-sprites.ts"
+    "data:sprites": "tsx scripts/build-sprites.ts",
+    "docs:check": "tsx scripts/docs-check.ts"
   },
   "dependencies": {
     "phaser": "3.90.0",

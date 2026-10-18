@@ -144,3 +144,81 @@ test('P1 recipe perks: LASER SHOW, GOLDEN BULL, BEAR MARKET', async ({ page }) =
   });
   expect(dealt).toBeCloseTo(10.5, 1);
 });
+
+test('remaining P1 recipe perks: SKULL & BONES, SHARK WEEK, HONK LORD, DOUBLE RAINBOW', async ({ page }) => {
+  test.setTimeout(120_000);
+  await arena(page, '/?a=18&b=66&fight=1&test=1');
+  const reset = (kit: Record<string, unknown>, x0: number, x1: number) =>
+    page.evaluate(
+      ([kit, x0, x1]) => {
+        const A = (window as any).__arena;
+        A.idle(0, x0);
+        A.idle(1, x1);
+        A.setKit(0, kit);
+        for (const f of A.scene.fighters) {
+          f.score.damage = 0;
+          f.state = 'free';
+          f.action = null;
+          f.invulnUntil = 0;
+          f.bubbleUntil = 0;
+          f.body.setVelocity(0, 0);
+        }
+        A.scene.fighters[0].facing = 1;
+        for (const s of A.scene.sources) s.graceUntil = 0;
+      },
+      [kit, x0, x1] as const,
+    );
+
+  // SKULL & BONES: the combo ender launches nearly straight up (80°) instead of 38°
+  const ender = async (recipe: string | null) => {
+    await reset({ recipe }, 560, 620);
+    await page.waitForTimeout(300);
+    return page.evaluate(() => {
+      const A = (window as any).__arena;
+      const [me, foe] = A.scene.fighters;
+      me.attackStart = A.scene.time.now - 100;
+      me.attackId = 'punch3';
+      me.state = 'attack';
+      me.attackHit = false;
+      me.tryMelee({ damage: 8, base: 360, scaling: 8, angleDeg: 38, startupMs: 90, activeMs: 90, recoveryMs: 240, box: { x: 58, y: -10, w: 70, h: 52 }, hitstunMs: 380, hitstopMs: 0 }, foe, true);
+      return Math.atan2(-foe.body.velocity.y, Math.abs(foe.body.velocity.x)) * (180 / Math.PI);
+    });
+  };
+  const plain = await ender(null);
+  const skull = await ender('SKULL_AND_BONES');
+  console.log(`combo-ender launch angle: plain ${plain.toFixed(0)}°, SKULL & BONES ${skull.toFixed(0)}°`);
+  expect(skull).toBeGreaterThan(plain + 25);
+
+  // SHARK WEEK: the drool puddle also bites
+  await reset({ close: 'DROOL', recipe: 'SHARK_WEEK' }, 500, 1000);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => (window as any).__arena.press(0, 'close'));
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => (window as any).__arena.state().entities.zones)).toEqual(expect.arrayContaining(['puddle', 'bite']));
+
+  // HONK LORD: honk stun lasts 0.2 s longer
+  const honkStun = async (recipe: string | null) => {
+    await reset({ close: 'HONK', recipe }, 560, 640);
+    await page.waitForTimeout(300);
+    await page.evaluate(() => (window as any).__arena.press(0, 'close'));
+    await page.waitForTimeout(60);
+    return page.evaluate(() => (window as any).__arena.scene.fighters[1].stateUntil - (window as any).__arena.scene.time.now);
+  };
+  const honk = await honkStun(null);
+  const lord = await honkStun('HONK_LORD');
+  console.log(`honk stun left: plain ${Math.round(honk)} ms, HONK LORD ${Math.round(lord)} ms`);
+  expect(lord - honk).toBeGreaterThan(120);
+
+  // DOUBLE RAINBOW: the puke cone reaches further (hits at 190 px, plain does not)
+  const pukeAt = async (recipe: string | null) => {
+    await reset({ close: 'PUKE', recipe }, 500, 690);
+    await page.waitForTimeout(300);
+    await page.evaluate(() => (window as any).__arena.press(0, 'close'));
+    await page.waitForTimeout(600);
+    return page.evaluate(() => (window as any).__arena.scene.fighters[1].score.damage);
+  };
+  const shortPuke = await pukeAt(null);
+  const longPuke = await pukeAt('DOUBLE_RAINBOW');
+  console.log(`puke at 190 px: plain ${shortPuke}%, DOUBLE RAINBOW ${longPuke}%`);
+  expect(longPuke).toBeGreaterThan(shortPuke);
+});

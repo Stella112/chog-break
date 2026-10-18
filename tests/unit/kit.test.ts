@@ -42,6 +42,10 @@ describe('kit', () => {
       if (p.recipe === 'ESCAPE_VELOCITY') expect(k.maxJumps).toBe(3);
       if (p.recipe === 'KING_BEAM') expect(k.special).toBe('BEAM');
       if (p.recipe === 'FWOG_LORD') expect(k.trinket).toBe('FWOG');
+      if (p.recipe === 'BTC_MAXI') {
+        const plain = buildKit({ ...mutant(p.a, p.b), recipe: undefined });
+        expect(k.profile.speed).toBeCloseTo(plain.profile.speed * 1.1);
+      }
     }
   });
 
