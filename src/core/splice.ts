@@ -1,4 +1,6 @@
-// §D3/§D4: createMutant(A, B) — pure, order-independent, stable forever for CORE_VERSION 1.
+// §D3/§D4: createMutant(A, B) — pure, order-independent, and stable forever per CORE_VERSION.
+// v2 (P-1, approved by Maris 2026-10-19): the parent that gave the inherited Head is the top half
+// of the art, so the picture matches the "from #A / from #B" labels. v1 stays reproducible.
 import type { Hex } from 'viem';
 import {
   accessoryGene,
@@ -18,7 +20,8 @@ import { streamFor } from './rng';
 import { NONE, type NormalizedTraits } from './types';
 import { isUnstable } from './unstable';
 
-export const CORE_VERSION = 1;
+export const CORE_VERSION = 2;
+export type CoreVersion = 1 | 2;
 
 export const INHERITED_SLOTS = ['Eyes', 'Head', 'Mouth', 'Body', 'Base', 'Accessory', 'Aura'] as const;
 export type InheritedSlot = (typeof INHERITED_SLOTS)[number];
@@ -70,10 +73,13 @@ export function createMutant({
   parentA,
   parentB,
   recipeTiers = ['P0', 'P1'],
+  version = CORE_VERSION,
 }: {
   parentA: Parent;
   parentB: Parent;
   recipeTiers?: readonly RecipeTier[];
+  /** Reproduce an older algorithm version (default: current). */
+  version?: CoreVersion;
 }): Mutant {
   const { lo, hi, pairKey } = makePair(parentA.tokenId, parentB.tokenId);
   const pLo = parentA.tokenId === lo ? parentA : parentB;
@@ -118,7 +124,9 @@ export function createMutant({
 
   const v = streamFor(pairKey, 'visual');
   const baseIsLo = v.bit() === 0;
-  const topIsLo = v.bit() === 0;
+  const topIsLoV1 = v.bit() === 0; // always drawn so the visual stream is identical in v1 and v2
+  // v2: the Head's parent is on top (falls back to the stream when neither parent has a Head).
+  const topIsLo = version >= 2 && inherited.Head.value !== NONE ? inherited.Head.from === lo : topIsLoV1;
   const seamY = 0.4 + v.next() * 0.2;
   const seamJags = Array.from({ length: 9 }, () => v.next() * 2 - 1);
   const glitchBands = Array.from({ length: 3 + v.int(3) }, (): [number, number, number] => [
@@ -130,7 +138,7 @@ export function createMutant({
   const glitchIntensity = Math.max(TIER_GLITCH[pLo.traits.Tier] ?? 0.15, TIER_GLITCH[pHi.traits.Tier] ?? 0.15);
 
   return {
-    coreVersion: CORE_VERSION,
+    coreVersion: version,
     pairKey,
     lo,
     hi,

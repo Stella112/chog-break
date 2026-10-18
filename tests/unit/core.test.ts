@@ -100,6 +100,35 @@ describe('createMutant', () => {
       }
     }
   });
+  it('v2 (P-1): the parent that gave the Head is the top half of the art', () => {
+    let checked = 0;
+    for (let i = 0; i < 1000; i++) {
+      const [a, b] = randomPair();
+      const m = createMutant({ parentA: a, parentB: b });
+      expect(m.coreVersion).toBe(2);
+      if (m.inherited.Head.value !== NONE) {
+        expect(m.visualRecipe.topParent).toBe(m.inherited.Head.from);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(500);
+  });
+  it('v1 stays reproducible and differs from v2 only in topParent', () => {
+    let differs = 0;
+    for (let i = 0; i < 300; i++) {
+      const [a, b] = randomPair();
+      const v1 = createMutant({ parentA: a, parentB: b, version: 1 });
+      const v2 = createMutant({ parentA: a, parentB: b });
+      expect(v1).toEqual(createMutant({ parentA: b, parentB: a, version: 1 }));
+      expect({ ...v1, coreVersion: 0, visualRecipe: { ...v1.visualRecipe, topParent: 0 } }).toEqual({
+        ...v2,
+        coreVersion: 0,
+        visualRecipe: { ...v2.visualRecipe, topParent: 0 },
+      });
+      if (v1.visualRecipe.topParent !== v2.visualRecipe.topParent) differs++;
+    }
+    expect(differs).toBeGreaterThan(0);
+  });
   it('stays inside visual bounds', () => {
     for (let i = 0; i < 300; i++) {
       const [a, b] = randomPair();

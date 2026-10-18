@@ -29,3 +29,7 @@
 - **2P notebook rule:** local 2P matches don't change the mutant's W–L record (the record is "your mutant vs the lab bot").
 - **Lethality tuning (polish pass):** `KNOCKBACK.unit` 1.2 and `TUNING.hitstunDrag` 420. Measured with the headless sim (Hard bots, 20 matches): lives lost per 120 s went 0.85 → 1.8. The "no unavoidable kill below ~60%" rule is checked physically: travel = vx² / (2 · drag) < 840 px for every base move at 60% on a weight-1 target.
 - **HUD as an overlay scene:** a zooming arena camera would scale and move a same-scene HUD, so the HUD is a separate Phaser scene launched alongside the arena.
+
+## 2026-10-19
+
+- **P-1 approved → CORE_VERSION 2:** §D6 picked the art's top parent from the "visual" stream; Maris approved putting the parent that gave the inherited **Head** on top, so the picture matches the reveal labels. The visual-stream bit is still drawn (the stream is identical in v1 and v2); when neither parent has a Head the stream decides. `createMutant({ version: 1 })` reproduces v1 output exactly, per §D3 ("bump CORE_VERSION and keep v1 reproducible"). Genes, names, recipes and arena rules are unchanged between versions.

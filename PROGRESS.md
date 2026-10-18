@@ -217,7 +217,7 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 
 ## Proposals
 - ~~P-2, background music~~: **approved by Maris (2026-10-18) and built**; see below.
-- **P-1, mutant art matches the genes:** §D6 picks the top/bottom parent of the art from the "visual" stream, independent of inheritance. So a KING BEAM can show parent A's wizard hat while the gene table says the head (Crown) came from parent B. Proposal: put the parent that gave the inherited **Head** on top (fall back to the visual stream when Head is `none`), so the picture matches "from #A / from #B". Needs Maris's OK because it changes §D6 wording.
+- ~~P-1, mutant art matches the genes~~: **approved by Maris (2026-10-19) and built** as core v2: the parent that gave the inherited Head is the top half of the art (falls back to the visual stream when neither parent has a Head). `CORE_VERSION` 1 → 2; `createMutant({ version: 1 })` still reproduces v1 exactly (unit test: v1 and v2 differ only in `visualRecipe.topParent`). Checked on KING BEAM: the crown parent is on top and the laser beam from the other parent still shows below the seam.
 
 ## Do not touch
 - `contracts/**`, `docs/REVIEW.md`, `docs/SECURITY.md`, `tests/review/**` (Reviewer-owned)
