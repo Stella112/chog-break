@@ -5,10 +5,20 @@ import { expect, test, type Page } from '@playwright/test';
 async function arena(page: Page, url = '/?a=18&b=66&fight=1&test=1') {
   await page.goto(url);
   await page.getByRole('button', { name: 'FIGHT ▸' }).click();
-  await page.waitForFunction(() => (window as any).__arena?.state().live === true, null, { timeout: 15_000 });
+  await page.waitForFunction(() => (window as any).__arena?.state().live === true, null, {
+    timeout: 15_000,
+  });
+  // The default opponent is seeded by the UTC date; neutralise its element so gene checks don't depend on the day.
+  await page.evaluate(() => (window as any).__arena.setKit(1, { element: 'NONE' }));
 }
 
-async function setup(page: Page, kit: Record<string, unknown>, x0 = 500, x1 = 640, foeKit: Record<string, unknown> = {}) {
+async function setup(
+  page: Page,
+  kit: Record<string, unknown>,
+  x0 = 500,
+  x1 = 640,
+  foeKit: Record<string, unknown> = {},
+) {
   await page.evaluate(
     ([kit, x0, x1, foeKit]) => {
       const A = (window as any).__arena;
@@ -34,8 +44,9 @@ async function setup(page: Page, kit: Record<string, unknown>, x0 = 500, x1 = 64
   await page.waitForTimeout(500);
 }
 
-const ev = <T,>(page: Page, fn: () => T) => page.evaluate(fn);
-const press = (page: Page, key: string, i = 0) => page.evaluate(([k, i]) => (window as any).__arena.press(i, k), [key, i] as const);
+const ev = <T>(page: Page, fn: () => T) => page.evaluate(fn);
+const press = (page: Page, key: string, i = 0) =>
+  page.evaluate(([k, i]) => (window as any).__arena.press(i, k), [key, i] as const);
 const S = () => (window as any).__arena.scene;
 
 test.describe.configure({ mode: 'serial' });
@@ -56,7 +67,23 @@ test('Head genes: WARP, HORNS recoveries; GUARD blocks', async ({ page }) => {
   await page.evaluate(() => {
     const A = (window as any).__arena;
     const src = A.scene.sources[0];
-    A.scene.sources[0] = { read: () => ((A.scene.sources[0] = src), { left: false, right: true, down: false, jump: true, punch: false, dash: false, special: false, close: false, dashHeld: false, closeHeld: false }) };
+    A.scene.sources[0] = {
+      read: () => (
+        (A.scene.sources[0] = src),
+        {
+          left: false,
+          right: true,
+          down: false,
+          jump: true,
+          punch: false,
+          dash: false,
+          special: false,
+          close: false,
+          dashHeld: false,
+          closeHeld: false,
+        }
+      ),
+    };
   });
   await page.waitForTimeout(60);
   const y1 = await page.evaluate(() => (window as any).__arena.scene.fighters[0].y);
@@ -74,7 +101,23 @@ test('Head genes: WARP, HORNS recoveries; GUARD blocks', async ({ page }) => {
     foe.body.setAllowGravity(false);
     const A = (window as any).__arena;
     const src = A.scene.sources[0];
-    A.scene.sources[0] = { read: () => ((A.scene.sources[0] = src), { left: false, right: false, down: false, jump: true, punch: false, dash: false, special: false, close: false, dashHeld: false, closeHeld: false }) };
+    A.scene.sources[0] = {
+      read: () => (
+        (A.scene.sources[0] = src),
+        {
+          left: false,
+          right: false,
+          down: false,
+          jump: true,
+          punch: false,
+          dash: false,
+          special: false,
+          close: false,
+          dashHeld: false,
+          closeHeld: false,
+        }
+      ),
+    };
   });
   await page.waitForTimeout(350);
   const hornDmg = await page.evaluate(() => (window as any).__arena.scene.fighters[1].score.damage);
@@ -87,10 +130,40 @@ test('Head genes: WARP, HORNS recoveries; GUARD blocks', async ({ page }) => {
   await page.evaluate(() => {
     const A = (window as any).__arena;
     A.scene.fighters[1].facing = -1;
-    A.scene.sources[1] = { read: () => ({ left: false, right: false, down: false, jump: false, punch: false, dash: false, special: false, close: false, dashHeld: true, closeHeld: false }) };
+    A.scene.sources[1] = {
+      read: () => ({
+        left: false,
+        right: false,
+        down: false,
+        jump: false,
+        punch: false,
+        dash: false,
+        special: false,
+        close: false,
+        dashHeld: true,
+        closeHeld: false,
+      }),
+    };
   });
   await page.waitForTimeout(300);
-  console.log('guard pre', JSON.stringify(await page.evaluate(() => { const f = (window as any).__arena.scene.fighters[1]; return { b: f.blocking, st: f.state, g: f.grounded, y: Math.round(f.y), vy: Math.round(f.body.velocity.y), grav: f.body.allowGravity, bd: f.body.blocked.down, td: f.body.touching.down }; })));
+  console.log(
+    'guard pre',
+    JSON.stringify(
+      await page.evaluate(() => {
+        const f = (window as any).__arena.scene.fighters[1];
+        return {
+          b: f.blocking,
+          st: f.state,
+          g: f.grounded,
+          y: Math.round(f.y),
+          vy: Math.round(f.body.velocity.y),
+          grav: f.body.allowGravity,
+          bd: f.body.blocked.down,
+          td: f.body.touching.down,
+        };
+      }),
+    ),
+  );
   await press(page, 'close');
   await page.waitForTimeout(500);
   const guarded = await page.evaluate(() => (window as any).__arena.scene.fighters[1].score.damage);
@@ -106,7 +179,9 @@ test('More passives: GUST, SHOCK, DUMP, SHIV, BLOOM, UNDEAD', async ({ page }) =
   await setup(page, { element: 'GUST' }, 500, 600);
   await press(page, 'dash');
   await page.waitForTimeout(40);
-  const pushed = await page.evaluate(() => Math.abs((window as any).__arena.scene.fighters[1].body.velocity.x));
+  const pushed = await page.evaluate(() =>
+    Math.abs((window as any).__arena.scene.fighters[1].body.velocity.x),
+  );
   console.log(`GUST push ${Math.round(pushed)} px/s`);
   expect(pushed).toBeGreaterThan(150); // 520 px/s at launch, minus ground friction before we sample
 
@@ -124,7 +199,16 @@ test('More passives: GUST, SHOCK, DUMP, SHIV, BLOOM, UNDEAD', async ({ page }) =
     const t = await page.evaluate(async (el) => {
       const sc = (window as any).__arena.scene;
       const [f, foe] = sc.fighters;
-      const spec = { damage: 8, base: 360, scaling: 8, angleDeg: 38, hitstunMs: 380, hitstopMs: 0, kind: 'melee', comboEnder: true };
+      const spec = {
+        damage: 8,
+        base: 360,
+        scaling: 8,
+        angleDeg: 38,
+        hitstunMs: 380,
+        hitstopMs: 0,
+        kind: 'melee',
+        comboEnder: true,
+      };
       f.kit.element = el;
       sc.hit(f, foe, spec, 1);
       return foe.stateUntil - sc.time.now;
@@ -140,11 +224,19 @@ test('More passives: GUST, SHOCK, DUMP, SHIV, BLOOM, UNDEAD', async ({ page }) =
   await setup(page, { element: 'BLOOM' }, 400, 1000);
   await page.evaluate(() => ((window as any).__arena.scene.fighters[0].score.damage = 30));
   // heals 1% every 3 s (Phase 6 tuning)
-  await page.waitForFunction(() => (window as any).__arena.scene.fighters[0].score.damage < 30, null, { timeout: 5000 });
+  await page.waitForFunction(
+    () => (window as any).__arena.scene.fighters[0].score.damage < 30,
+    null,
+    { timeout: 5000 },
+  );
 
   // DUMP shrinks within 10 s
   await setup(page, { element: 'NONE', trinket: 'DUMP' }, 400, 1000);
-  await page.waitForFunction(() => (window as any).__arena.state().fighters[0].size === 'shrink', null, { timeout: 12_000 });
+  await page.waitForFunction(
+    () => (window as any).__arena.state().fighters[0].size === 'shrink',
+    null,
+    { timeout: 12_000 },
+  );
 
   // UNDEAD: first blast-zone exit revives at 60% without losing a life
   await setup(page, { trinket: 'NONE', affinity: 'UNDEAD' }, 400, 1000);
@@ -166,7 +258,11 @@ test('P0 recipe perks', async ({ page }) => {
   // KING BEAM pierces a BUBBLE shield; a normal beam does not
   const beamThroughBubble = async (recipe: string | undefined) => {
     await setup(page, { special: 'BEAM', recipe }, 500, 900);
-    await page.evaluate(() => ((window as any).__arena.scene.fighters[1].bubbleUntil = (window as any).__arena.scene.time.now + 5000));
+    await page.evaluate(
+      () =>
+        ((window as any).__arena.scene.fighters[1].bubbleUntil =
+          (window as any).__arena.scene.time.now + 5000),
+    );
     await press(page, 'special');
     await page.waitForTimeout(700);
     return page.evaluate(() => (window as any).__arena.scene.fighters[1].score.damage);
@@ -191,7 +287,23 @@ test('P0 recipe perks', async ({ page }) => {
     const f = A.scene.fighters[0];
     const tap = () => {
       const src = A.scene.sources[0];
-      A.scene.sources[0] = { read: () => ((A.scene.sources[0] = src), { left: false, right: false, down: false, jump: true, punch: false, dash: false, special: false, close: false, dashHeld: false, closeHeld: false }) };
+      A.scene.sources[0] = {
+        read: () => (
+          (A.scene.sources[0] = src),
+          {
+            left: false,
+            right: false,
+            down: false,
+            jump: true,
+            punch: false,
+            dash: false,
+            special: false,
+            close: false,
+            dashHeld: false,
+            closeHeld: false,
+          }
+        ),
+      };
     };
     for (let i = 0; i < 3; i++) {
       tap();
@@ -210,28 +322,87 @@ test('P0 recipe perks', async ({ page }) => {
     f.jumpsUsed = 2;
     f.recoveryUsed = false;
     const src = A.scene.sources[0];
-    A.scene.sources[0] = { read: () => ((A.scene.sources[0] = src), { left: false, right: true, down: false, jump: true, punch: false, dash: false, special: false, close: false, dashHeld: false, closeHeld: false }) };
+    A.scene.sources[0] = {
+      read: () => (
+        (A.scene.sources[0] = src),
+        {
+          left: false,
+          right: true,
+          down: false,
+          jump: true,
+          punch: false,
+          dash: false,
+          special: false,
+          close: false,
+          dashHeld: false,
+          closeHeld: false,
+        }
+      ),
+    };
   });
   await page.waitForTimeout(100);
-  expect(await page.evaluate(() => (window as any).__arena.state().entities.zones)).toContain('rune');
+  expect(await page.evaluate(() => (window as any).__arena.state().entities.zones)).toContain(
+    'rune',
+  );
 
   // THE NAKED KING: hold I for 1 s → super armor (no knockback)
   await setup(page, { recipe: 'THE_NAKED_KING', head: 'ROYAL', close: 'HEADBUTT' }, 500, 1000);
   await page.evaluate(() => {
     const A = (window as any).__arena;
-    A.scene.sources[0] = { read: () => ({ left: false, right: false, down: false, jump: false, punch: false, dash: false, special: false, close: false, dashHeld: false, closeHeld: true }) };
+    A.scene.sources[0] = {
+      read: () => ({
+        left: false,
+        right: false,
+        down: false,
+        jump: false,
+        punch: false,
+        dash: false,
+        special: false,
+        close: false,
+        dashHeld: false,
+        closeHeld: true,
+      }),
+    };
   });
   await page.waitForTimeout(1200);
-  expect(await page.evaluate(() => (window as any).__arena.scene.fighters[0].superArmorUntil > (window as any).__arena.scene.time.now)).toBe(true);
+  expect(
+    await page.evaluate(
+      () =>
+        (window as any).__arena.scene.fighters[0].superArmorUntil >
+        (window as any).__arena.scene.time.now,
+    ),
+  ).toBe(true);
 
   // FWOG LORD: two frogs
   await setup(page, { recipe: 'FWOG_LORD', trinket: 'FWOG' }, 400, 1100);
-  await page.evaluate(() => (window as any).__arena.scene.sources[0] = { read: () => ({ left: false, right: false, down: false, jump: false, punch: false, dash: false, special: false, close: false, dashHeld: false, closeHeld: false }) });
-  await page.waitForFunction(() => (window as any).__arena.state().entities.frogs >= 2, null, { timeout: 9000 });
+  await page.evaluate(
+    () =>
+      ((window as any).__arena.scene.sources[0] = {
+        read: () => ({
+          left: false,
+          right: false,
+          down: false,
+          jump: false,
+          punch: false,
+          dash: false,
+          special: false,
+          close: false,
+          dashHeld: false,
+          closeHeld: false,
+        }),
+      }),
+  );
+  await page.waitForFunction(() => (window as any).__arena.state().entities.frogs >= 2, null, {
+    timeout: 9000,
+  });
 
   // VOLATILITY: grows or shrinks within 5 s
   await setup(page, { recipe: 'VOLATILITY', trinket: 'PUMP' }, 400, 1100);
-  await page.waitForFunction(() => (window as any).__arena.state().fighters[0].size !== 'none', null, { timeout: 7000 });
+  await page.waitForFunction(
+    () => (window as any).__arena.state().fighters[0].size !== 'none',
+    null,
+    { timeout: 7000 },
+  );
 
   // NUCLEAR UNDEAD: revive bursts the nearby opponent
   await setup(page, { recipe: 'NUCLEAR_UNDEAD', affinity: 'UNDEAD', trinket: 'NONE' }, 640, 700);
@@ -248,7 +419,10 @@ test('P0 recipe perks', async ({ page }) => {
 
 test('P0 arena modifiers: telegraph, effect', async ({ page }) => {
   test.setTimeout(120_000);
-  await arena(page, '/?a=18&b=66&fight=1&test=1&mods=TOXIC_FLOOR,SLIPPERY_FLOOR,UNSTABLE_KNOCKBACK');
+  await arena(
+    page,
+    '/?a=18&b=66&fight=1&test=1&mods=TOXIC_FLOOR,SLIPPERY_FLOOR,UNSTABLE_KNOCKBACK',
+  );
   const mods = await page.evaluate(() => (window as any).__arena.state().mods);
   expect(mods).toMatchObject({ gravity: 1, friction: 0.3, kb: 1.35 });
   // TOXIC FLOOR: a segment arms (telegraph) within ~3 s, then hurts a fighter standing on it
@@ -257,10 +431,19 @@ test('P0 arena modifiers: telegraph, effect', async ({ page }) => {
     A.idle(0, 300);
     A.idle(1, 1000);
   });
-  await page.waitForFunction(() => (window as any).__arena.state().entities.zones.includes('floor-toxic'), null, { timeout: 5000 });
+  await page.waitForFunction(
+    () => (window as any).__arena.state().entities.zones.includes('floor-toxic'),
+    null,
+    { timeout: 5000 },
+  );
   const zone = await page.evaluate(() => {
     const z = (window as any).__arena.scene.zones.find((z: any) => z.o.kind === 'floor-toxic');
-    return { x: z.rect.x, w: z.rect.width, armedIn: z.activeAt - (window as any).__arena.scene.time.now, dieIn: z.dieAt - (window as any).__arena.scene.time.now };
+    return {
+      x: z.rect.x,
+      w: z.rect.width,
+      armedIn: z.activeAt - (window as any).__arena.scene.time.now,
+      dieIn: z.dieAt - (window as any).__arena.scene.time.now,
+    };
   });
   expect(zone.armedIn).toBeGreaterThan(500); // visible telegraph before it hurts
   // Park on the glowing segment and make sure we are standing on the main floor (not a float above it).
@@ -271,7 +454,11 @@ test('P0 arena modifiers: telegraph, effect', async ({ page }) => {
     if (Math.abs(y - 521) < 6) break;
   }
   // Wait on game time, not wall time: under load the game clock runs slower than real time.
-  await page.waitForFunction(() => (window as any).__arena.scene.fighters[0].score.damage > 0, null, { timeout: 15_000 }).catch(() => {});
+  await page
+    .waitForFunction(() => (window as any).__arena.scene.fighters[0].score.damage > 0, null, {
+      timeout: 15_000,
+    })
+    .catch(() => {});
   const dmg = await page.evaluate(() => (window as any).__arena.scene.fighters[0].score.damage);
   console.log(`TOXIC FLOOR damage while standing on the segment: ${dmg}%`);
   expect(dmg).toBeGreaterThan(0);
