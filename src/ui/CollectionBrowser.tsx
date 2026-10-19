@@ -101,7 +101,7 @@ export function CollectionBrowser({
           <span className="label">SEARCH</span>
           <input
             type="search"
-            placeholder="Name, #number or token ID"
+            placeholder="Number or trait (crown, laser…)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />

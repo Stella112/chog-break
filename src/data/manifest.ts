@@ -12,8 +12,13 @@ export type Manifest = {
 
 const FILTER_CATEGORIES: TraitCategory[] = TRAIT_CATEGORIES.filter((c) => c !== 'Side');
 
-export function buildManifest(chogs: ChogRecord[], sprites: Record<string, SpriteInfo> = {}): Manifest {
-  const valid = chogs.filter((c) => Number.isInteger(c.tokenId) && c.traits && typeof c.displayName === 'string');
+export function buildManifest(
+  chogs: ChogRecord[],
+  sprites: Record<string, SpriteInfo> = {},
+): Manifest {
+  const valid = chogs.filter(
+    (c) => Number.isInteger(c.tokenId) && c.traits && typeof c.displayName === 'string',
+  );
   const filters = FILTER_CATEGORIES.map((category) => {
     const counts = new Map<string, { label: string; count: number }>();
     for (const c of valid) {
@@ -52,12 +57,26 @@ export function searchChogs(
 ): ChogRecord[] {
   const q = query.trim().toLowerCase().replace(/^#/, '');
   const active = Object.entries(filters).filter(([, v]) => v) as [TraitCategory, string][];
-  return m.chogs.filter((c) => {
-    for (const [cat, v] of active) if (c.traits[cat] !== v) return false;
-    if (!q) return true;
-    if (/^\d+$/.test(q)) return String(c.tokenId) === q || String(c.displayNumber) === q;
-    return c.displayName.toLowerCase().includes(q);
-  });
+  const pool = active.length
+    ? m.chogs.filter((c) => active.every(([cat, v]) => c.traits[cat] === v))
+    : m.chogs;
+  if (!q) return pool;
+  // Numbers: exact token ID / #number first, then IDs and numbers that start with what was typed.
+  if (/^\d+$/.test(q)) {
+    const ids = (c: ChogRecord) => [
+      String(c.tokenId),
+      c.displayNumber === null ? '' : String(c.displayNumber),
+    ];
+    const exact = pool.filter((c) => ids(c).includes(q));
+    const prefix = pool.filter((c) => !exact.includes(c) && ids(c).some((s) => s.startsWith(q)));
+    return [...exact, ...prefix];
+  }
+  // Text: the name or any trait value ("crown", "laser", "skull"…).
+  return pool.filter(
+    (c) =>
+      c.displayName.toLowerCase().includes(q) ||
+      c.attributes.some((a) => String(a.value).toLowerCase().includes(q)),
+  );
 }
 
 export const spriteUrl = (tokenId: number) => `/chogs/${tokenId}.webp`;

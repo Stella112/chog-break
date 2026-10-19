@@ -196,6 +196,9 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - Full regression: 64 unit + 37 e2e pass (balance sim passed on rerun). Found and fixed a date-dependent test flake: the default opponent is seeded by the UTC date and today's has a SHIELD element, halving the first hit in two gene tests; the gene e2e helpers now neutralise the opponent's element.
 - HUMAN CHECKPOINT: Maris to try it with her real wallet.
 
+## Lab search fix (Maris, 2026-10-19: "the lab keeps bringing one result")
+- Search only matched exact numbers or the name (every name is "CHOG #N"), so "14" gave ≤ 2 results and "crown" or "laser" gave 0. Now: exact number first, then IDs/numbers starting with the digits typed ("14" → 221), and text matches any trait value ("crown" → 54). Placeholder now says "Number or trait (crown, laser…)". Unit tests added.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 

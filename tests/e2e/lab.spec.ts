@@ -11,7 +11,7 @@ function trackErrors(page: Page) {
 }
 
 async function pick(page: Page, query: string, slot: 'A' | 'B') {
-  await page.getByPlaceholder('Name, #number or token ID').fill(query);
+  await page.getByPlaceholder('Number or trait (crown, laser…)').fill(query);
   await page.locator('.cell').first().click();
   await page.getByRole('button', { name: `LOAD INTO ${slot}` }).click();
 }
@@ -49,7 +49,7 @@ test('invalid deep link shows a friendly error and the Lab still works', async (
   await expect(page.getByText("A Chog can't be spliced with itself.")).toBeVisible();
   await page.goto('/?a=1&b=99999');
   await expect(page.getByText(/No Chog with token ID 99999/)).toBeVisible();
-  await expect(page.getByPlaceholder('Name, #number or token ID')).toBeVisible();
+  await expect(page.getByPlaceholder('Number or trait (crown, laser…)')).toBeVisible();
 });
 
 test('filters are generated from the manifest', async ({ page }) => {

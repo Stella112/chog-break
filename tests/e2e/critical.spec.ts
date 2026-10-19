@@ -12,7 +12,7 @@ function trackErrors(page: Page, ignore: RegExp[] = []) {
 }
 
 async function pick(page: Page, query: string, slot: 'A' | 'B') {
-  await page.getByPlaceholder('Name, #number or token ID').fill(query);
+  await page.getByPlaceholder('Number or trait (crown, laser…)').fill(query);
   await page.locator('.cell').first().click();
   await page.getByRole('button', { name: `LOAD INTO ${slot}` }).click();
 }
@@ -69,7 +69,7 @@ test('missing image shows the fallback, no crash', async ({ page }) => {
   await expect(page.locator('.mutant-name')).toHaveText('KING BEAM', { timeout: 10_000 });
   await page.goto('/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
-  await page.getByPlaceholder('Name, #number or token ID').fill('18');
+  await page.getByPlaceholder('Number or trait (crown, laser…)').fill('18');
   await expect(page.locator('.cell .art-offline')).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -62,7 +62,7 @@ test('no wallet installed: friendly message, guest flow untouched', async ({ pag
   await page.goto('/?view=mychogs');
   await expect(page.getByText('No browser wallet found', { exact: false }).first()).toBeVisible();
   await page.getByRole('button', { name: 'LAB' }).click();
-  await expect(page.getByPlaceholder('Name, #number or token ID')).toBeVisible();
+  await expect(page.getByPlaceholder('Number or trait (crown, laser…)')).toBeVisible();
 });
 
 test('rejected connection shows "Request cancelled"', async ({ page }) => {

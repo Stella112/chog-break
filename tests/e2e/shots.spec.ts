@@ -14,7 +14,7 @@ test('capture screens', async ({ page }) => {
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await page.waitForTimeout(800);
   for (const [q, slot] of [['18', 'A'], ['66', 'B']] as const) {
-    await page.getByPlaceholder('Name, #number or token ID').fill(q);
+    await page.getByPlaceholder('Number or trait (crown, laser…)').fill(q);
     await page.locator('.cell').first().click();
     await page.getByRole('button', { name: `LOAD INTO ${slot}` }).click();
   }
