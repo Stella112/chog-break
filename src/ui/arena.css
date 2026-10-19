@@ -20,6 +20,10 @@ kbd { font-family: var(--mono); background: var(--bg); border: 1px solid var(--t
 .arena-wrap { margin-top: 0.8rem; }
 .arena-host { width: 100%; aspect-ratio: 16 / 9; max-height: calc(100vh - 140px); border: 2px solid var(--line); background: #07060b; outline: none; }
 .arena-host canvas { display: block; }
+/* 2.5D: the three.js stage sits under the transparent Phaser canvas, matched to its size and offset. */
+.arena-host { position: relative; overflow: hidden; }
+.arena-host canvas.arena-3d { position: absolute; z-index: 0; pointer-events: none; }
+.arena-host canvas:not(.arena-3d) { position: relative; z-index: 1; }
 .arena-hint { text-align: center; margin-top: 0.4rem; }
 .results { text-align: center; margin-top: 3rem; }
 .results-title { font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 6vw, 3.6rem); margin: 0; }

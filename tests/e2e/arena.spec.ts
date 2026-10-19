@@ -57,7 +57,9 @@ test('rematch ×10 without leaks, stale state or errors', async ({ page }) => {
     const s = await page.evaluate(() => window.__arena!.state());
     expect(s.fighters.map((f) => f.lives)).toEqual([2, 2]);
     expect(s.fighters.map((f) => f.damage)).toEqual([0, 0]);
-    expect(await page.locator('.arena-host canvas').count()).toBe(1);
+    // one Phaser canvas and one 3D stage canvas per match: nothing left over from previous matches
+    expect(await page.locator('.arena-host canvas').count()).toBe(2);
+    expect(await page.locator('canvas.arena-3d').count()).toBe(1);
   }
   expect(errors).toEqual([]);
 });
@@ -114,4 +116,23 @@ test('resting fighters never sink through the floor at a low frame rate', async 
   console.log(`after 10 s throttled: lives ${s.fighters.map((f) => f.lives).join('/')}, y ${s.fighters.map((f) => Math.round(f.y)).join('/')}`);
   expect(s.fighters.map((f) => f.lives)).toEqual([2, 2]);
   expect(errors).toEqual([]);
+});
+
+test('2.5D: the 3D stage sits exactly under the Phaser canvas', async ({ page }) => {
+  const errors: string[] = [];
+  await toArena(page, errors);
+  const canvases = page.locator('.arena-host canvas');
+  await expect(canvases).toHaveCount(2);
+  const three = await page.locator('canvas.arena-3d').boundingBox();
+  const phaser = await canvases.nth(1).boundingBox();
+  for (const k of ['x', 'y', 'width', 'height'] as const) expect(Math.abs(three![k] - phaser![k]), k).toBeLessThan(1.5);
+  expect(errors).toEqual([]);
+});
+
+test('2.5D fallback: ?arena=2d runs the flat 2D arena', async ({ page }) => {
+  await page.goto('/?a=18&b=66&fight=1&test=1&arena=2d');
+  await page.getByRole('button', { name: 'FIGHT ▸' }).click();
+  await page.waitForFunction(() => window.__arena?.state().live === true, null, { timeout: 15_000 });
+  await expect(page.locator('canvas.arena-3d')).toHaveCount(0);
+  await expect(page.locator('.arena-host canvas')).toHaveCount(1);
 });

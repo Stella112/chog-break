@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
+import type { Stage3D } from '../arena/three/Stage3D';
 import type { ArenaConfig, MatchResult } from '../arena/ArenaScene';
 import { createArenaGame } from '../arena/createGame';
 
@@ -19,13 +20,53 @@ export function Arena({ onEnd, matchKey, onQuit, twoPlayer = false, ...cfg }: Pr
   cfgRef.current = cfg;
 
   useEffect(() => {
-    if (!host.current) return;
-    const game: Phaser.Game = createArenaGame(host.current, {
-      ...cfgRef.current,
-      onEnd: (r) => onEndRef.current(r),
-    });
-    host.current.focus();
-    return () => game.destroy(true);
+    const el = host.current;
+    if (!el) return;
+    let game: Phaser.Game | null = null;
+    let stage: Stage3D | null = null;
+    let cancelled = false;
+    const start = (view3d: Stage3D | null) => {
+      if (cancelled) return view3d?.dispose();
+      stage = view3d;
+      const g = createArenaGame(el, {
+        ...cfgRef.current,
+        view3d: view3d ?? undefined,
+        onEnd: (r) => onEndRef.current(r),
+      });
+      game = g;
+      if (view3d) {
+        el.prepend(view3d.canvas);
+        // Phaser FIT-scales and centres its canvas; keep the 3D canvas exactly underneath it.
+        const sync = () => {
+          const c = g.canvas;
+          if (!c) return;
+          Object.assign(view3d.canvas.style, {
+            width: c.style.width,
+            height: c.style.height,
+            left: `${c.offsetLeft}px`,
+            top: `${c.offsetTop}px`,
+          });
+        };
+        g.scale.on(Phaser.Scale.Events.RESIZE, sync);
+        g.events.once(Phaser.Core.Events.READY, sync);
+        requestAnimationFrame(sync);
+      }
+      el.focus();
+    };
+    // 2.5D by default; `?arena=2d` (or no WebGL) keeps the 2D arena.
+    const mods = cfgRef.current.modifiers ?? [];
+    const floor = mods.includes('SLIPPERY_FLOOR') ? 'slippery' : mods.includes('BOUNCY_FLOOR') ? 'bouncy' : 'normal';
+    if (new URLSearchParams(window.location.search).get('arena') === '2d') start(null);
+    else
+      import('../arena/three/Stage3D').then(
+        (m) => start(m.createStage3D(floor)),
+        () => start(null),
+      );
+    return () => {
+      cancelled = true;
+      game?.destroy(true);
+      stage?.dispose();
+    };
   }, [matchKey]);
 
   useEffect(() => {

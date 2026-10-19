@@ -205,6 +205,12 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 ## Audit (2026-10-19)
 - Full requirements audit in `docs/AUDIT.md`. Fixed: CHAOS ORB balance (72% → 59%), reveal layout on phones, demo script wallet segment, README holder path.
 
+## 2.5D arena (Maris approved, 2026-10-19)
+- `src/arena/three/Stage3D.ts`: three.js scene (lab wall, columns, girder with beacons, glass tanks on a grid floor, 3D main stage with hazard-stripe top and glowing edges, floating platforms on hanger rods, key/fill/rim lights, hit-flash point lights, blob shadows). Rendered on Phaser's POST_RENDER with the Phaser camera's centre, zoom and shake, so the 3D platform tops sit exactly on the physics bodies. Phaser canvas is transparent; its platform rectangles stay as invisible physics bodies.
+- Fallbacks: `?arena=2d`, no WebGL, or a failed import → the 2D arena; headless sims never create it.
+- e2e: the 3D canvas lines up with the Phaser canvas (±1.5 px), no console errors, `?arena=2d` has no 3D canvas.
+- Balance sim is now deterministic (see DECISIONS); it passes for seed 2026 every run.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 

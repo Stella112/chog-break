@@ -48,7 +48,7 @@ Rarity never equals strength: Tier changes no stat (enforced by tests over every
 
 - **Lab:** browse/search/filter all 1,969 real Chogs (filters generated from the data), load two parents, SPLICE.
 - **Reveal:** a splice-rig sequence (parent tubes, lightning, chamber), then the mutant, its name, and every inherited trait with *from #A / from #B* and the gene it gave.
-- **Fight:** Phaser 3 arena vs a bot (Easy / Normal / Hard) or **local 2-player**. Smash-style damage % and knockback, 2 lives, dynamic camera, animated characters with the mutant's portrait as the head. Every gene, all 16 recipe perks and all 10 arena modifiers have a real effect.
+- **Fight:** Phaser 3 arena vs a bot (Easy / Normal / Hard) or **local 2-player**. Smash-style damage % and knockback, 2 lives, dynamic camera, animated characters with the mutant's portrait as the head. The arena is **2.5D**: a three.js lab (stage and floating platforms as real 3D blocks, glass specimen tanks, lighting, hit flashes, fighter shadows) rendered under the Phaser gameplay layer, with its camera locked to the fight camera. Gameplay stays on one plane, Smash-style. `?arena=2d` (or no WebGL) uses the flat 2D arena. Every gene, all 16 recipe perks and all 10 arena modifiers have a real effect.
 - **Lab Notebook:** every mutant you make, with W–L record, secret/unstable badges, Fight and Share buttons. Stored on this device.
 - **Share card:** 1200×675 PNG download and a Post on X intent link (never auto-posts).
 - **Sound and music:** all synthesized in code (WebAudio), with SOUND and MUSIC toggles.

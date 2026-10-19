@@ -47,6 +47,8 @@ function useReducedMotion() {
 
 function setUrl(params: Record<string, string> | null) {
   const q = new URLSearchParams(params ?? {});
+  // Keep the 2D-arena fallback switch across in-app navigation.
+  if (new URLSearchParams(location.search).get('arena') === '2d') q.set('arena', '2d');
   if (TEST_MODE) {
     q.set('test', '1');
     const mods = new URLSearchParams(location.search).get('mods');

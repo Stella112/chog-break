@@ -11,6 +11,7 @@ import type { FighterKit } from './kit';
 import { ModifierRuntime, modifierPhysics, type ModifierHost } from './modifiers';
 import { ATTACKS } from './attacks';
 import { makeHeadCanvas } from './rig';
+import type { Stage3D } from './three/Stage3D';
 import { applyKO, isOutside, knockback, knockbackVector, MATCH, resolveMatch, respawn, STAGE } from './rules';
 
 export type FighterSetup = { name: string; canvas: HTMLCanvasElement; color: number; kit?: FighterKit; bodyColor?: number };
@@ -36,6 +37,8 @@ export type ArenaConfig = {
   showControls?: boolean;
   /** Skip countdown, effects and end-of-match pause (headless sims). */
   instant?: boolean;
+  /** 2.5D: three.js stage rendered behind this (transparent) canvas. Absent → 2D arena. */
+  view3d?: Stage3D;
 };
 
 /** §D4.5 says 60%; tuned in Phase 4 balance (revive was a free extra life in time-outs). */
@@ -94,6 +97,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
   create() {
     this.drawBackground();
     this.buildStage();
+    this.attachView3d();
     this.cfg.fighters.forEach((f, i) => {
       const key = `fighter-${i}`;
       if (this.textures.exists(key)) this.textures.remove(key);
@@ -506,7 +510,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
   private drawBackground() {
     // Headless sims have no renderer to bake textures with; there is nothing to see anyway.
     if (!this.game.renderer) return;
-    this.bake('arena-bg', STAGE.width, STAGE.height, (g) => this.paintBackground(g)).setDepth(DEPTH.bg);
+    if (!this.cfg.view3d) this.bake('arena-bg', STAGE.width, STAGE.height, (g) => this.paintBackground(g)).setDepth(DEPTH.bg);
     const scanImg = this.bake('arena-scan', STAGE.width, STAGE.height + 12, (g) => {
       g.fillStyle(0xffffff, 1);
       for (let y = 0; y < STAGE.height + 12; y += 6) g.fillRect(0, y, STAGE.width, 2);
@@ -542,7 +546,35 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
       const r = this.add.rectangle(x + w / 2, y + 7, w, 14, 0x3a3346).setDepth(DEPTH.platform);
       this.floats.add(r);
       g.fillStyle(0x4ff0ff, 0.8).fillRect(x, y, w, 3);
+      if (this.cfg.view3d) r.setVisible(false);
     }
+    // 2.5D: the 3D stage draws the platforms; the Phaser rectangles stay as invisible physics bodies.
+    if (this.cfg.view3d) {
+      main.setVisible(false);
+      g.setVisible(false);
+      this.mainDeco.setVisible(false);
+    }
+  }
+
+  /** 2.5D: render the 3D stage right after Phaser renders, with this frame's camera and fighters. */
+  private attachView3d() {
+    const v = this.cfg.view3d;
+    if (!v || this.instant) return;
+    const onRender = () => {
+      const cam = this.cameras.main;
+      const shake = cam.shakeEffect as unknown as { _offsetX: number; _offsetY: number; isRunning: boolean };
+      v.render({
+        cx: cam.midPoint.x,
+        cy: cam.midPoint.y,
+        zoom: cam.zoom,
+        shakeX: shake.isRunning ? shake._offsetX : 0,
+        shakeY: shake.isRunning ? shake._offsetY : 0,
+        fighters: this.fighters.map((f) => ({ x: f.x, feet: f.body.bottom, visible: f.state !== 'ko' })),
+        timeMs: this.time.now,
+      });
+    };
+    this.game.events.on(Phaser.Core.Events.POST_RENDER, onRender);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(Phaser.Core.Events.POST_RENDER, onRender));
   }
 
   private drawMainDeco() {
@@ -562,6 +594,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
     this.edges = { left, right };
     this.mainRect.setSize(right - left, 80).setPosition((left + right) / 2, STAGE.mainY + 40);
     (this.mainRect.body as Phaser.Physics.Arcade.StaticBody).updateFromGameObject();
+    this.cfg.view3d?.setEdges(left, right);
     if (this.mainDeco) this.drawMainDeco();
   }
 
@@ -613,6 +646,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
 
   private burst(x: number, y: number, n: number, color: number) {
     if (this.instant) return;
+    this.cfg.view3d?.flash(x, y, color, Math.min(1.5, n / 10));
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + Math.random() * 0.4;
       const d = 40 + Math.random() * 50;
