@@ -33,3 +33,5 @@
 ## 2026-10-19
 
 - **P-1 approved → CORE_VERSION 2:** §D6 picked the art's top parent from the "visual" stream; Maris approved putting the parent that gave the inherited **Head** on top, so the picture matches the reveal labels. The visual-stream bit is still drawn (the stream is identical in v1 and v2); when neither parent has a Head the stream decides. `createMutant({ version: 1 })` reproduces v1 output exactly, per §D3 ("bump CORE_VERSION and keep v1 reproducible"). Genes, names, recipes and arena rules are unchanged between versions.
+- **2.5D arena approved (Maris, 2026-10-19):** asked about 3D; after the trade-offs (§A6 lists 3D as out of scope; real 3D movement can't be solid by the freeze) Maris chose a **2.5D arena**: three.js (`three@0.186.1`, new dependency, approved) renders the stage, lighting and camera in 3D while gameplay stays on the 2D plane with the existing Phaser physics, genes, bot and tests. The current 2D arena stays as the fallback (`?arena=2d`, no WebGL, headless sims).
+- **CHAOS ORB toned down:** 7 → 6 damage per hit, 4 → 3 bounces. The 300-match sim had it at 72.4% (limit 65%); now 58.6%.

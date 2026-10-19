@@ -49,7 +49,7 @@ export function startSpecial(f: Fighter, now: number) {
       break;
 
     case 'CHAOS_ORB':
-      ctx.spawnProjectile({ owner: f, x: f.x + f.facing * 40, y: f.y - 20, vx: f.facing * 520, vy: -260, gravity: 900, radius: 14, color: 0xff4fd8, spec: proj(7, 260, 5, 40, 300), lifeMs: 2600, bounces: 4 });
+      ctx.spawnProjectile({ owner: f, x: f.x + f.facing * 40, y: f.y - 20, vx: f.facing * 520, vy: -260, gravity: 900, radius: 14, color: 0xff4fd8, spec: proj(6, 260, 5, 40, 300), lifeMs: 2600, bounces: 3 });
       recoveryAction(f, now, 260);
       break;
 

@@ -23,6 +23,8 @@ Controls (desktop keyboard): **A/D** move · **W** jump (press again in the air 
 
 Try **TRY A SECRET MUTATION** on the home screen for a random one of the 16 secret recipes.
 
+**Holder path (optional):** press **CONNECT WALLET** (top bar) or open **MY CHOGS** (`/?view=mychogs`). The app reads which Chogs your address holds straight from the Chog Genesis contract on Monad and lists them with their genes and your experiments; **SPLICE WITH…** loads one into the Lab, which also gets a MY CHOGS tab. If your wallet is on another network, **SWITCH TO MONAD** adds or selects chain 143. Nothing is ever signed or sent.
+
 ---
 
 ## Why the Chog NFTs are essential

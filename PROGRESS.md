@@ -202,6 +202,9 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 ## Lab picking fix (Maris, 2026-10-19: "picking not working")
 - Clicking a Chog only opened its detail panel; loading needed LOAD INTO A/B further down, easy to miss. Now one click fills the next empty chamber (A, then B); when both are full, a click shows details with LOAD INTO A/B. Hints say "Click a Chog below". e2e test added.
 
+## Audit (2026-10-19)
+- Full requirements audit in `docs/AUDIT.md`. Fixed: CHAOS ORB balance (72% → 59%), reveal layout on phones, demo script wallet segment, README holder path.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 
