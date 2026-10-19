@@ -31,7 +31,7 @@ export const SPECIAL_CD: Record<SpecialGene, number> = {
   TEARS: 4000,
   LEECH: 5000,
   RAGE: 6000,
-  CHAOS_ORB: 4000,
+  CHAOS_ORB: 4500,
   SPIT: 3000,
 };
 export const CLOSE_CD: Record<CloseGene, number> = {

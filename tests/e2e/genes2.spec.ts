@@ -265,6 +265,8 @@ test('P0 recipe perks', async ({ page }) => {
     );
     await press(page, 'special');
     await page.waitForTimeout(700);
+    // a hit may land a little later when frames are slow; give it up to 1 s more
+    await page.waitForFunction(() => (window as any).__arena.scene.fighters[1].score.damage > 0, null, { timeout: 1000 }).catch(() => {});
     return page.evaluate(() => (window as any).__arena.scene.fighters[1].score.damage);
   };
   const normal = await beamThroughBubble(undefined);
@@ -411,7 +413,7 @@ test('P0 recipe perks', async ({ page }) => {
     sc.fighters[0].undeadReady = true;
     sc.fighters[0].body.reset(700, 940);
   });
-  await page.waitForTimeout(400);
+  await page.waitForFunction(() => (window as any).__arena.scene.fighters[1].score.damage >= 8, null, { timeout: 2000 }).catch(() => {});
   const burst = await page.evaluate(() => (window as any).__arena.scene.fighters[1].score.damage);
   console.log(`NUCLEAR UNDEAD burst ${burst}%`);
   expect(burst).toBeGreaterThanOrEqual(8);

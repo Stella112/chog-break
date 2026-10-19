@@ -7,6 +7,7 @@ import type { ChogRecord } from '../core/types';
 import { drawFallbackSprite } from '../art/fallbackSprite';
 import { ArenaScene, type ArenaConfig, type MatchResult } from './ArenaScene';
 import type { Difficulty } from './bot';
+import { resetProjectileSeed } from './entities';
 import { buildKit, type FighterKit } from './kit';
 import { STAGE } from './rules';
 
@@ -67,6 +68,11 @@ export function runHeadlessMatch(
     });
     game.events.once(Phaser.Core.Events.READY, () => {
       game.loop.stop();
+      // The scene clock starts at loop.time (the real browser clock) while we step from 0: zero it, or every
+      // timer set during create() would depend on wall-clock time and seeded matches wouldn't repeat.
+      game.loop.time = 0;
+      game.loop.now = 0;
+      resetProjectileSeed(seed);
       game.scene.add('arena', ArenaScene, true, cfg);
       let t = 0;
       let steps = 0;

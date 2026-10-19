@@ -589,6 +589,9 @@ export class Fighter {
 
   private squash(sx: number, sy: number) {
     if (this.rig) return this.rig.squash(sx, sy);
+    // Headless sims: squash is cosmetic, and Phaser tweens run on Date.now(), so scaling the physics sprite
+    // here made seeded matches depend on wall-clock time.
+    if (!this.scene.game.renderer) return;
     const base = this.baseScale * this.sizeMul;
     this.scene.tweens.killTweensOf(this.sprite);
     this.sprite.setScale(base * sx, base * sy);

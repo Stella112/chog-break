@@ -11,6 +11,10 @@ function lcg(seed: number) {
   return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
 }
 let projectileSeed = 1;
+/** Headless sims reset this per match so a seeded match is reproducible. */
+export function resetProjectileSeed(seed = 1) {
+  projectileSeed = seed;
+}
 
 export class Projectile {
   x: number;

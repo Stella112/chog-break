@@ -38,6 +38,8 @@ async function setup(page: Page, kit: Record<string, unknown>, x0 = 500, x1 = 64
       A.idle(1, x1);
       A.setKit(0, kit);
       const S = A.scene;
+      // clear frogs, zones and projectiles left over from the previous check
+      for (const list of [S.projectiles, S.zones, S.frogs, S.coins]) for (const e of list ?? []) e.destroy?.();
       S.fighters[0].facing = 1;
       S.fighters[1].score.damage = 0;
       S.fighters[0].score.damage = 30;
@@ -167,7 +169,10 @@ test('Passives: element, trinket, affinity, head', async ({ page }) => {
   // FROST: punch slows the target
   await setup(page, { element: 'FROST' }, 560, 620);
   await press(page, 'punch');
-  await page.waitForTimeout(250);
+  // wait for the hit (frame pacing varies under load) rather than a fixed sleep
+  await page
+    .waitForFunction(() => (window as any).__arena.scene.fighters[1].slowUntil > (window as any).__arena.scene.time.now, null, { timeout: 1500 })
+    .catch(() => {});
   expect(
     await page.evaluate(
       () =>
@@ -183,9 +188,23 @@ test('Passives: element, trinket, affinity, head', async ({ page }) => {
     A.scene.fighters[1].shieldReady = true;
   });
   await setup(page, { element: 'NONE', close: 'HEADBUTT' }, 500, 580);
+  await page.evaluate(() => {
+    const S = (window as any).__arena.scene;
+    // arm the shield after setup's settle time: a hit from the previous check can land during it
+    S.fighters[1].shieldReady = true;
+    S.fighters[1].score.damage = 0;
+    const orig = S.hit.bind(S);
+    S.__hits = [];
+    S.hit = (a: any, t: any, spec: any, dir: any) => {
+      const d = orig(a, t, spec, dir);
+      if (t === S.fighters[1]) S.__hits.push(`${spec.kind ?? '?'}:${spec.damage}->${d}`);
+      return d;
+    };
+  });
   await press(page, 'close');
   await page.waitForTimeout(500);
-  expect((await state(page)).fighters[1]!.damage).toBeCloseTo(3.5, 1);
+  const hits = await page.evaluate(() => (window as any).__arena.scene.__hits.join(' '));
+  expect((await state(page)).fighters[1]!.damage, hits).toBeCloseTo(3.5, 1);
   await page.evaluate(() => (window as any).__arena.setKit(1, { element: 'NONE' }));
 
   // ROYAL takes less knockback than LIGHTWEIGHT (same hit, same damage)
