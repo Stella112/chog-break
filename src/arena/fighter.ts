@@ -6,7 +6,7 @@ import { baselineKit, type FighterKit, type PhysicsProfile } from './kit';
 import { MATCH, newScore, type FighterScore } from './rules';
 import { startClose, startSpecial } from './moves';
 import { TUNING } from './tuning';
-import { FighterRig, RIG_SCALE } from './rig';
+import { FighterRig, RIG_SCALE, type Rig } from './rig';
 
 export type { PhysicsProfile };
 
@@ -74,7 +74,7 @@ export class Fighter {
   private ring: Phaser.GameObjects.Ellipse;
   private tag: Phaser.GameObjects.Text;
   /** Animated character drawn over the (invisible) physics sprite; null in headless sims. */
-  rig: FighterRig | null = null;
+  rig: Rig | null = null;
   private lastFallSpeed = 0;
 
   constructor(
@@ -111,10 +111,14 @@ export class Fighter {
   }
 
   /** Swap the flat portrait for the animated rig (round portrait head on a code-drawn body). */
-  attachRig(headKey: string, bodyColor: number) {
-    this.rig = new FighterRig(this.scene, headKey, bodyColor, this.color);
+  attachRig(headKey: string, bodyColor: number, rig?: Rig) {
+    this.rig = rig ?? new FighterRig(this.scene, headKey, bodyColor, this.color);
     this.sprite.setVisible(false);
+    // the 2.5D stage draws its own soft shadow under a 3D fighter
+    if (rig) this.shadow.setAlpha(0).setScale(0);
+    this.has3dRig = !!rig;
   }
+  private has3dRig = false;
 
   /** Brief full-colour flash (hits, toxic ticks). */
   flash(color: number, ms: number) {
@@ -508,7 +512,7 @@ export class Fighter {
     if (gy !== null && visible) {
       const h = Math.max(0, gy - b.bottom);
       const s = Phaser.Math.Clamp(1 - h / 400, 0.3, 1);
-      this.shadow.setPosition(this.x, gy).setScale(s * this.sizeMul).setAlpha(0.35 * s).setVisible(true);
+      this.shadow.setPosition(this.x, gy).setScale(s * this.sizeMul).setAlpha(0.35 * s).setVisible(!this.has3dRig);
       this.ring.setPosition(this.x, gy).setScale(s * this.sizeMul).setVisible(h < 6);
     } else {
       this.shadow.setVisible(false);

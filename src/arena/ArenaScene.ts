@@ -115,8 +115,11 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
       if (!this.instant && this.game.renderer) {
         const key = `head-${i}`;
         if (this.textures.exists(key)) this.textures.remove(key);
-        this.textures.addCanvas(key, makeHeadCanvas(setup.canvas, setup.color));
-        f.attachRig(key, setup.bodyColor ?? 0xb48cff);
+        const headCanvas = makeHeadCanvas(setup.canvas, setup.color);
+        this.textures.addCanvas(key, headCanvas);
+        const bodyColor = setup.bodyColor ?? 0xb48cff;
+        // 2.5D: a three.js fighter with the same rig interface; the 2D rig otherwise.
+        f.attachRig(key, bodyColor, this.cfg.view3d?.createFighter(key, headCanvas, bodyColor, setup.color));
       }
       f.setTag(this.cfg.drivers[i] === 'bot' ? 'CPU' : this.cfg.drivers[0] === 'human' && this.cfg.drivers[1] === 'human' ? `P${i + 1}` : 'YOU');
       return f;

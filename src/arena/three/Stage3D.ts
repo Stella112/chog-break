@@ -3,6 +3,7 @@
 // every frame so the 3D platform tops line up exactly with the physics bodies. All art is drawn in code.
 import * as THREE from 'three';
 import { STAGE } from '../rules';
+import { Fighter3D } from './Fighter3D';
 
 const W = STAGE.width;
 const H = STAGE.height;
@@ -405,6 +406,14 @@ export class Stage3D {
       this.scene.add(light);
       this.flashes.push({ light, until: 0, peak: 0 });
     }
+  }
+
+  /** A 3D fighter rig living in this scene (disposed with the stage). */
+  createFighter(headKey: string, headCanvas: HTMLCanvasElement, bodyColor: number, playerColor: number): Fighter3D {
+    const f = new Fighter3D(headKey, headCanvas, bodyColor, playerColor);
+    this.scene.add(f.root);
+    this.disposables.push(f);
+    return f;
   }
 
   /** Main platform edges (SHRINKING STAGE). */

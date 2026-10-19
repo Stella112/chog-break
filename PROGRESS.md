@@ -210,6 +210,7 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - Fallbacks: `?arena=2d`, no WebGL, or a failed import → the 2D arena; headless sims never create it.
 - e2e: the 3D canvas lines up with the Phaser canvas (±1.5 px), no console errors, `?arena=2d` has no 3D canvas.
 - Balance sim is now deterministic (see DECISIONS); it passes for seed 2026 every run.
+- **3D fighters** (`src/arena/three/Fighter3D.ts`): same `Rig` interface and pose math as the 2D rig; lit body, legs, floating fists and belt with inverted-hull outlines; the portrait on an unlit, non-tone-mapped disc on a coin head (NFT colours stay true); three-quarter yaw, mirrored when facing left like the 2D rig. Physics and hitboxes unchanged; headless sims don't use it.
 
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.

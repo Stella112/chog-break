@@ -16,6 +16,18 @@ export type RigPose = {
   runSpeed: number;
 };
 
+/** What a fighter needs from its visual rig (2D Phaser rig or the 2.5D three.js rig). */
+export interface Rig {
+  readonly headKey: string;
+  squash(sx: number, sy: number): void;
+  flash(color: number, ms: number): void;
+  setTint(color: number | null): void;
+  setVisible(v: boolean): void;
+  setAlpha(a: number): void;
+  update(x: number, feetY: number, p: RigPose, now: number, dt: number): void;
+  destroy(): void;
+}
+
 const OUTLINE = 0x0b0a10;
 /** Visual scale of the whole character (the physics hitbox is unchanged). */
 export const RIG_SCALE = 1.25;
@@ -25,7 +37,7 @@ function shade(color: number, f: number) {
   return Phaser.Display.Color.GetColor(Math.min(255, c.red * f), Math.min(255, c.green * f), Math.min(255, c.blue * f));
 }
 
-export class FighterRig {
+export class FighterRig implements Rig {
   readonly root: Phaser.GameObjects.Container;
   private g: Phaser.GameObjects.Graphics;
   private head: Phaser.GameObjects.Image;
