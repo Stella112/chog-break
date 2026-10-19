@@ -46,7 +46,7 @@ function Chamber({
             </button>
           </>
         ) : (
-          <span className="small dim">Pick a Chog below</span>
+          <span className="small dim">Click a Chog below</span>
         )}
       </div>
     </div>
@@ -74,7 +74,7 @@ export function Lab({ manifest, a, b, error, onLoad, onClear, onSplice, ownedIds
           {!ready && (
             <span className="splice-hint">
               {a === null && b === null
-                ? 'Load two Chogs from the collection below'
+                ? 'Click two Chogs below to load them'
                 : 'Load one more Chog'}
             </span>
           )}

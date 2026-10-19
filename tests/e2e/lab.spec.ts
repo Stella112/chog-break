@@ -73,3 +73,16 @@ test('375px viewport has no horizontal scroll', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('one click on a Chog fills the next empty chamber', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
+  await page.locator('.cell').nth(0).click();
+  await expect(page.locator('.chamber-a.is-loaded')).toBeVisible();
+  await page.locator('.cell').nth(1).click();
+  await expect(page.locator('.chamber-b.is-loaded')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'SPLICE' })).toBeEnabled();
+  // Both full: a click shows details instead of replacing a parent.
+  await page.locator('.cell').nth(2).click();
+  await expect(page.getByRole('button', { name: 'LOAD INTO B' })).toBeVisible();
+});

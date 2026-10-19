@@ -178,8 +178,12 @@ export function CollectionBrowser({
                       left: (idx % cols) * (CELL + GAP),
                     }}
                     onClick={() => {
-                      sfx.click();
                       setDetail(c);
+                      // One click fills the next empty chamber; when both are full, the detail panel picks A or B.
+                      if (selectedA === null && c.tokenId !== selectedB) onLoad('A', c.tokenId);
+                      else if (selectedB === null && c.tokenId !== selectedA)
+                        onLoad('B', c.tokenId);
+                      else sfx.click();
                     }}
                   >
                     <ChogImage tokenId={c.tokenId} alt={c.displayName} thumb />

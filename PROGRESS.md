@@ -199,6 +199,9 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 ## Lab search fix (Maris, 2026-10-19: "the lab keeps bringing one result")
 - Search only matched exact numbers or the name (every name is "CHOG #N"), so "14" gave ≤ 2 results and "crown" or "laser" gave 0. Now: exact number first, then IDs/numbers starting with the digits typed ("14" → 221), and text matches any trait value ("crown" → 54). Placeholder now says "Number or trait (crown, laser…)". Unit tests added.
 
+## Lab picking fix (Maris, 2026-10-19: "picking not working")
+- Clicking a Chog only opened its detail panel; loading needed LOAD INTO A/B further down, easy to miss. Now one click fills the next empty chamber (A, then B); when both are full, a click shows details with LOAD INTO A/B. Hints say "Click a Chog below". e2e test added.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 
