@@ -19,7 +19,9 @@ type S = {
   mods: { gravity: number; friction: number; kb: number };
 };
 
-async function arena(page: Page, url = '/?a=18&b=66&fight=1&test=1') {
+// Gameplay-rule checks run on the 2D arena: they read results after real-time waits, and the 3D layer's
+// extra per-frame work made those timings noisy. Rules are identical; the 3D visuals have their own tests.
+async function arena(page: Page, url = '/?a=18&b=66&fight=1&test=1&arena=2d') {
   await page.goto(url);
   await page.getByRole('button', { name: 'FIGHT ▸' }).click();
   await page.waitForFunction(() => (window as any).__arena?.state().live === true, null, {

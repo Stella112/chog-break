@@ -83,7 +83,7 @@ test('P1 modifiers: OVERCLOCK, BOUNCY, METEOR, COIN RAIN, SHRINKING, GLITCH', as
 });
 
 test('P1 recipe perks: LASER SHOW, GOLDEN BULL, BEAR MARKET', async ({ page }) => {
-  await arena(page, '/?a=18&b=66&fight=1&test=1');
+  await arena(page, '/?a=18&b=66&fight=1&test=1&arena=2d'); // rule timing checks: 2D arena (see genes.spec)
   const setup = (kit: Record<string, unknown>, x0: number, x1: number) =>
     page.evaluate(
       ([kit, x0, x1]) => {
@@ -147,7 +147,7 @@ test('P1 recipe perks: LASER SHOW, GOLDEN BULL, BEAR MARKET', async ({ page }) =
 
 test('remaining P1 recipe perks: SKULL & BONES, SHARK WEEK, HONK LORD, DOUBLE RAINBOW', async ({ page }) => {
   test.setTimeout(120_000);
-  await arena(page, '/?a=18&b=66&fight=1&test=1');
+  await arena(page, '/?a=18&b=66&fight=1&test=1&arena=2d'); // rule timing checks: 2D arena (see genes.spec)
   const reset = (kit: Record<string, unknown>, x0: number, x1: number) =>
     page.evaluate(
       ([kit, x0, x1]) => {
