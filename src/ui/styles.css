@@ -295,3 +295,22 @@ a.btn { display: inline-block; text-decoration: none; color: inherit; }
 .nb-unknown { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; grid-template-columns: none; }
 .nb-q { font-family: var(--display); font-size: 2.4rem; color: #3a3346; line-height: 1; }
 .nb-empty p { margin: 0.3rem 0; }
+
+/* ---------- wallet / my chogs ---------- */
+.wallet-chip { font-family: var(--mono); font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+.wallet-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--toxic); display: inline-block; }
+.wallet-dot.off { background: var(--danger); }
+.toast { margin: 0.6rem 0 0; padding: 0.5rem 0.8rem; border-left: 4px solid var(--danger); background: rgba(255, 79, 79, 0.08); font-size: 0.9rem; }
+.mychogs .hl { color: var(--hazard); }
+.mc-connect { display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem; max-width: 620px; }
+.mc-progress { height: 10px; background: var(--bg); border: 1px solid var(--line); margin: 0.5rem 0; }
+.mc-progress span { display: block; height: 100%; background: var(--hazard); transition: width 0.2s; }
+.mc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0.9rem; margin-top: 0.8rem; }
+.mc-card { background: var(--panel); border: 1px solid var(--line); padding: 0.8rem; }
+.mc-head { display: grid; grid-template-columns: 96px 1fr; gap: 0.7rem; align-items: start; }
+.mc-head img, .mc-head .art-offline { width: 96px; height: 96px; }
+.mc-head h3 { margin: 0; font-family: var(--display); font-weight: 400; }
+.mc-genes { margin-top: 0.5rem; font-size: 0.82rem; }
+.mc-lab { margin-top: 0.5rem; }
+.mc-exp { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.3rem 0; }
+.browser-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.6rem; }

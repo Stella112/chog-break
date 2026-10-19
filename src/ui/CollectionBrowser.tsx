@@ -16,14 +16,28 @@ type Props = {
   onLoad: (slot: 'A' | 'B', tokenId: number) => void;
   selectedA: number | null;
   selectedB: number | null;
+  /** Owned token IDs when a wallet is connected (§D2 MY CHOGS tab). */
+  ownedIds?: number[] | null;
 };
 
-export function CollectionBrowser({ manifest, onLoad, selectedA, selectedB }: Props) {
+export function CollectionBrowser({
+  manifest,
+  onLoad,
+  selectedA,
+  selectedB,
+  ownedIds = null,
+}: Props) {
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Partial<Record<TraitCategory, string>>>({});
   const [filterCat, setFilterCat] = useState<TraitCategory>('Head');
   const [detail, setDetail] = useState<ChogRecord | null>(null);
-  const results = useMemo(() => searchChogs(manifest, query, filters), [manifest, query, filters]);
+  const [mine, setMine] = useState(false);
+  const results = useMemo(() => {
+    const all = searchChogs(manifest, query, filters);
+    if (!mine || !ownedIds) return all;
+    const owned = new Set(ownedIds);
+    return all.filter((c) => owned.has(c.tokenId));
+  }, [manifest, query, filters, mine, ownedIds]);
 
   // Hand-rolled windowed grid (thumbnails only, §D13 performance).
   const scroller = useRef<HTMLDivElement>(null);
@@ -62,6 +76,26 @@ export function CollectionBrowser({ manifest, onLoad, selectedA, selectedB }: Pr
 
   return (
     <section className="browser" aria-label="Chog collection">
+      {ownedIds && (
+        <div className="browser-tabs seg" role="radiogroup" aria-label="Collection">
+          <button
+            role="radio"
+            aria-checked={!mine}
+            className={!mine ? 'on' : ''}
+            onClick={() => setMine(false)}
+          >
+            ALL CHOGS
+          </button>
+          <button
+            role="radio"
+            aria-checked={mine}
+            className={mine ? 'on' : ''}
+            onClick={() => setMine(true)}
+          >
+            MY CHOGS ({ownedIds.length})
+          </button>
+        </div>
+      )}
       <div className="browser-controls">
         <label className="field">
           <span className="label">SEARCH</span>
@@ -86,7 +120,9 @@ export function CollectionBrowser({ manifest, onLoad, selectedA, selectedB }: Pr
           <span className="label">VALUE</span>
           <select
             value={filters[filterCat] ?? ''}
-            onChange={(e) => setFilters((f) => ({ ...f, [filterCat]: e.target.value || undefined }))}
+            onChange={(e) =>
+              setFilters((f) => ({ ...f, [filterCat]: e.target.value || undefined }))
+            }
           >
             <option value="">Any</option>
             {catValues.map((v) => (
@@ -109,7 +145,10 @@ export function CollectionBrowser({ manifest, onLoad, selectedA, selectedB }: Pr
             onClick={() => setFilters((f) => ({ ...f, [cat]: undefined }))}
             aria-label={`Remove filter ${cat}`}
           >
-            {cat}: {manifest.filters.find((f) => f.category === cat)?.values.find((x) => x.value === v)?.label ?? v} ✕
+            {cat}:{' '}
+            {manifest.filters.find((f) => f.category === cat)?.values.find((x) => x.value === v)
+              ?.label ?? v}{' '}
+            ✕
           </button>
         ))}
       </div>
@@ -159,7 +198,9 @@ export function CollectionBrowser({ manifest, onLoad, selectedA, selectedB }: Pr
               <ChogImage tokenId={detail.tokenId} alt={detail.displayName} />
               <div>
                 <h3>{detail.displayName}</h3>
-                <p className="mono dim">TOKEN ID {detail.tokenId} · {detail.traits.Tier.toUpperCase()}</p>
+                <p className="mono dim">
+                  TOKEN ID {detail.tokenId} · {detail.traits.Tier.toUpperCase()}
+                </p>
                 <div className="detail-actions">
                   <button className="btn btn-a" onClick={() => onLoad('A', detail.tokenId)}>
                     LOAD INTO A
@@ -178,7 +219,13 @@ export function CollectionBrowser({ manifest, onLoad, selectedA, selectedB }: Pr
                   return (
                     <tr key={slot}>
                       <th>{slot}</th>
-                      <td>{detail.traits[slot] === NONE ? <span className="dim">none</span> : String(raw)}</td>
+                      <td>
+                        {detail.traits[slot] === NONE ? (
+                          <span className="dim">none</span>
+                        ) : (
+                          String(raw)
+                        )}
+                      </td>
                       <td>
                         <span className="gene">{GENE_INFO[gene]?.label ?? gene}</span>
                         <span className="dim small"> {SLOT_ROLE[slot]}</span>

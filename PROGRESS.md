@@ -1,10 +1,10 @@
 # PROGRESS
 
 ## Last updated
-2026-10-18 by the BUILDER (Claude Code)
+2026-10-19 by the BUILDER (Claude Code)
 
 ## Current phase
-**Phase 6/7: P1 game features done + submission package drafted.** (Maris, 2026-10-18: "the main thing is a working game"; deploy is the last step). Done: local 2P, 6 P1 modifiers, 8 P1 recipes, share card. Not started: wallet/MY CHOGS, Recorded Splice (needs the Reviewer's registry). Vercel deploy deferred to the end.
+**Phase 6/7: P1 game features done + submission package drafted.** (Maris, 2026-10-18: "the main thing is a working game"; deploy is the last step). Done: local 2P, 6 P1 modifiers, 8 P1 recipes, share card. Wallet connect + MY CHOGS holder mode built (read-only, 2026-10-19). Not started: Recorded Splice (needs the Reviewer's registry). Vercel deploy deferred to the end.
 
 ## Phase 0: setup, facts, data
 - [x] `npm run build`, `typecheck`, `lint` and `test` pass
@@ -187,6 +187,15 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - **All 16 recipe perks now tested** (added SKULL & BONES 38° → 80°, SHARK WEEK bite zone, HONK LORD stun +0.2 s, DOUBLE RAINBOW reach, BTC MAXI +10% speed).
 - **Fresh clone → `npm ci` → `npm run build`: succeeds** (built in 30 s). npm 11 warns that esbuild/sharp install scripts were not run; the build works regardless.
 
+## Wallet connect + MY CHOGS (Maris, 2026-10-19: "build wallet connect and MY CHOGS holder mode")
+- `src/chain/client.ts`: injected EIP-1193 wallet via viem; `wallet_switchEthereumChain` to 143, falling back to `wallet_addEthereumChain` (Monad, MON/18, RPC from `chain.ts`; no explorer URL because the explorer is still unverified).
+- `src/chain/ownership.ts`: `balanceOf(owner)` first (0 → no scan), then `ownerOf` for IDs 1–1969 via Multicall3 in chunks of 250, stopping as soon as `balance` tokens are found; failed calls ignored; result cached per address for the session.
+- `src/state/wallet.ts` + `src/ui/MyChogs.tsx`: connect panel, scan progress, error/RETRY, empty state, owned cards (genes, experiments from the notebook, secrets found, count of undiscovered recipes it is half of), SPLICE WITH… loads it into chamber A. Topbar wallet chip + SWITCH TO MONAD; Lab gets ALL CHOGS / MY CHOGS tabs; `?view=mychogs` deep link.
+- Never signs or sends anything; guest features never wait on the wallet. Friendly errors for no wallet, rejected request, timeout, network failure.
+- Tests: `tests/unit/ownership.test.ts` (balance 0 skips the scan, chunking + early stop, case-insensitive, failures ignored); `tests/e2e/wallet.spec.ts` with a mock EIP-1193 wallet whose address is the **real** current owner of token 1 (looked up on Monad at test time): finds CHOG #1462 on-chain, wrong network → SWITCH TO MONAD adds the chain, SPLICE WITH…, Lab MY CHOGS tab; no wallet installed; rejected request.
+- Full regression: 64 unit + 37 e2e pass (balance sim passed on rerun). Found and fixed a date-dependent test flake: the default opponent is seeded by the UTC date and today's has a SHIELD element, halving the first hit in two gene tests; the gene e2e helpers now neutralise the opponent's element.
+- HUMAN CHECKPOINT: Maris to try it with her real wallet.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 
@@ -200,7 +209,8 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 4. Paste the production URL to the Builder. The Builder then makes the og:image URL absolute and runs the §G1 checklist against the live site.
 
 ## Next
-- Wallet + MY CHOGS, then Recorded Splice if the registry exists.
+- Maris tests MY CHOGS with her real wallet.
+- Recorded Splice if the registry exists.
 - Last: Vercel deploy → §G1 on the live URL → P0 DONE.
 
 

@@ -11,6 +11,7 @@ type Props = {
   onLoad: (slot: 'A' | 'B', id: number) => void;
   onClear: (slot: 'A' | 'B') => void;
   onSplice: () => void;
+  ownedIds?: number[] | null;
 };
 
 function Chamber({
@@ -52,7 +53,7 @@ function Chamber({
   );
 }
 
-export function Lab({ manifest, a, b, error, onLoad, onClear, onSplice }: Props) {
+export function Lab({ manifest, a, b, error, onLoad, onClear, onSplice, ownedIds }: Props) {
   const ready = a !== null && b !== null && a !== b;
   return (
     <div className="lab">
@@ -90,6 +91,7 @@ export function Lab({ manifest, a, b, error, onLoad, onClear, onSplice }: Props)
       </div>
       <CollectionBrowser
         manifest={manifest}
+        ownedIds={ownedIds ?? null}
         selectedA={a}
         selectedB={b}
         onLoad={(slot, id) => {

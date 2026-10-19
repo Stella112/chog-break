@@ -19,12 +19,15 @@ import { PreMatch } from './PreMatch';
 import { Results } from './Results';
 import { Reveal } from './Reveal';
 import { ErrorBoundary } from './ErrorBoundary';
+import { MyChogs } from './MyChogs';
+import { useWallet } from '../state/wallet';
+import { shortAddress } from '../chain/client';
 
 // Phaser is only needed in the arena: load it lazily so the Lab is interactive fast (§D13).
 const loadArena = () => import('./Arena');
 const Arena = lazy(() => loadArena().then((m) => ({ default: m.Arena })));
 
-type Screen = 'home' | 'lab' | 'reveal' | 'notebook' | 'prematch' | 'arena' | 'results';
+type Screen = 'home' | 'lab' | 'reveal' | 'notebook' | 'prematch' | 'arena' | 'results' | 'mychogs';
 
 const TEST_MODE =
   typeof location !== 'undefined' && new URLSearchParams(location.search).get('test') === '1';
@@ -88,6 +91,12 @@ export function App() {
   const [fightsStarted, setFightsStarted] = useState(0);
   const reducedMotion = useReducedMotion();
   const deepLinkHandled = useRef(false);
+  const tokenIds = useMemo(
+    () => (manifest ? manifest.chogs.map((c) => c.tokenId) : null),
+    [manifest],
+  );
+  const wallet = useWallet(tokenIds);
+  const ownedIds = wallet.owned.status === 'done' ? wallet.owned.ids : null;
 
   // Background music: driving loop in the arena, mellow lab loop everywhere else.
   useEffect(() => {
@@ -110,7 +119,8 @@ export function App() {
         run: (n: number, seed: number, difficulty?: 'easy' | 'normal' | 'hard') =>
           runBalanceSim(manifest.chogs, n, seed, undefined, difficulty),
         match: runHeadlessMatch,
-        ladder: (n: number, a: 'easy' | 'normal' | 'hard', b: 'easy' | 'normal' | 'hard') => runLadder(manifest.chogs, n, a, b),
+        ladder: (n: number, a: 'easy' | 'normal' | 'hard', b: 'easy' | 'normal' | 'hard') =>
+          runLadder(manifest.chogs, n, a, b),
       };
     });
   }, [manifest]);
@@ -179,6 +189,10 @@ export function App() {
       setScreen('notebook');
       return;
     }
+    if (p.get('view') === 'mychogs') {
+      setScreen('mychogs');
+      return;
+    }
     const qa = p.get('a');
     const qb = p.get('b');
     if (qa === null && qb === null) return;
@@ -204,6 +218,7 @@ export function App() {
     sfx.click();
     if (s === 'home' || s === 'lab') setUrl(null);
     if (s === 'notebook') setUrl({ view: 'notebook' });
+    if (s === 'mychogs') setUrl({ view: 'mychogs' });
     if (screen === 'reveal') setRevealsSeen((n) => n + 1);
     setScreen(s);
   };
@@ -269,6 +284,31 @@ export function App() {
               LAB
             </button>
           )}
+          {wallet.address ? (
+            <span className="wallet-chip">
+              <button
+                className="btn btn-ghost small"
+                onClick={() => go('mychogs')}
+                aria-label="My Chogs"
+              >
+                <span className={`wallet-dot${wallet.onMonad ? '' : ' off'}`} />{' '}
+                {shortAddress(wallet.address)}
+              </button>
+              {!wallet.onMonad && wallet.chainId !== null && (
+                <button className="btn btn-ghost small" onClick={() => void wallet.switchChain()}>
+                  SWITCH TO MONAD
+                </button>
+              )}
+            </span>
+          ) : (
+            <button
+              className="btn btn-ghost small"
+              onClick={() => (wallet.available ? void wallet.connect() : go('mychogs'))}
+              disabled={wallet.connecting}
+            >
+              {wallet.connecting ? 'CONNECTING…' : 'CONNECT WALLET'}
+            </button>
+          )}
           <button className="btn btn-ghost small" onClick={() => go('notebook')}>
             NOTEBOOK{notebookCount ? ` (${notebookCount})` : ''}
           </button>
@@ -299,6 +339,11 @@ export function App() {
         </nav>
       </header>
 
+      {wallet.error && screen !== 'mychogs' && (
+        <p className="toast" role="alert">
+          {wallet.error}
+        </p>
+      )}
       <main id="main">
         <ErrorBoundary key={screen} onReset={() => setScreen('lab')}>
           <div className="screen">
@@ -327,6 +372,9 @@ export function App() {
                     onClick={() => go('lab')}
                   >
                     ENTER THE LAB
+                  </button>
+                  <button className="btn btn-ghost" onClick={() => go('mychogs')}>
+                    MY CHOGS
                   </button>
                   {SECRET_PAIRS.length > 0 && (
                     <button className="btn btn-ghost" disabled={!manifest} onClick={secretMutation}>
@@ -364,6 +412,7 @@ export function App() {
             {manifest && screen === 'lab' && (
               <Lab
                 manifest={manifest}
+                ownedIds={ownedIds}
                 a={a}
                 b={b}
                 error={labError}
@@ -461,6 +510,19 @@ export function App() {
                 manifest={manifest}
                 loLabel={label(mutant.lo)}
                 hiLabel={label(mutant.hi)}
+              />
+            )}
+
+            {manifest && screen === 'mychogs' && (
+              <MyChogs
+                manifest={manifest}
+                wallet={wallet}
+                onSplice={(id) => {
+                  setA(id);
+                  setB(null);
+                  go('lab');
+                }}
+                onOpen={(lo, hi) => splice(manifest, lo, hi)}
               />
             )}
 

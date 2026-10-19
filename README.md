@@ -50,8 +50,9 @@ Rarity never equals strength: Tier changes no stat (enforced by tests over every
 - **Lab Notebook:** every mutant you make, with W–L record, secret/unstable badges, Fight and Share buttons. Stored on this device.
 - **Share card:** 1200×675 PNG download and a Post on X intent link (never auto-posts).
 - **Sound and music:** all synthesized in code (WebAudio), with SOUND and MUSIC toggles.
+- **MY CHOGS (optional, read-only):** connect a browser wallet to see the Chogs you hold, read straight from the Chog Genesis contract on Monad (`balanceOf`, then `ownerOf` via Multicall3), with their genes, your experiments with them and a SPLICE WITH… shortcut. The Lab gets a MY CHOGS tab. A wallet on another network gets a SWITCH TO MONAD button. Connecting never asks you to sign or send anything, and everything else works without a wallet.
 
-**Not in this build:** wallet connect / MY CHOGS, Recorded Splice and the on-chain registry contract, holder payouts. Nothing in the app claims otherwise; there are no transactions anywhere.
+**Not in this build:** Recorded Splice and the on-chain registry contract, holder payouts. Nothing in the app claims otherwise; there are no transactions anywhere.
 
 ---
 
@@ -92,13 +93,13 @@ scripts/      data pipeline: chain checks, manifest, trait report, sprites
 
 **Determinism:** `pairKey = keccak256(abi.encode(CHOG_GENESIS, lo, hi))`, so A×B is always identical to B×A, on any device, forever. Separate seeded streams (sfc32) drive genes, names, visuals and arena rules. Ownership, time and wallets never affect the result.
 
-**Data:** chain facts were checked against Monad mainnet (chain 143); see `docs/CHAIN_CHECK.md`. The token set (exactly IDs 1–1969) was proven with `ownerOf`; metadata and art were fetched from IPFS once and are served from this site (`public/`), so the app needs no RPC or IPFS at runtime. Every trait count matches the published collection (`docs/TRAIT_REPORT.md`, `docs/RECIPE_EXAMPLES.md`).
+**Data:** chain facts were checked against Monad mainnet (chain 143); see `docs/CHAIN_CHECK.md`. The token set (exactly IDs 1–1969) was proven with `ownerOf`; metadata and art were fetched from IPFS once and are served from this site (`public/`), so the game needs no RPC or IPFS at runtime (only the optional MY CHOGS page reads the Monad RPC). Every trait count matches the published collection (`docs/TRAIT_REPORT.md`, `docs/RECIPE_EXAMPLES.md`).
 
 **Unstable mutants** (5% of pairs) are chosen by a fixed hash rule, not by chance.
 
 ## Security and privacy
 
-No wallet, no transactions, no accounts, no secrets in the repo. Nothing is sent anywhere: the notebook lives in the browser's local storage. Share links only contain two token IDs.
+No transactions, no accounts, no secrets in the repo. The wallet connection is optional and read-only: the app only asks for your address and reads ownership from Monad; it never requests a signature or a transaction. Nothing is sent anywhere else: the notebook lives in the browser's local storage. Share links only contain two token IDs.
 
 ## Known limitations
 
