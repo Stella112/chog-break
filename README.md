@@ -23,7 +23,7 @@ Controls (desktop keyboard): **A/D** move · **W** jump (press again in the air 
 
 Try **TRY A SECRET MUTATION** on the home screen for a random one of the 16 secret recipes.
 
-**Holder path (optional):** press **CONNECT WALLET** (top bar) or open **MY CHOGS** (`/?view=mychogs`). The app reads which Chogs your address holds straight from the Chog Genesis contract on Monad and lists them with their genes and your experiments; **SPLICE WITH…** loads one into the Lab, which also gets a MY CHOGS tab. If your wallet is on another network, **SWITCH TO MONAD** adds or selects chain 143. Nothing is ever signed or sent.
+**Holder path (optional):** press **CONNECT WALLET** (top bar) or open **MY CHOGS** (`/?view=mychogs`). The app reads which Chogs your address holds straight from the Chog Genesis contract on Monad and lists them with their genes and your experiments; **SPLICE WITH…** loads one into the Lab, which also gets a MY CHOGS tab. If your wallet is on another network, **SWITCH TO MONAD** adds or selects chain 143. Holders also get cosmetic badges (YOURS in the Lab, HOLDER SPLICE on the reveal, YOUR CHOG in the notebook, a holder line on share cards); they never change gameplay. Browsing your Chogs never asks you to sign anything.
 
 ---
 
@@ -54,7 +54,7 @@ Rarity never equals strength: Tier changes no stat (enforced by tests over every
 - **Sound and music:** all synthesized in code (WebAudio), with SOUND and MUSIC toggles.
 - **MY CHOGS (optional, read-only):** connect a browser wallet to see the Chogs you hold, read straight from the Chog Genesis contract on Monad (`balanceOf`, then `ownerOf` via Multicall3), with their genes, your experiments with them and a SPLICE WITH… shortcut. The Lab gets a MY CHOGS tab. A wallet on another network gets a SWITCH TO MONAD button. Connecting never asks you to sign or send anything, and everything else works without a wallet.
 
-**Not in this build:** Recorded Splice and the on-chain registry contract, holder payouts. Nothing in the app claims otherwise; there are no transactions anywhere.
+**Recorded Splice (built and tested, not yet deployed):** the registry contract (`contracts/src/ChogBreakRegistry.sol`) records a pair on Monad for a $CHOG fee, gives the first recorder permanent first-discoverer credit, and splits the fee 35% / 35% to the current owners of the two parent tokens, 20% to a prize-pool address and 10% sent to the dead address. It has 29 Foundry tests, 5 read-only fork tests against Monad mainnet, and browser tests that drive the app's RECORDED SPLICE flow against the compiled contract on a local chain. **It is not deployed yet, so the app shows no Recorded Splice and nobody is paid anything today.** Deployment is Maris's step (`docs/DEPLOY.md`); until then `REGISTRY_ADDRESS` in `src/config/chain.ts` is `null`.
 
 ---
 
@@ -101,7 +101,7 @@ scripts/      data pipeline: chain checks, manifest, trait report, sprites
 
 ## Security and privacy
 
-No transactions, no accounts, no secrets in the repo. The wallet connection is optional and read-only: the app only asks for your address and reads ownership from Monad; it never requests a signature or a transaction. Nothing is sent anywhere else: the notebook lives in the browser's local storage. Share links only contain two token IDs.
+No accounts, no secrets in the repo. The wallet connection is optional: the app asks for your address and reads ownership from Monad. The only transactions in the code are the optional Recorded Splice (once deployed): it approves exactly the fee (never an unlimited allowance), simulates first, and the user confirms each step in their own wallet. Nothing is sent anywhere else: the notebook lives in the browser's local storage. Share links only contain two token IDs.
 
 ## Known limitations
 

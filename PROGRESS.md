@@ -212,6 +212,15 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - Balance sim is now deterministic (see DECISIONS); it passes for seed 2026 every run.
 - **3D fighters** (`src/arena/three/Fighter3D.ts`): same `Rig` interface and pose math as the 2D rig; lit body, legs, floating fists and belt with inverted-hull outlines; the portrait on an unlit, non-tone-mapped disc on a coin head (NFT colours stay true); three-quarter yaw, mirrored when facing left like the 2D rig. Physics and hitboxes unchanged; headless sims don't use it.
 
+## Holder perks + Recorded Splice (Maris, 2026-10-20: options 1 and 2; Builder assigned the contract)
+- **Holder perks (cosmetic):** YOURS tag in the Lab grid, HOLDER SPLICE on the reveal, YOUR CHOG badge in the notebook, holder line on share cards. Ownership is read from Monad; never affects gameplay. e2e in `wallet.spec`.
+- **Contract:** `contracts/src/ChogBreakRegistry.sol` exactly per §D10 (Ownable2Step, ReentrancyGuard, Pausable, SafeERC20; no upgradeability, delegatecall, selfdestruct or rescue). OpenZeppelin 5.6.1 from npm (the git clone kept failing); forge-std as a submodule.
+- **Foundry:** 29 tests, all of the §D10 list (incl. TS/Solidity pairKey vectors from the shared fixture, odd-fee fuzz, reentrancy via malicious token, owner spoofing, pause, admin, events) + fee-raise-after-approval. 5 fork tests vs Monad mainnet pass (ownerOf(1), decimals 18, exact $CHOG transfer, full recordSplice against the real Chog Genesis + $CHOG). `forge coverage` could not run: Foundry 1.8.3's analyser rejects the standard `Ownable(owner)` constructor call through Ownable2Step (tool bug); every function and branch has a test.
+- **Deploy:** `contracts/script/Deploy.s.sol` prints everything (chain id, deployer + MON balance, addresses, decimals read on-chain, fee/max raw + human, prize, owner, split) and aborts unless `CONFIRM_MAINNET_DEPLOY=YES` and chain 143. Dry run against Monad checked. `docs/DEPLOY.md` walks Maris through keystore → dry run → deploy → hand back address + tx.
+- **App:** `src/chain/registry.ts` (check chain → fee/balance/allowance → approve exactly the fee → simulate → wallet → receipt success → decode events; §D9 error copy), `RecordedSplice.tsx` (RECORDED SPLICE next to the free SPLICE, confirm panel with the 35/35/20/10 split and both owners, progress), FIRST DISCOVERY! banner, on-chain pair line on the reveal, ON-CHAIN notebook badge (recordedTx), MY CHOGS uses + $CHOG earned. Hidden while `REGISTRY_ADDRESS` is null.
+- **Tests:** `tests/unit/registry.anvil.test.ts` (6, real compiled contract on anvil chain 143: ABI parity, exact approval, payouts, discovery, stats, errors); `tests/e2e/recorded.spec.ts` (3, real browser → real contract on anvil: full flow, repeat recording, hidden without registry).
+- **HUMAN CHECKPOINT:** Maris deploys (docs/DEPLOY.md) and runs one real Recorded Splice on mainnet.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 
@@ -226,6 +235,7 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 
 ## Next
 - Maris tests MY CHOGS with her real wallet.
+- Maris deploys the registry (docs/DEPLOY.md) → Builder sets REGISTRY_ADDRESS and verifies it on-chain → one real Recorded Splice.
 - Recorded Splice if the registry exists.
 - Last: Vercel deploy → §G1 on the live URL → P0 DONE.
 
@@ -239,7 +249,7 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 
 ## Needs human verification
 - $CHOG `burn()`: the implementation bytecode contains the selectors, but the source was not checked. The spec still uses the dead address.
-- $CHOG fee-on-transfer: needs the Reviewer fork test.
+- ~~$CHOG fee-on-transfer~~: **resolved 2026-10-20** by `contracts/test/Fork.t.sol` against Monad mainnet: a transfer delivers exactly the amount sent; decimals 18.
 
 ## Proposals
 - ~~P-2, background music~~: **approved by Maris (2026-10-18) and built**; see below.

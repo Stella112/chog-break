@@ -57,6 +57,15 @@ export function recordResult(pairKey: string, won: boolean) {
   write(nb);
 }
 
+/** Recorded Splice: remember the transaction that recorded this pair on-chain. */
+export function setRecordedTx(pairKey: string, tx: string) {
+  const nb = { ...readNotebook() };
+  const entry = nb[pairKey];
+  if (!entry) return;
+  nb[pairKey] = { ...entry, recordedTx: tx };
+  write(nb);
+}
+
 export function _resetNotebookMemory() {
   memory = {};
 }

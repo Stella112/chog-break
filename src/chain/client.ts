@@ -1,6 +1,7 @@
-// §D9 wallet: injected provider (window.ethereum) via viem. Read-only in this build: no transactions.
+// §D9 wallet: injected provider (window.ethereum) via viem. Transactions only for Recorded Splice (registry.ts).
 import { createPublicClient, createWalletClient, custom, defineChain, http, type Address, type EIP1193Provider } from 'viem';
 import { CHAIN_ID, MULTICALL3, RPC_URL } from '../config/chain';
+import { ACTIVE_RPC } from './active';
 
 export const monad = defineChain({
   id: CHAIN_ID,
@@ -11,7 +12,14 @@ export const monad = defineChain({
 });
 
 /** Reads go straight to the public RPC (CORS-enabled), never through the wallet. */
-export const publicClient = createPublicClient({ chain: monad, transport: http(RPC_URL, { retryCount: 2, timeout: 20_000 }) });
+export const publicClient = createPublicClient({ chain: monad, transport: http(ACTIVE_RPC, { retryCount: 2, timeout: 20_000 }) });
+
+/** A wallet client for the connected account (signing happens in the user's wallet). */
+export function walletClientFor(account: Address) {
+  const provider = injected();
+  if (!provider) throw new Error('NO_WALLET');
+  return createWalletClient({ chain: monad, account, transport: custom(provider) });
+}
 
 type InjectedProvider = EIP1193Provider & {
   on?: (event: string, cb: (...args: unknown[]) => void) => void;

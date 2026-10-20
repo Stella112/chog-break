@@ -178,6 +178,11 @@ export function Notebook({ manifest, onOpen, onFight }: Props) {
                   {e.recipeId && <span className="badge badge-recipe">SECRET</span>}
                   {e.unstable && <span className="badge badge-unstable">UNSTABLE</span>}
                   {owned && (owned.includes(e.lo) || owned.includes(e.hi)) && <span className="badge badge-holder">YOUR CHOG</span>}
+                  {e.recordedTx && (
+                    <span className="badge badge-onchain" title={`Recorded on Monad: ${e.recordedTx}`}>
+                      ON-CHAIN
+                    </span>
+                  )}
                 </span>
                 <div className="nb-actions">
                   <button className="btn btn-primary small" onClick={() => onFight(e.lo, e.hi)}>

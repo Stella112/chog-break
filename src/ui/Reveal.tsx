@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { INHERITED_SLOTS, type Mutant } from '../core/splice';
 import { NONE } from '../core/types';
 import { GENE_INFO, SLOT_ROLE } from '../config/geneInfo';
@@ -8,6 +8,7 @@ import { sfx } from '../audio/sfx';
 import { ChogImage } from './ChogImage';
 import { geneForSlot } from './traitGenes';
 import { ShareButtons } from './ShareButtons';
+import { PairOnChain } from './OnChain';
 import { ownedParents, useOwned } from '../state/owned';
 
 /** Jittering lightning arcs from both parent tubes into the chamber (redrawn every 70 ms). */
@@ -61,6 +62,8 @@ const STEPS = [
 type Step = (typeof STEPS)[number][0];
 
 type Props = {
+  /** After a Recorded Splice: the FIRST DISCOVERY / RECORDED banner. */
+  record?: ReactNode;
   mutant: Mutant;
   manifest: Manifest;
   canSkip: boolean;
@@ -73,6 +76,7 @@ type Props = {
 };
 
 export function Reveal({
+  record,
   mutant,
   manifest,
   canSkip,
@@ -208,6 +212,8 @@ export function Reveal({
             {lo.displayName} (ID {lo.tokenId}) × {hi.displayName} (ID {hi.tokenId})
             {isNewDiscovery ? ' · NEW ENTRY IN NOTEBOOK' : ' · ALREADY IN NOTEBOOK'}
           </p>
+          {record}
+          <PairOnChain lo={mutant.lo} hi={mutant.hi} refresh={record ? 1 : 0} />
           {mine.length > 0 && (
             <p className="holder-chip mono small">
               HOLDER SPLICE · you hold {mine.map((id) => manifest.byId.get(id)?.displayName ?? `#${id}`).join(' and ')}

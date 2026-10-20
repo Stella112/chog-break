@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Manifest } from '../data/manifest';
 import { sfx } from '../audio/sfx';
 import { ChogImage } from './ChogImage';
@@ -12,6 +13,8 @@ type Props = {
   onClear: (slot: 'A' | 'B') => void;
   onSplice: () => void;
   ownedIds?: number[] | null;
+  /** RECORDED SPLICE control (only with a wallet and a deployed registry). */
+  recorded?: (a: number, b: number) => ReactNode;
 };
 
 function Chamber({
@@ -53,7 +56,7 @@ function Chamber({
   );
 }
 
-export function Lab({ manifest, a, b, error, onLoad, onClear, onSplice, ownedIds }: Props) {
+export function Lab({ manifest, a, b, error, onLoad, onClear, onSplice, ownedIds, recorded }: Props) {
   const ready = a !== null && b !== null && a !== b;
   return (
     <div className="lab">
@@ -71,6 +74,7 @@ export function Lab({ manifest, a, b, error, onLoad, onClear, onSplice, ownedIds
             SPLICE
           </button>
           <span className="mono small">FREE EXPERIMENT</span>
+          {ready && recorded?.(a, b)}
           {!ready && (
             <span className="splice-hint">
               {a === null && b === null

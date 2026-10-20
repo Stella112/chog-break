@@ -8,6 +8,7 @@ import { readNotebook } from '../state/notebook';
 import type { WalletState } from '../state/wallet';
 import { ChogImage } from './ChogImage';
 import { geneForSlot } from './traitGenes';
+import { TokenOnChain } from './OnChain';
 
 type Props = {
   manifest: Manifest;
@@ -52,6 +53,7 @@ function OwnedCard({ chog, onSplice, onOpen }: { chog: ChogRecord; onSplice: (id
           })}
         </tbody>
       </table>
+      <TokenOnChain id={chog.tokenId} />
       <div className="mc-lab">
         <p className="mono small">
           EXPERIMENTS WITH THIS CHOG: {experiments.length}

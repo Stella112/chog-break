@@ -8,7 +8,7 @@ import { SECRET_PAIRS } from '../config/game';
 import { loadManifest, type Manifest } from '../data/manifest';
 import { isMuted, setMuted, sfx } from '../audio/sfx';
 import { isMusicMuted, music, setMusicMuted } from '../audio/music';
-import { readNotebook, recordDiscovery, recordResult } from '../state/notebook';
+import { readNotebook, recordDiscovery, recordResult, setRecordedTx } from '../state/notebook';
 import { needsJar, renderMutant } from '../art/mutantRenderer';
 import { SKIN_TINT } from '../config/geneInfo';
 import type { Difficulty } from '../arena/bot';
@@ -22,6 +22,10 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { MyChogs } from './MyChogs';
 import { useWallet } from '../state/wallet';
 import { OwnedContext } from '../state/owned';
+import { RecordedSplice } from './RecordedSplice';
+import { RecordBanner } from './OnChain';
+import { ACTIVE_REGISTRY } from '../chain/active';
+import type { RecordResult } from '../chain/registry';
 import { shortAddress } from '../chain/client';
 
 // Phaser is only needed in the arena: load it lazily so the Lab is interactive fast (§D13).
@@ -81,6 +85,7 @@ export function App() {
   const [b, setB] = useState<number | null>(null);
   const [mutant, setMutant] = useState<Mutant | null>(null);
   const [isNew, setIsNew] = useState(false);
+  const [lastRecord, setLastRecord] = useState<(RecordResult & { decimals: number }) | null>(null);
   const [labError, setLabError] = useState<string | null>(null);
   const [muted, setMutedState] = useState(isMuted());
   const [musicOff, setMusicOff] = useState(isMusicMuted());
@@ -152,6 +157,7 @@ export function App() {
   }, [mutant, opponent]);
 
   const splice = useCallback((m: Manifest, x: number, y: number, toFight = false) => {
+    setLastRecord(null);
     try {
       makePair(x, y);
       const pa = m.byId.get(x);
@@ -427,11 +433,40 @@ export function App() {
                 }}
                 onClear={(slot) => (slot === 'A' ? setA(null) : setB(null))}
                 onSplice={() => a !== null && b !== null && splice(manifest, a, b)}
+                recorded={
+                  ACTIVE_REGISTRY && wallet.address
+                    ? (x, y) => (
+                        <RecordedSplice
+                          key={`${x}-${y}`}
+                          manifest={manifest}
+                          a={x}
+                          b={y}
+                          address={wallet.address!}
+                          onMonad={wallet.onMonad}
+                          onSwitchChain={() => void wallet.switchChain()}
+                          onRecorded={(r) => {
+                            splice(manifest, x, y);
+                            setRecordedTx(r.pairKey, r.txHash);
+                            setLastRecord(r);
+                          }}
+                        />
+                      )
+                    : undefined
+                }
               />
             )}
 
             {manifest && screen === 'reveal' && mutant && (
               <Reveal
+                record={
+                  lastRecord && lastRecord.lo === mutant.lo && lastRecord.hi === mutant.hi ? (
+                    <RecordBanner
+                      record={lastRecord}
+                      loName={manifest.byId.get(mutant.lo)?.displayName ?? `#${mutant.lo}`}
+                      hiName={manifest.byId.get(mutant.hi)?.displayName ?? `#${mutant.hi}`}
+                    />
+                  ) : undefined
+                }
                 key={mutant.pairKey}
                 mutant={mutant}
                 manifest={manifest}

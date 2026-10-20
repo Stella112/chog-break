@@ -53,4 +53,4 @@ None. All code was written during Chogathon 2026. Open-source libraries are list
 Internal playtesting only. The first playtest feedback ("I don't know how to play" and "it looks like moving static pictures") led directly to the in-fight coach, the visual controls guide and the animated character rigs.
 
 ## What's next
-Recorded Splices on Monad with first-discoverer credit and parent-holder payouts in $CHOG, a Daily Experiment challenge, and online play.
+Deploying Recorded Splice on Monad (the contract and the in-app flow are built and tested; deployment is pending) for first-discoverer credit and parent-holder payouts in $CHOG, a Daily Experiment challenge, and online play.

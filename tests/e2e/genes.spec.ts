@@ -40,6 +40,9 @@ async function setup(page: Page, kit: Record<string, unknown>, x0 = 500, x1 = 64
       A.idle(1, x1);
       A.setKit(0, kit);
       const S = A.scene;
+      // long tests must not run into the 120 s timer: sudden death disables UNDEAD and changes the rules
+      S.elapsedMs = 0;
+      S.suddenDeath = false;
       // clear frogs, zones and projectiles left over from the previous check
       for (const list of [S.projectiles, S.zones, S.frogs, S.coins]) for (const e of list ?? []) e.destroy?.();
       S.fighters[0].facing = 1;

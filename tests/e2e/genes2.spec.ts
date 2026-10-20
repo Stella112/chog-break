@@ -29,6 +29,9 @@ async function setup(
       A.setKit(0, kit);
       A.setKit(1, foeKit);
       const S = A.scene;
+      // long tests must not run into the 120 s timer: sudden death disables UNDEAD and changes the rules
+      S.elapsedMs = 0;
+      S.suddenDeath = false;
       S.fighters[0].facing = 1;
       for (const f of S.fighters) {
         f.score.damage = 0;
@@ -378,7 +381,7 @@ test('P0 recipe perks', async ({ page }) => {
   ).toBe(true);
 
   // FWOG LORD: two frogs
-  await setup(page, { recipe: 'FWOG_LORD', trinket: 'FWOG' }, 400, 1100);
+  await setup(page, { recipe: 'FWOG_LORD', trinket: 'FWOG' }, 400, 1000); // keep the foe on the stage (mainRight 1040): a fall's delayed respawn leaks into the next check
   await page.evaluate(
     () =>
       ((window as any).__arena.scene.sources[0] = {
@@ -401,7 +404,7 @@ test('P0 recipe perks', async ({ page }) => {
   });
 
   // VOLATILITY: grows or shrinks within 5 s
-  await setup(page, { recipe: 'VOLATILITY', trinket: 'PUMP' }, 400, 1100);
+  await setup(page, { recipe: 'VOLATILITY', trinket: 'PUMP' }, 400, 1000);
   await page.waitForFunction(
     () => (window as any).__arena.state().fighters[0].size !== 'none',
     null,
@@ -417,8 +420,13 @@ test('P0 recipe perks', async ({ page }) => {
   });
   await page.waitForFunction(() => (window as any).__arena.scene.fighters[1].score.damage >= 8, null, { timeout: 2000 }).catch(() => {});
   const burst = await page.evaluate(() => (window as any).__arena.scene.fighters[1].score.damage);
+  const why = await page.evaluate(() => {
+    const sc = (window as any).__arena.scene;
+    const [f, foe] = sc.fighters;
+    return JSON.stringify({ fState: f.state, fx: Math.round(f.x), fy: Math.round(f.y), undeadReady: f.undeadReady, aff: f.kit.affinity, recipe: f.kit.recipe, lives: f.score.lives, sd: sc.suddenDeath, foeState: foe.state, foeX: Math.round(foe.x), foeY: Math.round(foe.y), foeInv: foe.invulnUntil - sc.time.now, foeBubble: foe.bubbleUntil - sc.time.now });
+  });
   console.log(`NUCLEAR UNDEAD burst ${burst}%`);
-  expect(burst).toBeGreaterThanOrEqual(8);
+  expect(burst, why).toBeGreaterThanOrEqual(8);
 });
 
 test('P0 arena modifiers: telegraph, effect', async ({ page }) => {
