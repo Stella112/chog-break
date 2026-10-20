@@ -24,8 +24,10 @@ export const IPFS_GATEWAYS = [
   'https://dweb.link/ipfs/',
 ];
 
-// Recorded Splice registry (§D10). null until Maris deploys it (docs/DEPLOY.md); while null the app shows
-// no Recorded Splice anywhere. When set: add the deploy tx hash as a comment and verify its constructor args.
-export const REGISTRY_ADDRESS: `0x${string}` | null = null;
+// Recorded Splice registry (§D10). VERIFIED 2026-10-20: deployed by Maris (deployer 0x17f2…13FC) in
+// tx 0xd2fae7a1dea094d2512c7b4e0293b94e50c7774c8bbd0df052f4c15f05743588 (block 115149552);
+// `npm run registry:verify` passes (code, immutables, fee 100 / max 10,000 $CHOG, owner, pair keys) and the
+// source is verified on Sourcify/MonadVision (exact match). Set to null to hide Recorded Splice again.
+export const REGISTRY_ADDRESS: `0x${string}` | null = '0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1';
 /** The registry sends 10% of each fee here (disclosed as "sent to the dead address", never "burned"). */
 export const DEAD_ADDRESS = '0x000000000000000000000000000000000000dEaD' as const;

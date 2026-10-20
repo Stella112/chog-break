@@ -52,8 +52,14 @@ async function main() {
     row(false, 'compiled artifact found', 'run `cd contracts && forge build` first');
   }
   if (art && code) {
-    const same = masked(code, art.deployedBytecode.immutableReferences) === masked(art.deployedBytecode.object, art.deployedBytecode.immutableReferences);
-    row(same, 'runtime bytecode matches this repo (immutables masked)');
+    const refs = art.deployedBytecode.immutableReferences;
+    const a = masked(code, refs);
+    const b = masked(art.deployedBytecode.object, refs);
+    // solc appends a CBOR metadata blob (length in the last 2 bytes) whose hash depends on file paths, so a
+    // build from another folder differs only there. Compare the executable code without it.
+    const strip = (hex: string) => hex.slice(0, hex.length - (parseInt(hex.slice(-4), 16) + 2) * 2);
+    row(strip(a) === strip(b), 'runtime code matches this repo (immutables masked, metadata ignored)');
+    if (a !== b && strip(a) === strip(b)) console.log('info  metadata hash differs (built from another path); the code itself is identical');
   }
 
   const [nft, token, maxFee, fee, prize, owner, paused] = await Promise.all([

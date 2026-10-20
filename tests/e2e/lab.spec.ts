@@ -22,7 +22,7 @@ test('guest splice flow', async ({ page }) => {
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await pick(page, '18', 'A'); // token 18: purple laser
   await pick(page, '66', 'B'); // token 66: crown
-  await page.getByRole('button', { name: 'SPLICE' }).click();
+  await page.getByRole('button', { name: 'SPLICE', exact: true }).click();
   await expect(page.locator('.mutant-name')).toHaveText('KING BEAM', { timeout: 10_000 });
   await expect(page.getByText('from #1479').first()).toBeVisible();
   await expect(page).toHaveURL(/a=18&b=66/);
@@ -81,7 +81,7 @@ test('one click on a Chog fills the next empty chamber', async ({ page }) => {
   await expect(page.locator('.chamber-a.is-loaded')).toBeVisible();
   await page.locator('.cell').nth(1).click();
   await expect(page.locator('.chamber-b.is-loaded')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'SPLICE' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'SPLICE', exact: true })).toBeEnabled();
   // Both full: a click shows details instead of replacing a parent.
   await page.locator('.cell').nth(2).click();
   await expect(page.getByRole('button', { name: 'LOAD INTO B' })).toBeVisible();

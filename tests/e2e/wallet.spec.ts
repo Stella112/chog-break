@@ -62,7 +62,7 @@ test('connect → wrong network → Switch to Monad (adds chain) → MY CHOGS li
   await page.getByRole('radio', { name: 'ALL CHOGS' }).click();
   await page.getByPlaceholder('Number or trait (crown, laser…)').fill('1500');
   await page.locator('.cell').first().click();
-  await page.getByRole('button', { name: 'SPLICE' }).click();
+  await page.getByRole('button', { name: 'SPLICE', exact: true }).click();
   await expect(page.getByText(/HOLDER SPLICE · you hold CHOG #1462/)).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'NOTEBOOK', exact: true }).click();
   await expect(page.locator('.badge-holder').first()).toBeVisible();

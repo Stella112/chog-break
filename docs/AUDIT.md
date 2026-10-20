@@ -51,7 +51,7 @@ Every requirement in `docs/MASTER_SPEC.md` was checked against the code, the tes
 | local 2P works · share card exports | ✅ `p1.spec` |
 | all contract tests pass | ✅ (updated 2026-10-20) 29 Foundry tests + 5 Monad mainnet fork tests (Maris assigned the contract to the Builder) |
 | Recorded Splice · discovery in the UI · owner payouts correct | ✅ on a local chain 143 against the compiled contract (`registry.anvil.test`, `recorded.spec`) and on a mainnet fork (`Fork.t.sol`); ⏳ one real mainnet recording (Maris) |
-| deployed address is real and shown with explorer link | ⏳ **not deployed** (Maris, `docs/DEPLOY.md`). Explorer links (Monadscan, verified) are wired for the registry, transactions and discoverers; `npm run registry:verify` checks a deployment before it is switched on |
+| deployed address is real and shown with explorer link | ✅ 2026-10-20: `0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1` (tx `0xd2fae7…3588`); `registry:verify` passes; source verified (Sourcify exact match); Monadscan links in the app |
 
 ## Phase checklists (§F)
 - **Phase 0:** chain check, manifest (1,969), trait report and sprites done. ✅

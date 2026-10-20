@@ -25,7 +25,7 @@ test('critical flow: home → lab → A → B → splice → reveal → fight �
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await pick(page, '18', 'A');
   await pick(page, '66', 'B');
-  await page.getByRole('button', { name: 'SPLICE' }).click();
+  await page.getByRole('button', { name: 'SPLICE', exact: true }).click();
   await expect(page.locator('.mutant-name')).toHaveText('KING BEAM', { timeout: 10_000 });
   await page.getByRole('button', { name: 'FIGHT ▸' }).click();
   await expect(page.getByText("TODAY'S LAB OPPONENT")).toBeVisible();

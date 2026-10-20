@@ -168,11 +168,9 @@ test('recording the same pair again: RECORDED ON MONAD (not a new discovery), no
   await expect(page.getByText(/recorded 2×/)).toBeVisible({ timeout: 30_000 });
 });
 
-test('no registry configured: no RECORDED SPLICE anywhere, free splice unchanged', async ({ page }) => {
-  await page.addInitScript(testWallet(URL, user, ''));
-  await page.addInitScript(() => delete (window as any).__chogbreakTestChain);
-  await page.goto('/?test=1');
-  await page.getByRole('button', { name: 'CONNECT WALLET' }).first().click();
+test('guest (no wallet): no RECORDED SPLICE, the free splice is unchanged', async ({ page }) => {
+  // the production registry is deployed, so RECORDED SPLICE exists, but only for a connected wallet
+  await page.goto('/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await page.locator('.cell').nth(0).click();
   await page.locator('.cell').nth(1).click();

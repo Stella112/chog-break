@@ -22,7 +22,9 @@ CHOG//BREAK turns the 1,969 Chog Genesis NFTs into ingredients. Pick any two rea
 
 **Discover.** Sixteen secret recipes hide in specific cross-parent combinations (laser eyes + crown = KING BEAM; Skull + Radioactive = NUCLEAR UNDEAD). Each one renames the mutant, changes its look and adds a perk. The Lab Notebook keeps every mutant you have made with its fight record, shows secret mutations found as "N / ???", and the results screen hints when one of your parents is half of a recipe you haven't found. With 1,937,496 possible pairs, the natural question after every fight is "what happens if I splice that one instead?"
 
-**Holders.** Connect a wallet (optional and read-only) to open MY CHOGS: the Chogs you hold, read straight from the contract on Monad, with the genes each one carries, your experiments with it and a one-click SPLICE WITH… The Lab gets a MY CHOGS tab. Nothing is ever signed or sent.
+**Recorded Splice ($CHOG).** With a wallet, a player can record any experiment on Monad for a 100 $CHOG fee (registry `0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1`, source verified). The first to record a pair is its permanent first discoverer, and every recording pays 35% of the fee to the current owner of each parent Chog, so holding a popular Chog earns $CHOG. The rest goes 20% to a prize pool and 10% to the dead address. The free experiment stays the default.
+
+**Holders.** Connect a wallet (optional) to open MY CHOGS: the Chogs you hold, read straight from the contract on Monad, with the genes each one carries, your experiments with it and a one-click SPLICE WITH… The Lab gets a MY CHOGS tab. Nothing is ever signed or sent.
 
 **Rarity never equals strength.** Tier changes no stat, which is enforced by tests over every gene combination. A headless 300-match bot-vs-bot simulation checks that no gene wins more than 65% of its matches.
 
@@ -53,4 +55,4 @@ None. All code was written during Chogathon 2026. Open-source libraries are list
 Internal playtesting only. The first playtest feedback ("I don't know how to play" and "it looks like moving static pictures") led directly to the in-fight coach, the visual controls guide and the animated character rigs.
 
 ## What's next
-Deploying Recorded Splice on Monad (the contract and the in-app flow are built and tested; deployment is pending) for first-discoverer credit and parent-holder payouts in $CHOG, a Daily Experiment challenge, and online play.
+a Daily Experiment challenge, and online play.

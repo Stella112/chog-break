@@ -12,9 +12,9 @@ Record at 1440×900 in Chrome with sound on. Use a fresh browser profile so the 
 | 2:05–2:25 | Results (WINNER, lab tip) → **CHANGE #…** → splice a different partner → different name, art and moves | "Change one parent and you get a different mutant, different moves, different fight." |
 | 2:25–2:38 | Lab Notebook (records, SECRET badge, ??? slots) → DOWNLOAD PNG share card | "Every experiment lands in your notebook. Sixteen secret mutations are hiding in 1.9 million pairs." |
 | 2:38–2:50 | CONNECT WALLET → MY CHOGS: owned Chogs read from Monad, genes, SPLICE WITH… | "Hold a Chog? Connect and splice your own. It only reads what you own; nothing is signed." |
-| 2:50–2:55 | Quick cut: LOCAL 2P on one keyboard | "Play the bot, or a friend on the same keyboard." |
+| 2:50–2:55 | RECORDED SPLICE on a new pair → confirm in wallet → **FIRST DISCOVERY!** (or a quick cut of LOCAL 2P if no $CHOG to spend) | "Record it on Monad: the first discoverer is permanent, and both parent owners get paid in $CHOG." |
 | 2:55–3:00 | Home screen | "1,969 Chogs. Millions of experiments. SPLICE. BREAK. REPEAT." |
 
 Notes:
-- The wallet segment is read-only (ownership). There is no Recorded Splice or payout in this build, and the video must not imply one. Record it with a wallet that holds at least one Chog.
+- MY CHOGS needs a wallet that holds at least one Chog. The RECORDED SPLICE shot needs 100 $CHOG and a little MON in that wallet and spends them for real; pick a pair nobody has recorded yet to show FIRST DISCOVERY!
 - If the arena modifier for your pair is "STABLE… FOR NOW", use `/?a=70&b=352&fight=1` for a shot with modifiers, or skip the line.
