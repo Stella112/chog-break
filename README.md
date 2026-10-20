@@ -10,6 +10,8 @@ Loop: **SPLICE → REVEAL → FIGHT → DISCOVER → SPLICE AGAIN**
 
 ## Judge quick start (no wallet, ~60 s)
 
+**Live: https://chog-break.vercel.app**
+
 Open the app and press **ENTER THE LAB**, or use these links directly (append to the app URL):
 
 | What | Link |

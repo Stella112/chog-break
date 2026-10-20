@@ -1,6 +1,6 @@
 # Chogathon 2026 submission: CHOG//BREAK: Mutant Arena
 
-> Draft text for each submission field. The **Description** block is kept under the 8,000-character limit (checked by `npm run docs:check`). Replace `<APP_URL>` with the production URL after deploying.
+> Draft text for each submission field. The **Description** block is kept under the 8,000-character limit (checked by `npm run docs:check`). App: https://chog-break.vercel.app
 
 ## Project name
 CHOG//BREAK: Mutant Arena
@@ -37,7 +37,7 @@ Two existing NFTs become genetic inputs for a playable third entity, and the sam
 The NFTs supply the parents' identity and art, the mutant's genetics, its visual composition, its abilities, the secret recipes and the arena's rules. Remove Chog Genesis and the product disappears. (Code map in the README.)
 
 ## How to test (no wallet, ~60 seconds)
-1. Open `<APP_URL>` and press **ENTER THE LAB**, or open `<APP_URL>/?a=18&b=66` for a secret mutation (KING BEAM).
+1. Open https://chog-break.vercel.app and press **ENTER THE LAB**, or open https://chog-break.vercel.app/?a=18&b=66 for a secret mutation (KING BEAM).
 2. Watch the reveal: each trait shows which parent it came from and what gene it gave.
 3. Press **FIGHT ▸**, then **FIGHT ▸** again. Desktop keyboard: A/D move, W jump, J punch, K dash, L special, I close move. The first fight coaches you.
 4. Knock the bot off the screen twice. Then try **Change #…** to swap one parent and see how the mutant and its moves change.
