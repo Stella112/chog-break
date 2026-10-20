@@ -49,7 +49,9 @@ Every requirement in `docs/MASTER_SPEC.md` was checked against the code, the tes
 | owned Chogs detected accurately | ✅ e2e uses the real on-chain owner of token 1; ⏳ Maris's wallet |
 | holder can splice their own Chog | ✅ SPLICE WITH… + Lab MY CHOGS tab |
 | local 2P works · share card exports | ✅ `p1.spec` |
-| all contract tests pass · deployed address · Recorded Splice · discovery · payouts | ❌ **not started**: the registry contract is Reviewer-owned (`contracts/` does not exist yet). Deploying it moves real funds (STOP 5). The UI says nothing about payouts or recording |
+| all contract tests pass | ✅ (updated 2026-10-20) 29 Foundry tests + 5 Monad mainnet fork tests (Maris assigned the contract to the Builder) |
+| Recorded Splice · discovery in the UI · owner payouts correct | ✅ on a local chain 143 against the compiled contract (`registry.anvil.test`, `recorded.spec`) and on a mainnet fork (`Fork.t.sol`); ⏳ one real mainnet recording (Maris) |
+| deployed address is real and shown with explorer link | ⏳ **not deployed** (Maris, `docs/DEPLOY.md`). Explorer links (Monadscan, verified) are wired for the registry, transactions and discoverers; `npm run registry:verify` checks a deployment before it is switched on |
 
 ## Phase checklists (§F)
 - **Phase 0:** chain check, manifest (1,969), trait report and sprites done. ✅
@@ -58,17 +60,18 @@ Every requirement in `docs/MASTER_SPEC.md` was checked against the code, the tes
 - **Phase 3:** full match, rematch ×10, lives once per KO, bot recovery, fps logged. FUN GATE passed ("I'd press rematch", recorded in PROGRESS). ✅
 - **Phase 4:** every gene verified by e2e. Modifiers checked for telegraph and effect. Balance sim passes after the CHAOS ORB fix. Recipes order-independent. ✅
 - **Phase 5:** polish, a11y, OG/favicon, and the critical flow on the production build. ✅ Live-URL run ⏳ (deploy).
-- **Phase 6:** wallet + MY CHOGS ✅, share card ✅, local 2P ✅, P1 recipes ✅, P1 modifiers ✅, Recorded Splice ❌ (needs the contract).
+- **Phase 6:** wallet + MY CHOGS ✅, share card ✅, local 2P ✅, P1 recipes ✅, P1 modifiers ✅, Recorded Splice ✅ built and tested, ⏳ deploy (Maris).
 - **Phase 7:** README, SUBMISSION and DEMO_SCRIPT written; fresh clone builds. ✅ Live-URL checklist ⏳.
 
 ## Honesty / no-placeholder (§G3, §G3a)
 No "coming soon", TODOs, lorem ipsum, fake owners, tx hashes or earnings in the UI. No claims of on-chain records, payouts, burns, secure randomness or online play. `docs:check` enforces this for README and SUBMISSION. ✅
 
 ## Reviewer track (not Builder work, listed for completeness)
-`contracts/`, `tests/review/`, `docs/REVIEW.md`, `docs/SECURITY.md` and `docs/DEPLOY.md` do not exist. The $CHOG `burn()` and fee-on-transfer checks are still under "Needs human verification".
+Updated 2026-10-20: Maris assigned `contracts/` and `docs/DEPLOY.md` to the Builder. `docs/CONTRACT_SELF_REVIEW.md` covers the R3 topics but is a self-review, not an independent one. `tests/review/`, `docs/REVIEW.md` and `docs/SECURITY.md` (Reviewer-owned) still don't exist. Fee-on-transfer is resolved by the fork test; $CHOG `burn()` source is still unchecked (the contract uses the dead address).
 
 ## Open items, in order
 1. **Maris:** try MY CHOGS with a real wallet.
+1b. **Maris:** deploy the registry (`docs/DEPLOY.md`) → Builder runs `npm run registry:verify`, sets `REGISTRY_ADDRESS` → one real Recorded Splice.
 2. **Approved 2026-10-19:** 2.5D arena (three.js). It must keep every test above green, with the 2D arena as the fallback.
 3. **Maris:** Vercel deploy → Builder re-runs §G1 on the live URL.
 4. Recorded Splice: only if the Reviewer's registry exists and Maris deploys it; otherwise ship without it (§F Phase 6).

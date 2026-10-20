@@ -5,8 +5,14 @@ export const CHAIN_ID = 143;
 export const CHOG_GENESIS = '0xc96d31F8626c6D03Fae5dCD3d61e3FB9F4a73763' as const;
 export const CHOG_TOKEN = '0x350035555E10d9AfAF1566AaebfCeD5BA6C27777' as const;
 
-// UNVERIFIED: public RPC — confirm in official Monad docs + eth_chainId check (scripts/verify-chain.ts)
+// VERIFIED 2026-10-20: listed as the mainnet public RPC in the official docs
+// (docs.monad.xyz/developer-essentials/network-information) and answers eth_chainId 0x8f.
 export const RPC_URL = 'https://rpc.monad.xyz';
+// VERIFIED 2026-10-20: Monadscan is listed in the official docs; /address/<CHOG_GENESIS> shows "Chog Genesis (CHOG)"
+// and /tx/<hash> showed the same block as the RPC for a live transaction.
+export const EXPLORER_URL = 'https://monadscan.com';
+export const explorerTx = (hash: string) => `${EXPLORER_URL}/tx/${hash}`;
+export const explorerAddress = (address: string) => `${EXPLORER_URL}/address/${address}`;
 // UNVERIFIED: canonical Multicall3 address — confirm eth_getCode on chain 143
 export const MULTICALL3 = '0xcA11bde05977b3631167028862bE2a173976CA11' as const;
 // UNVERIFIED: IPFS gateways, tried in order

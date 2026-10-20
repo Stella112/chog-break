@@ -7,6 +7,7 @@ import { readNotebook, type NotebookEntry } from '../state/notebook';
 import { ChogImage } from './ChogImage';
 import { ShareButtons } from './ShareButtons';
 import { useOwned } from '../state/owned';
+import { explorerTx } from '../config/chain';
 
 type Filter = 'all' | 'secret' | 'unstable';
 type Sort = 'newest' | 'wins';
@@ -179,9 +180,15 @@ export function Notebook({ manifest, onOpen, onFight }: Props) {
                   {e.unstable && <span className="badge badge-unstable">UNSTABLE</span>}
                   {owned && (owned.includes(e.lo) || owned.includes(e.hi)) && <span className="badge badge-holder">YOUR CHOG</span>}
                   {e.recordedTx && (
-                    <span className="badge badge-onchain" title={`Recorded on Monad: ${e.recordedTx}`}>
-                      ON-CHAIN
-                    </span>
+                    <a
+                      className="badge badge-onchain"
+                      href={explorerTx(e.recordedTx)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Recorded on Monad: view the transaction"
+                    >
+                      ON-CHAIN ↗
+                    </a>
                   )}
                 </span>
                 <div className="nb-actions">

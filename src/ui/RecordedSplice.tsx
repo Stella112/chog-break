@@ -2,7 +2,7 @@
 // recording gets first-discoverer credit, and the two parent owners are paid. FREE EXPERIMENT stays the default.
 import { useState } from 'react';
 import { parseAbi, type Address } from 'viem';
-import { CHOG_GENESIS } from '../config/chain';
+import { CHOG_GENESIS, explorerAddress } from '../config/chain';
 import type { Manifest } from '../data/manifest';
 import { ACTIVE_REGISTRY } from '../chain/active';
 import { publicClient, shortAddress, walletClientFor } from '../chain/client';
@@ -166,7 +166,12 @@ export function RecordedSplice({ manifest, a, b, address, onMonad, onSwitchChain
           </button>
         )}
       </div>
-      <p className="small dim">The free experiment needs none of this.</p>
+      <p className="small dim">
+        The free experiment needs none of this. Registry:{' '}
+        <a href={explorerAddress(registry)} target="_blank" rel="noopener noreferrer">
+          {shortAddress(registry)}
+        </a>
+      </p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // Read-only on-chain facts from the Recorded Splice registry. Render nothing until a registry exists.
 import { useEffect, useState } from 'react';
 import { ACTIVE_REGISTRY } from '../chain/active';
+import { explorerAddress, explorerTx } from '../config/chain';
 import { publicClient, shortAddress } from '../chain/client';
 import { formatChog, readPairRecord, readTokenStats, type PairRecord, type RecordResult, type RegistryReader } from '../chain/registry';
 
@@ -25,11 +26,17 @@ export function PairOnChain({ lo, hi, refresh = 0 }: { lo: number; hi: number; r
   if (!ACTIVE_REGISTRY || failed || !rec) return null;
   return (
     <p className="mono small onchain-line">
-      {rec.discoverer
-        ? `ON-CHAIN · first discovered by ${shortAddress(rec.discoverer)}${
-            rec.discoveredAt ? ` on ${new Date(rec.discoveredAt * 1000).toLocaleDateString()}` : ''
-          } · recorded ${rec.count}×`
-        : 'ON-CHAIN · not recorded yet: its first discoverer slot is open'}
+      {rec.discoverer ? (
+        <>
+          ON-CHAIN · first discovered by{' '}
+          <a href={explorerAddress(rec.discoverer)} target="_blank" rel="noopener noreferrer">
+            {shortAddress(rec.discoverer)}
+          </a>
+          {rec.discoveredAt ? ` on ${new Date(rec.discoveredAt * 1000).toLocaleDateString()}` : ''} · recorded {rec.count}×
+        </>
+      ) : (
+        'ON-CHAIN · not recorded yet: its first discoverer slot is open'
+      )}
     </p>
   );
 }
@@ -49,7 +56,9 @@ export function RecordBanner({ record, loName, hiName }: { record: RecordResult 
         {formatChog(record.shareLo, d)} $CHOG to the owner of {loName} · {formatChog(record.shareHi, d)} $CHOG to the owner of{' '}
         {hiName} · {formatChog(record.prize, d)} to the prize pool · {formatChog(record.burned, d)} sent to the dead address
       </span>
-      <span className="mono small dim">tx {shortAddress(record.txHash)}</span>
+      <a className="mono small" href={explorerTx(record.txHash)} target="_blank" rel="noopener noreferrer">
+        View transaction {shortAddress(record.txHash)} on Monadscan ↗
+      </a>
     </div>
   );
 }

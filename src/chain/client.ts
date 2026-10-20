@@ -1,6 +1,6 @@
 // §D9 wallet: injected provider (window.ethereum) via viem. Transactions only for Recorded Splice (registry.ts).
 import { createPublicClient, createWalletClient, custom, defineChain, http, type Address, type EIP1193Provider } from 'viem';
-import { CHAIN_ID, MULTICALL3, RPC_URL } from '../config/chain';
+import { CHAIN_ID, EXPLORER_URL, MULTICALL3, RPC_URL } from '../config/chain';
 import { ACTIVE_RPC } from './active';
 
 export const monad = defineChain({
@@ -8,6 +8,7 @@ export const monad = defineChain({
   name: 'Monad',
   nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
   rpcUrls: { default: { http: [RPC_URL] } },
+  blockExplorers: { default: { name: 'Monadscan', url: EXPLORER_URL } },
   contracts: { multicall3: { address: MULTICALL3 } },
 });
 
@@ -55,9 +56,8 @@ export async function switchToMonad(): Promise<void> {
     if (code !== 4902 && inner !== 4902) throw e;
     await provider.request({
       method: 'wallet_addEthereumChain',
-      // Verified: chain ID 143, native MON, public RPC answers eth_chainId 0x8f (docs/CHAIN_CHECK.md).
-      // No blockExplorerUrls: the explorer is not yet verified.
-      params: [{ chainId: chainIdHex, chainName: 'Monad', nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 }, rpcUrls: [RPC_URL] }],
+      // Verified: chain ID 143, native MON, RPC and explorer from the official Monad docs (src/config/chain.ts).
+      params: [{ chainId: chainIdHex, chainName: 'Monad', nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 }, rpcUrls: [RPC_URL], blockExplorerUrls: [EXPLORER_URL] }],
     });
   }
 }

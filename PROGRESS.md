@@ -241,11 +241,11 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 
 
 ## Unverified facts (all in `src/config/chain.ts`)
-- RPC URL works but is not yet confirmed in the official Monad docs.
+- ~~RPC URL~~: **verified 2026-10-20** in the official Monad docs (network information page).
 - Multicall3 has code at the canonical address and multicall calls succeed (functionally verified).
 - IPFS gateways are third-party: filebase works; pinata, ipfs.io and dweb.link return 429 under load.
 - `eth_getLogs` works for a 100-block range and fails at 1,000.
-- Block explorer and contract verification method: not yet read from the official docs.
+- ~~Block explorer + verification~~: **verified 2026-10-20**: Monadscan (`/address/`, `/tx/` checked against live data) and MonadVision are the official explorers; contract verification via Sourcify (`--verifier sourcify --verifier-url https://sourcify-api-monad.blockvision.org/`, no API key) or Monadscan (API key). Now in `src/config/chain.ts` and `docs/DEPLOY.md`.
 
 ## Needs human verification
 - $CHOG `burn()`: the implementation bytecode contains the selectors, but the source was not checked. The spec still uses the dead address.

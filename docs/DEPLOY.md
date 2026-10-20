@@ -85,15 +85,24 @@ Your keystore asks for its password and signs the transaction. Copy two things f
 - the line `ChogBreakRegistry deployed at 0x…`
 - the transaction hash
 
-## 6. Hand back to the Builder
+## 6. Verify the source on the explorer (no API key needed)
+
+```bash
+cd contracts
+forge verify-contract <registry address> src/ChogBreakRegistry.sol:ChogBreakRegistry --chain 143 --verifier sourcify --verifier-url https://sourcify-api-monad.blockvision.org/
+```
+
+(From the official Monad docs. Monadscan verification works too but needs a Monadscan API key.)
+
+## 7. Hand back to the Builder
 
 Paste the **registry address** and the **transaction hash** in the chat. The Builder then:
 1. puts them in `src/config/chain.ts` (`REGISTRY_ADDRESS`, with the tx hash as a comment)
-2. checks on-chain that the deployed contract's `CHOG_GENESIS`, `CHOG_TOKEN`, `fee`, `MAX_FEE`, `prizeRecipient` and `owner` match what you chose
+2. runs `npm run registry:verify -- <address>`, which checks on-chain that the deployed bytecode is exactly this repo's compiled contract and that `CHOG_GENESIS`, `CHOG_TOKEN`, `fee`, `MAX_FEE`, `prizeRecipient`, `owner` and the pair key match what you chose
 
 Until then the app shows no Recorded Splice anywhere.
 
-## 7. The final check (yours)
+## 8. The final check (yours)
 
 Run one real Recorded Splice in the app (spec §F Phase 6, human checkpoint). Then paste the explorer links into PROGRESS.md and confirm three things:
 - the receipt succeeded
