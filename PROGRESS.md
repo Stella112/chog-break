@@ -228,7 +228,7 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - HUMAN CHECKPOINT: Vercel production deploy (Maris).
 
 ## What Maris must do (deploy)
-1. Push the repo to GitHub (`git remote add origin <your repo URL>` then `git push -u origin main`).
+1. ~~Push the repo to GitHub~~: done 2026-10-20, **private** repo https://github.com/Stella112/chog-break (make it public before submitting: judges need the link).
 2. Vercel → Add New → Project → import the repo → Deploy (settings come from `vercel.json`; no env vars needed).
 3. Open the live URL: home → ENTER THE LAB → splice two Chogs → FIGHT.
 4. Paste the production URL to the Builder. The Builder then makes the og:image URL absolute and runs the §G1 checklist against the live site.
