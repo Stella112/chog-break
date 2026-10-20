@@ -6,6 +6,7 @@ import { needsJar, renderMutant } from '../art/mutantRenderer';
 import { readNotebook, type NotebookEntry } from '../state/notebook';
 import { ChogImage } from './ChogImage';
 import { ShareButtons } from './ShareButtons';
+import { useOwned } from '../state/owned';
 
 type Filter = 'all' | 'secret' | 'unstable';
 type Sort = 'newest' | 'wins';
@@ -53,6 +54,7 @@ type Props = {
 };
 
 export function Notebook({ manifest, onOpen, onFight }: Props) {
+  const owned = useOwned();
   const entries = useMemo(() => Object.values(readNotebook()), []);
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<Sort>('newest');
@@ -175,6 +177,7 @@ export function Notebook({ manifest, onOpen, onFight }: Props) {
                 <span className="badges">
                   {e.recipeId && <span className="badge badge-recipe">SECRET</span>}
                   {e.unstable && <span className="badge badge-unstable">UNSTABLE</span>}
+                  {owned && (owned.includes(e.lo) || owned.includes(e.hi)) && <span className="badge badge-holder">YOUR CHOG</span>}
                 </span>
                 <div className="nb-actions">
                   <button className="btn btn-primary small" onClick={() => onFight(e.lo, e.hi)}>

@@ -315,3 +315,8 @@ a.btn { display: inline-block; text-decoration: none; color: inherit; }
 .mc-lab { margin-top: 0.5rem; }
 .mc-exp { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.3rem 0; }
 .browser-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.6rem; }
+
+/* ---------- holder perks (cosmetic only) ---------- */
+.holder-chip { display: inline-block; margin: 0.2rem 0 0.6rem; padding: 0.2rem 0.6rem; background: #4ff0ff; color: #000; font-weight: 700; }
+.badge-holder { background: #4ff0ff; color: #000; }
+.cell-own { position: absolute; left: 4px; bottom: 26px; padding: 1px 5px; background: #4ff0ff; color: #000; font: 700 10px 'JetBrains Mono', monospace; }

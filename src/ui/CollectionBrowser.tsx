@@ -189,6 +189,7 @@ export function CollectionBrowser({
                     <ChogImage tokenId={c.tokenId} alt={c.displayName} thumb />
                     <span className="cell-name">{c.displayName}</span>
                     {tag && <span className="cell-tag">{tag}</span>}
+                    {ownedIds?.includes(c.tokenId) && <span className="cell-own">YOURS</span>}
                   </button>
                 );
               })}

@@ -56,6 +56,16 @@ test('connect → wrong network → Switch to Monad (adds chain) → MY CHOGS li
   await expect(page.locator('.chamber-a.is-loaded')).toBeVisible();
   await page.getByRole('radio', { name: /MY CHOGS \(\d+\)/ }).click();
   await expect(page.locator('.cell').first()).toBeVisible();
+
+  // Holder perks (cosmetic): YOURS tag in the grid, HOLDER SPLICE on the reveal, YOUR CHOG in the notebook.
+  await expect(page.locator('.cell .cell-own').first()).toBeVisible();
+  await page.getByRole('radio', { name: 'ALL CHOGS' }).click();
+  await page.getByPlaceholder('Number or trait (crown, laser…)').fill('1500');
+  await page.locator('.cell').first().click();
+  await page.getByRole('button', { name: 'SPLICE' }).click();
+  await expect(page.getByText(/HOLDER SPLICE · you hold CHOG #1462/)).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'NOTEBOOK', exact: true }).click();
+  await expect(page.locator('.badge-holder').first()).toBeVisible();
 });
 
 test('no wallet installed: friendly message, guest flow untouched', async ({ page }) => {

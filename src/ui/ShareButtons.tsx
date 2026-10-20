@@ -4,6 +4,7 @@ import type { Manifest } from '../data/manifest';
 import { needsJar } from '../art/mutantRenderer';
 import { deepLink, downloadShareCard, tweetUrl } from '../art/shareCard';
 import { readNotebook } from '../state/notebook';
+import { ownedParents, useOwned } from '../state/owned';
 
 export function ShareButtons({
   mutant,
@@ -17,6 +18,7 @@ export function ShareButtons({
   const [state, setState] = useState<'idle' | 'busy' | 'error'>('idle');
   const url = deepLink(mutant);
   const name = (id: number) => manifest.byId.get(id)?.displayName ?? `#${id}`;
+  const mine = ownedParents(useOwned(), mutant.lo, mutant.hi);
 
   const download = async () => {
     setState('busy');
@@ -30,6 +32,7 @@ export function ShareButtons({
         losses: entry?.losses ?? 0,
         framed: needsJar(manifest.sprites, mutant.visualRecipe),
         url,
+        holder: mine.length ? `HOLDER OF ${mine.map(name).join(' + ')}` : undefined,
       });
       setState('idle');
     } catch {

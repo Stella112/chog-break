@@ -11,6 +11,8 @@ export type ShareInfo = {
   losses: number;
   framed: boolean;
   url: string;
+  /** Holder perk: e.g. "HOLDER OF CHOG #1462" when the connected wallet holds a parent. */
+  holder?: string;
 };
 
 const W = 1200;
@@ -75,6 +77,14 @@ export async function drawShareCard(info: ShareInfo): Promise<HTMLCanvasElement>
   ctx.fillStyle = '#a59fb8';
   ctx.font = '20px "JetBrains Mono", monospace';
   ctx.fillText(m.experimentLabel, 80, 585);
+  if (info.holder) {
+    ctx.font = 'bold 18px "JetBrains Mono", monospace';
+    const tw = ctx.measureText(info.holder).width;
+    ctx.fillStyle = '#4ff0ff';
+    ctx.fillRect(72, 100, tw + 24, 32);
+    ctx.fillStyle = '#000';
+    ctx.fillText(info.holder, 84, 122);
+  }
 
   // text column
   const x0 = 570;

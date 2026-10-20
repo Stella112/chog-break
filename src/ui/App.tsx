@@ -21,6 +21,7 @@ import { Reveal } from './Reveal';
 import { ErrorBoundary } from './ErrorBoundary';
 import { MyChogs } from './MyChogs';
 import { useWallet } from '../state/wallet';
+import { OwnedContext } from '../state/owned';
 import { shortAddress } from '../chain/client';
 
 // Phaser is only needed in the arena: load it lazily so the Lab is interactive fast (§D13).
@@ -346,6 +347,7 @@ export function App() {
           {wallet.error}
         </p>
       )}
+      <OwnedContext.Provider value={ownedIds}>
       <main id="main">
         <ErrorBoundary key={screen} onReset={() => setScreen('lab')}>
           <div className="screen">
@@ -538,6 +540,7 @@ export function App() {
           </div>
         </ErrorBoundary>
       </main>
+      </OwnedContext.Provider>
     </div>
   );
 }

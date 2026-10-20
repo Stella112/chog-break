@@ -8,6 +8,7 @@ import { sfx } from '../audio/sfx';
 import { ChogImage } from './ChogImage';
 import { geneForSlot } from './traitGenes';
 import { ShareButtons } from './ShareButtons';
+import { ownedParents, useOwned } from '../state/owned';
 
 /** Jittering lightning arcs from both parent tubes into the chamber (redrawn every 70 ms). */
 function Arcs({ active }: { active: boolean }) {
@@ -85,6 +86,7 @@ export function Reveal({
   const [step, setStep] = useState<Step>(reducedMotion ? 'open' : 'lock');
   const canvas = useRef<HTMLCanvasElement>(null);
   const [artReady, setArtReady] = useState(false);
+  const mine = ownedParents(useOwned(), mutant.lo, mutant.hi);
   const lo = manifest.byId.get(mutant.lo)!;
   const hi = manifest.byId.get(mutant.hi)!;
 
@@ -206,6 +208,11 @@ export function Reveal({
             {lo.displayName} (ID {lo.tokenId}) × {hi.displayName} (ID {hi.tokenId})
             {isNewDiscovery ? ' · NEW ENTRY IN NOTEBOOK' : ' · ALREADY IN NOTEBOOK'}
           </p>
+          {mine.length > 0 && (
+            <p className="holder-chip mono small">
+              HOLDER SPLICE · you hold {mine.map((id) => manifest.byId.get(id)?.displayName ?? `#${id}`).join(' and ')}
+            </p>
+          )}
 
           <table className="genes inherit">
             <thead>
