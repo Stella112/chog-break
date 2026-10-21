@@ -1,0 +1,76 @@
+/* Landing page: same lab identity as the game (dark surfaces, hazard yellow, cyan/pink accents, Bungee + mono). */
+:root { --ld-bg: #0b0a10; --ld-panel: #15131d; --ld-line: #2e2a3d; --ld-text: #f1eef7; --ld-dim: #a59fb8; --ld-y: #ffd400; --ld-c: #4ff0ff; --ld-p: #ff4fd8; }
+html, body { margin: 0; background: var(--ld-bg); color: var(--ld-text); }
+.ld { font-family: Archivo, system-ui, sans-serif; line-height: 1.5; overflow-x: hidden; }
+.ld a { color: var(--ld-c); }
+.ld h1, .ld h2, .ld h3, .ld-logo { font-family: Bungee, Impact, sans-serif; letter-spacing: 0.01em; }
+.ld h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0 0 0.6rem; }
+.ld section { padding: clamp(2.5rem, 7vw, 5rem) clamp(16px, 6vw, 6rem); max-width: 1180px; margin: 0 auto; }
+
+.ld-top { position: sticky; top: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.8rem clamp(16px, 4vw, 3rem); background: rgba(11, 10, 16, 0.88); backdrop-filter: blur(6px); border-bottom: 1px solid var(--ld-line); }
+.ld-logo { color: var(--ld-text) !important; text-decoration: none; font-size: 1.3rem; }
+.ld-logo span { color: var(--ld-y); }
+.ld-top nav { display: flex; align-items: center; gap: 1.2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+.ld-top nav a:not(.ld-btn) { color: var(--ld-dim); text-decoration: none; }
+.ld-top nav a:not(.ld-btn):hover { color: var(--ld-text); }
+@media (max-width: 560px) { .ld-top nav a:not(.ld-btn) { display: none; } }
+
+.ld-btn { display: inline-block; padding: 0.85rem 1.4rem; background: var(--ld-y); color: #000 !important; font: 700 1rem 'JetBrains Mono', monospace; text-decoration: none; border: 2px solid var(--ld-y); box-shadow: 4px 4px 0 #000; transition: transform 0.1s, box-shadow 0.1s; }
+.ld-btn:hover, .ld-btn:focus-visible { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+.ld-btn-ghost { background: transparent; color: var(--ld-y) !important; }
+.ld-btn-small { padding: 0.45rem 0.9rem; font-size: 0.85rem; box-shadow: 3px 3px 0 #000; }
+
+.ld-hero { position: relative; padding-top: clamp(3rem, 9vw, 6rem) !important; }
+.ld-hazard { height: 14px; max-width: 420px; margin-bottom: 1.6rem; background: repeating-linear-gradient(135deg, var(--ld-y) 0 14px, #000 14px 28px); }
+.ld-kicker { font: 700 0.8rem 'JetBrains Mono', monospace; color: var(--ld-c); letter-spacing: 0.12em; margin: 0 0 0.6rem; }
+.ld-hero h1 { font-size: clamp(2.3rem, 8vw, 5.2rem); line-height: 1.02; margin: 0 0 1.2rem; }
+.ld-hero h1 em { font-style: normal; color: var(--ld-p); text-shadow: 3px 0 var(--ld-c); }
+.ld-sub { max-width: 640px; font-size: clamp(1rem, 2.2vw, 1.2rem); color: var(--ld-dim); }
+.ld-cta { display: flex; flex-wrap: wrap; gap: 0.9rem; margin: 1.6rem 0 0.8rem; }
+.ld-note { font: 0.85rem 'JetBrains Mono', monospace; color: var(--ld-dim); }
+
+.ld-strip { overflow: hidden; border-block: 1px solid var(--ld-line); background: var(--ld-panel); padding: 0.8rem 0; }
+.ld-strip-track { display: flex; gap: 0.8rem; width: max-content; animation: ld-scroll 60s linear infinite; }
+.ld-strip img { width: 96px; height: 96px; border-radius: 12px; background: #1d1a28; }
+@keyframes ld-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .ld-strip-track { animation: none; } }
+
+.ld-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center; }
+.ld-stats strong { display: block; font: 2rem Bungee, Impact, sans-serif; color: var(--ld-y); }
+.ld-stats span { font: 0.85rem 'JetBrains Mono', monospace; color: var(--ld-dim); }
+@media (max-width: 640px) { .ld-stats { grid-template-columns: repeat(2, 1fr); } }
+
+.ld-steps ol { list-style: none; padding: 0; margin: 1.4rem 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.ld-steps li { background: var(--ld-panel); border: 1px solid var(--ld-line); padding: 1.1rem; }
+.ld-steps b { font: 700 0.9rem 'JetBrains Mono', monospace; color: var(--ld-c); }
+.ld-steps p { margin: 0.5rem 0 0; color: var(--ld-dim); }
+@media (max-width: 860px) { .ld-steps ol { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .ld-steps ol { grid-template-columns: 1fr; } }
+
+.ld-lede { color: var(--ld-dim); max-width: 720px; }
+.ld-genes table { width: 100%; max-width: 760px; border-collapse: collapse; margin: 1rem 0 2rem; font-size: 0.98rem; }
+.ld-genes th { text-align: left; font: 700 0.8rem 'JetBrains Mono', monospace; color: var(--ld-dim); padding: 0.55rem 0.8rem 0.55rem 0; width: 7rem; }
+.ld-genes td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--ld-line); }
+.ld-trait { color: var(--ld-y); white-space: nowrap; }
+.ld-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.ld-card { background: var(--ld-panel); border: 1px solid var(--ld-line); padding: 1.2rem; }
+.ld-card h3 { margin: 0.4rem 0; font-size: 1.3rem; }
+.ld-card p { color: var(--ld-dim); margin: 0 0 0.8rem; }
+.ld-tag { font: 700 0.72rem 'JetBrains Mono', monospace; color: #000; background: var(--ld-y); padding: 0.15rem 0.45rem; }
+.ld-pair { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; font: 1.4rem Bungee, sans-serif; color: var(--ld-y); }
+.ld-pair img { width: 72px; height: 72px; border-radius: 10px; }
+@media (max-width: 860px) { .ld-cards { grid-template-columns: 1fr; } }
+
+.ld-split { display: flex; height: 54px; max-width: 760px; margin: 1.2rem 0 0.6rem; font: 700 0.75rem 'JetBrains Mono', monospace; color: #000; }
+.ld-split span { display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 0.3rem; overflow: hidden; }
+.ld-split span:nth-child(1) { background: var(--ld-c); }
+.ld-split span:nth-child(2) { background: var(--ld-p); }
+.ld-split span:nth-child(3) { background: var(--ld-y); }
+.ld-split span:nth-child(4) { background: #6b6680; color: var(--ld-text); }
+.small-print { font-size: 0.88rem; color: var(--ld-dim); max-width: 760px; word-break: break-word; }
+.ld-free { max-width: 760px; padding: 0.8rem 1rem; border: 1px dashed var(--ld-c); }
+
+.ld-final { text-align: center; }
+.ld-final h2 { margin-bottom: 1.4rem; }
+.ld-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.8rem; padding: 1.4rem clamp(16px, 6vw, 6rem); border-top: 1px solid var(--ld-line); font: 0.8rem 'JetBrains Mono', monospace; color: var(--ld-dim); }
+.ld :focus-visible { outline: 3px solid var(--ld-c); outline-offset: 3px; }

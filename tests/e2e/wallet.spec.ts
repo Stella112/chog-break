@@ -37,7 +37,7 @@ test('connect → wrong network → Switch to Monad (adds chain) → MY CHOGS li
   test.setTimeout(120_000);
   const owner = await client.readContract({ address: CHOG_GENESIS, abi, functionName: 'ownerOf', args: [1n] });
   await page.addInitScript(mockWallet(owner, '0x1'));
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'MY CHOGS' }).click();
   await page.getByRole('button', { name: 'CONNECT WALLET' }).first().click();
   await expect(page.getByText(/WALLET 0x/)).toBeVisible();

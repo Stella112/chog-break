@@ -1,4 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import './styles.css';
+import './arena.css';
 import { PairError, makePair } from '../core/pair';
 import { createMutant, type Mutant } from '../core/splice';
 import { dailyOpponentPair, utcDateString } from '../core/daily';
@@ -60,7 +62,7 @@ function setUrl(params: Record<string, string> | null) {
     if (mods !== null) q.set('mods', mods);
   }
   const s = q.toString();
-  history.replaceState(null, '', s ? `/?${s}` : '/');
+  history.replaceState(null, '', s ? `/play/?${s}` : '/play/');
 }
 
 /** Body colour for the arena rig: blend of both parents' skin tints. */
@@ -194,6 +196,10 @@ export function App() {
     if (!manifest || deepLinkHandled.current) return;
     deepLinkHandled.current = true;
     const p = new URLSearchParams(location.search);
+    if (p.get('view') === 'lab') {
+      setScreen('lab');
+      return;
+    }
     if (p.get('view') === 'notebook') {
       setScreen('notebook');
       return;

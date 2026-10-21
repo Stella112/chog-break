@@ -18,7 +18,7 @@ async function pick(page: Page, query: string, slot: 'A' | 'B') {
 
 test('guest splice flow', async ({ page }) => {
   const errors = trackErrors(page);
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await pick(page, '18', 'A'); // token 18: purple laser
   await pick(page, '66', 'B'); // token 66: crown
@@ -53,7 +53,7 @@ test('invalid deep link shows a friendly error and the Lab still works', async (
 });
 
 test('filters are generated from the manifest', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await page.locator('select').first().selectOption('Head');
   await page.locator('select').nth(1).selectOption('crown');
@@ -61,21 +61,21 @@ test('filters are generated from the manifest', async ({ page }) => {
 });
 
 test('secret mutation button resolves a recipe', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'TRY A SECRET MUTATION' }).click();
   await expect(page.getByText('SECRET MUTATION DISCOVERED')).toBeVisible({ timeout: 10_000 });
 });
 
 test('375px viewport has no horizontal scroll', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
 test('one click on a Chog fills the next empty chamber', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await page.locator('.cell').nth(0).click();
   await expect(page.locator('.chamber-a.is-loaded')).toBeVisible();

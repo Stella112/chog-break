@@ -222,6 +222,12 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - **DEPLOYED 2026-10-20** by Maris from the VPS (`/opt/chog-break-contracts`, deployer `0x17f2079259f18F9384DF6056b8E4185247db13FC`): registry `0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1`, tx `0xd2fae7a1dea094d2512c7b4e0293b94e50c7774c8bbd0df052f4c15f05743588`, block 115149552, 0.139 MON gas. Fee 100 $CHOG, MAX_FEE 10,000 $CHOG; owner and prize recipient = the deployer (can be moved later: two-step ownership, setPrizeRecipient). `npm run registry:verify` passes (runtime code identical; only the path-dependent metadata hash differs from a local build). Source verified on Sourcify/MonadVision: exact match. `REGISTRY_ADDRESS` set; Recorded Splice is live in the app.
 - **HUMAN CHECKPOINT (open):** one real Recorded Splice on mainnet; paste the Monadscan links here and check both owners got 35%.
 
+## Landing page + sponsored (gasless) recordings (Maris, 2026-10-21)
+- **Landing page** at `/` (separate light page: ~50 KB gzip JS, no game engine or game data); the game is its own page at `/play/` (`play/index.html`); old `/?a=…` links redirect there before loading. Lab interactive now 1.4 s on the 10 Mbit/s profile. e2e `landing.spec`.
+- **Registry v2** (`recordSpliceFor`: payer pays, player credited; `payer` in `SpliceRecorded`): 34 Foundry + 6 fork tests. On the VPS in `/opt/chog-break-contracts-v2`, **waiting for Maris to deploy** (fee 10 $CHOG).
+- **Sponsor** (`sponsor/`): one free recording per wallet and per IP every 48 h, daily cap (30), signed claim, exact approval, serialized relays; systemd unit (DynamicUser, read-only system). 6 anvil tests + 2 browser e2e against the real server.
+- **Next:** Maris deploys v2 and creates/funds the relayer → Builder verifies v2, installs the sponsor + Caddy site, sets `REGISTRY_ADDRESS` (v2) and `SPONSOR_URL`, then Maris pauses v1.
+
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
 

@@ -12,7 +12,7 @@ test('lab is interactive in under 3 s on a ~10 Mbit/s connection', async ({ page
     uploadThroughput: (5 * 1024 * 1024) / 8,
   });
   const t0 = Date.now();
-  await page.goto('/');
+  await page.goto('/play/');
   await expect(page.getByRole('button', { name: 'ENTER THE LAB' })).toBeEnabled({ timeout: 10_000 });
   const homeReady = Date.now() - t0;
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();

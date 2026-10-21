@@ -57,7 +57,7 @@ test('malformed metadata record is dropped, app still works', async ({ page }) =
     data[5] = { ...data[5], traits: undefined };
     await route.fulfill({ response: res, json: data });
   });
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await expect(page.getByText('1968 CHOGS')).toBeVisible();
   await page.goto('/?a=18&b=66');
@@ -71,7 +71,7 @@ test('missing image shows the fallback, no crash', async ({ page }) => {
   await page.route('**/chogs/thumbs/18.webp', (r) => r.fulfill({ status: 404, body: '' }));
   await page.goto('/?a=18&b=66');
   await expect(page.locator('.mutant-name')).toHaveText('KING BEAM', { timeout: 10_000 });
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await page.getByPlaceholder('Number or trait (crown, laser…)').fill('18');
   await expect(page.locator('.cell .art-offline')).toBeVisible();
@@ -99,7 +99,7 @@ test('archive failure shows a recoverable error', async ({ page }) => {
   await page.route('**/data/chogs.min.json', (route) =>
     fail ? route.fulfill({ status: 500, body: 'x' }) : route.continue(),
   );
-  await page.goto('/');
+  await page.goto('/play/');
   await expect(page.getByText(/failed to load/i)).toBeVisible();
   fail = false;
   await page.getByRole('button', { name: 'RETRY' }).click();
@@ -138,7 +138,7 @@ test('reduced motion: reveal is a short crossfade with no flash or lightning', a
 });
 
 test('music toggle persists across reloads and SOUND OFF disables it', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/play/');
   const musicBtn = page.getByRole('button', { name: 'Mute music' });
   await expect(musicBtn).toHaveText('MUSIC ON');
   await musicBtn.click();

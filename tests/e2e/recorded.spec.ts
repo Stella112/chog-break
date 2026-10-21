@@ -170,7 +170,7 @@ test('recording the same pair again: RECORDED ON MONAD (not a new discovery), no
 
 test('guest (no wallet): no RECORDED SPLICE, the free splice is unchanged', async ({ page }) => {
   // the production registry is deployed, so RECORDED SPLICE exists, but only for a connected wallet
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'ENTER THE LAB' }).click();
   await page.locator('.cell').nth(0).click();
   await page.locator('.cell').nth(1).click();

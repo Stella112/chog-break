@@ -7,8 +7,13 @@
     <meta name="theme-color" content="#0b0a10" />
     <title>CHOG//BREAK: Mutant Arena</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preload" href="/data/chogs.min.json" as="fetch" crossorigin="anonymous" />
-    <link rel="preload" href="/data/sprites.json" as="fetch" crossorigin="anonymous" />
+    <script>
+      // Old game links (/?a=18&b=66, /?view=…, /?test=1) open the game at /play/ before anything else loads.
+      (function () {
+        var q = new URLSearchParams(location.search);
+        if (['a', 'b', 'fight', 'view', 'test'].some(function (k) { return q.has(k); })) location.replace('/play/' + location.search + location.hash);
+      })();
+    </script>
     <meta property="og:type" content="website" />
     <meta property="og:title" content="CHOG//BREAK: Mutant Arena" />
     <meta property="og:description" content="Pick two Chogs. Splice them. See what goes wrong. Then fight it." />
@@ -30,6 +35,6 @@
   <body>
     <noscript>CHOG//BREAK needs JavaScript to splice Chogs.</noscript>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/landing/main.tsx"></script>
   </body>
 </html>
