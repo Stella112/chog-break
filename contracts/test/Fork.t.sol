@@ -80,4 +80,22 @@ contract ForkTest is Test {
         }
         assertEq(IERC20Metadata(CHOG_TOKEN).balanceOf(prize), 20e18);
     }
+
+    /// v2: a relayer pays, the player (with no tokens at all) is credited.
+    function test_fork_sponsoredRecordAgainstRealContracts() public {
+        if (!forked) vm.skip(true);
+        ChogBreakRegistry reg = new ChogBreakRegistry(
+            IERC721(CHOG_GENESIS), IERC20Metadata(CHOG_TOKEN), 10_000e18, 10e18, makeAddr("prize"), address(this)
+        );
+        address relayer = makeAddr("relayer");
+        address player = makeAddr("player");
+        deal(CHOG_TOKEN, relayer, 10e18);
+        vm.startPrank(relayer);
+        IERC20Metadata(CHOG_TOKEN).approve(address(reg), 10e18);
+        assertTrue(reg.recordSpliceFor(player, 5, 9));
+        vm.stopPrank();
+        assertEq(reg.firstDiscoverer(reg.pairKeyOf(5, 9)), player);
+        assertEq(IERC20Metadata(CHOG_TOKEN).balanceOf(relayer), 0, "relayer paid exactly 10 $CHOG");
+        assertEq(IERC20Metadata(CHOG_TOKEN).balanceOf(player), 0, "player paid nothing");
+    }
 }

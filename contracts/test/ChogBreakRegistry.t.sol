@@ -33,6 +33,7 @@ contract ChogBreakRegistryTest is Test {
     event PairDiscovered(bytes32 indexed pairKey, uint256 indexed lo, uint256 indexed hi, address discoverer);
     event SpliceRecorded(
         address indexed splicer,
+        address indexed payer,
         uint256 lo,
         uint256 hi,
         bytes32 indexed pairKey,
@@ -353,15 +354,15 @@ contract ChogBreakRegistryTest is Test {
         token.approve(address(reg), FEE);
         vm.expectEmit(true, true, true, true, address(reg));
         emit PairDiscovered(k, 1, 2, alice);
-        vm.expectEmit(true, true, false, true, address(reg));
-        emit SpliceRecorded(alice, 1, 2, k, holderA, holderB, FEE, 35e18, 35e18, 20e18, 10e18, true);
+        vm.expectEmit(true, true, true, true, address(reg));
+        emit SpliceRecorded(alice, alice, 1, 2, k, holderA, holderB, FEE, 35e18, 35e18, 20e18, 10e18, true);
         reg.recordSplice(2, 1);
         vm.stopPrank();
 
         vm.startPrank(bob);
         token.approve(address(reg), FEE);
-        vm.expectEmit(true, true, false, true, address(reg));
-        emit SpliceRecorded(bob, 1, 2, k, holderA, holderB, FEE, 35e18, 35e18, 20e18, 10e18, false);
+        vm.expectEmit(true, true, true, true, address(reg));
+        emit SpliceRecorded(bob, bob, 1, 2, k, holderA, holderB, FEE, 35e18, 35e18, 20e18, 10e18, false);
         reg.recordSplice(1, 2);
         vm.stopPrank();
     }
@@ -374,6 +375,76 @@ contract ChogBreakRegistryTest is Test {
         vm.expectEmit(false, false, false, true, address(reg));
         emit PrizeRecipientUpdated(prize, bob);
         reg.setPrizeRecipient(bob);
+        vm.stopPrank();
+    }
+
+    // ---------- v2: sponsored recordings ----------
+
+    function test_sponsoredRecordCreditsPlayerAndRelayerPays() public {
+        address player = makeAddr("player"); // holds no $CHOG and no MON
+        address relayer = bob;
+        bytes32 k = reg.pairKeyOf(1, 2);
+        uint256 r0 = token.balanceOf(relayer);
+        vm.startPrank(relayer);
+        token.approve(address(reg), FEE); // exact
+        vm.expectEmit(true, true, true, true, address(reg));
+        emit PairDiscovered(k, 1, 2, player);
+        vm.expectEmit(true, true, true, true, address(reg));
+        emit SpliceRecorded(player, relayer, 1, 2, k, holderA, holderB, FEE, 35e18, 35e18, 20e18, 10e18, true);
+        bool first = reg.recordSpliceFor(player, 2, 1);
+        vm.stopPrank();
+        assertTrue(first);
+        assertEq(reg.firstDiscoverer(k), player, "the player, not the relayer, is the discoverer");
+        assertEq(r0 - token.balanceOf(relayer), FEE, "relayer paid exactly the fee");
+        assertEq(token.balanceOf(player), 0, "player paid nothing");
+        assertEq(token.balanceOf(holderA), 35e18);
+        assertEq(token.balanceOf(holderB), 35e18);
+        assertEq(token.balanceOf(address(reg)), 0);
+    }
+
+    function test_sponsoredRecordRejectsZeroPlayer() public {
+        vm.startPrank(bob);
+        token.approve(address(reg), FEE);
+        vm.expectRevert(ChogBreakRegistry.ZeroAddress.selector);
+        reg.recordSpliceFor(address(0), 1, 2);
+        vm.stopPrank();
+    }
+
+    function test_sponsoredRecordRespectsPauseAndSameToken() public {
+        vm.startPrank(bob);
+        token.approve(address(reg), FEE);
+        vm.expectRevert(ChogBreakRegistry.SameToken.selector);
+        reg.recordSpliceFor(alice, 3, 3);
+        vm.stopPrank();
+        vm.prank(owner);
+        reg.pause();
+        vm.prank(bob);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        reg.recordSpliceFor(alice, 1, 2);
+    }
+
+    function test_sponsoredThenDirectKeepsFirstDiscoverer() public {
+        address player = makeAddr("player");
+        vm.startPrank(bob);
+        token.approve(address(reg), FEE);
+        reg.recordSpliceFor(player, 1, 2);
+        vm.stopPrank();
+        bool first = _approveAndRecord(alice, 1, 2);
+        assertFalse(first);
+        assertEq(reg.firstDiscoverer(reg.pairKeyOf(1, 2)), player);
+        assertEq(reg.pairSpliceCount(reg.pairKeyOf(1, 2)), 2);
+    }
+
+    function test_sponsoredReentrancyFails() public {
+        ReentrantToken evil = new ReentrantToken();
+        ChogBreakRegistry r2 =
+            new ChogBreakRegistry(IERC721(address(nft)), IERC20(address(evil)), MAX_FEE, FEE, prize, owner);
+        evil.setTarget(IRecord(address(r2)));
+        evil.mint(bob, 1_000e18);
+        vm.startPrank(bob);
+        evil.approve(address(r2), FEE * 2);
+        vm.expectRevert(ReentrancyGuard.ReentrancyGuardReentrantCall.selector);
+        r2.recordSpliceFor(alice, 1, 3);
         vm.stopPrank();
     }
 }

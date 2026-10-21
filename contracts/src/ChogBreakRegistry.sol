@@ -9,10 +9,11 @@ import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
-/// @title CHOG//BREAK Recorded Splice registry
+/// @title CHOG//BREAK Recorded Splice registry (v2)
 /// @notice Records a splice of two Chog Genesis tokens on Monad. The caller pays the $CHOG fee, which is split
 /// between the CURRENT on-chain owners of both parent tokens, a prize-pool address and the dead address.
 /// The first valid recording of a pair earns permanent first-discoverer credit.
+/// v2 adds recordSpliceFor: the caller pays, a named player gets the credit (sponsored, gasless for the player).
 /// @dev Small on purpose (spec §D10): no fighting, art, physics, trait mappings or randomness on-chain.
 /// No upgradeability, no delegatecall, no selfdestruct, no token rescue.
 contract ChogBreakRegistry is Ownable2Step, ReentrancyGuard, Pausable {
@@ -37,8 +38,11 @@ contract ChogBreakRegistry is Ownable2Step, ReentrancyGuard, Pausable {
     mapping(uint256 => uint256) public tokenEarned;
 
     event PairDiscovered(bytes32 indexed pairKey, uint256 indexed lo, uint256 indexed hi, address discoverer);
+    /// @param splicer the player credited with this recording (the discoverer if `first`)
+    /// @param payer who paid the fee and gas (equals `splicer` unless sponsored)
     event SpliceRecorded(
         address indexed splicer,
+        address indexed payer,
         uint256 lo,
         uint256 hi,
         bytes32 indexed pairKey,
@@ -89,6 +93,23 @@ contract ChogBreakRegistry is Ownable2Step, ReentrancyGuard, Pausable {
     /// @notice Record a splice of tokens `a` and `b`. Pulls `fee` $CHOG from the caller (exact approval needed).
     /// @dev Owners are resolved on-chain with ownerOf (reverts for tokens that don't exist), never from input.
     function recordSplice(uint256 a, uint256 b) external nonReentrant whenNotPaused returns (bool first) {
+        return _record(msg.sender, a, b);
+    }
+
+    /// @notice Sponsored recording: the caller pays the fee (and gas); `player` is credited as the splicer and,
+    /// if this is the pair's first recording, its first discoverer. Paying to credit someone else gives the
+    /// caller nothing, so this needs no access control.
+    function recordSpliceFor(address player, uint256 a, uint256 b)
+        external
+        nonReentrant
+        whenNotPaused
+        returns (bool first)
+    {
+        if (player == address(0)) revert ZeroAddress();
+        return _record(player, a, b);
+    }
+
+    function _record(address player, uint256 a, uint256 b) private returns (bool first) {
         if (a == b) revert SameToken();
         (uint256 lo, uint256 hi) = a < b ? (a, b) : (b, a);
         address ownerLo = CHOG_GENESIS.ownerOf(lo);
@@ -99,10 +120,10 @@ contract ChogBreakRegistry is Ownable2Step, ReentrancyGuard, Pausable {
         // effects
         first = firstDiscoverer[pairKey] == address(0);
         if (first) {
-            firstDiscoverer[pairKey] = msg.sender;
+            firstDiscoverer[pairKey] = player;
             // forge-lint: disable-next-line(unsafe-typecast)
             firstDiscoveryTime[pairKey] = uint64(block.timestamp); // safe until the year 584,942,417,355
-            emit PairDiscovered(pairKey, lo, hi, msg.sender);
+            emit PairDiscovered(pairKey, lo, hi, player);
         }
         pairSpliceCount[pairKey]++;
         tokenUsageCount[lo]++;
@@ -116,11 +137,12 @@ contract ChogBreakRegistry is Ownable2Step, ReentrancyGuard, Pausable {
         _pull(prizeRecipient, s.prize);
         _pull(DEAD, s.burned);
 
-        _emitRecorded(lo, hi, pairKey, ownerLo, ownerHi, s, first);
+        _emitRecorded(player, lo, hi, pairKey, ownerLo, ownerHi, s, first);
     }
 
     /// @dev Separate frame for the 12-field event (avoids "stack too deep" without via-IR).
     function _emitRecorded(
+        address player,
         uint256 lo,
         uint256 hi,
         bytes32 pairKey,
@@ -130,7 +152,7 @@ contract ChogBreakRegistry is Ownable2Step, ReentrancyGuard, Pausable {
         bool first
     ) private {
         emit SpliceRecorded(
-            msg.sender, lo, hi, pairKey, ownerLo, ownerHi, s.fee, s.shareLo, s.shareHi, s.prize, s.burned, first
+            player, msg.sender, lo, hi, pairKey, ownerLo, ownerHi, s.fee, s.shareLo, s.shareHi, s.prize, s.burned, first
         );
     }
 
