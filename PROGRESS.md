@@ -228,7 +228,8 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - **Sponsor** (`sponsor/`): one free recording per wallet and per IP every 48 h, daily cap (30), signed claim, exact approval, serialized relays; systemd unit (DynamicUser, read-only system). 6 anvil tests + 2 browser e2e against the real server.
 - **v2 DEPLOYED 2026-10-21** by Maris: `0x0EBe620530E604E6D05E0ffE7589c807E9e91527`, tx `0x41642ca43c6b63be4f0d3d97e84cf2b1c4274a61ec971e6fc6cfa14f55869f0d`, block 115344795, fee 10 $CHOG. `registry:verify` passes; Sourcify exact match. App switched to v2.
 - **Sponsor LIVE** on the VPS: `/opt/chogbreak-sponsor`, systemd `chogbreak-sponsor` (DynamicUser, sandboxed), Caddy site `https://chogbreak-api.38-49-209-149.sslip.io` (Caddyfile backed up first; `caddy validate` passed; other sites checked 200). Relayer `0xBA8a991eC2cA798055f6BDF53895aB3F84616f63` (key only in root-only `/etc/chogbreak-sponsor/relayer.env`). DAILY_CAP 30. RECORD FREE appears only while the relayer is funded.
-- **Open (Maris):** fund the relayer ($CHOG + MON); pause v1 (`0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1`); one real recording.
+- **Relayer funded 2026-10-21:** 1 MON + 500 $CHOG (= 50 free recordings at fee 10). Sponsor status `eligible: true, funded: true`; the live landing page shows the free-recording line.
+- **Open (Maris):** pause v1 (`0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1`); one real recording.
 
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.
