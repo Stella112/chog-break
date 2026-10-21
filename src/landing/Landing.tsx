@@ -1,5 +1,6 @@
 // Landing page at "/": what CHOG//BREAK is, in one scroll. Light on purpose: no game engine, no chain client.
 // Everything here is true of the current build; figures come from the real collection and the game code.
+import { useEffect, useState } from 'react';
 import { explorerAddress, REGISTRY_ADDRESS, SPONSOR_URL } from '../config/chain';
 import './landing.css';
 
@@ -25,7 +26,23 @@ function Thumb({ id }: { id: number }) {
   return <img src={`/chogs/thumbs/${id}.webp`} alt={`Chog Genesis token ${id}`} width={96} height={96} loading="lazy" decoding="async" />;
 }
 
+/** Only promise free recordings while the sponsor is live and funded. */
+function useFreeRecordings() {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    if (!SPONSOR_URL) return;
+    fetch(`${SPONSOR_URL}/api/sponsor/status`, { signal: AbortSignal.timeout(8000) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s: { funded?: boolean; paused?: boolean; remainingToday?: number } | null) =>
+        setOn(!!s && !!s.funded && !s.paused && (s.remainingToday ?? 0) > 0),
+      )
+      .catch(() => {});
+  }, []);
+  return on;
+}
+
 export function Landing() {
+  const free = useFreeRecordings();
   return (
     <div className="ld">
       <header className="ld-top">
@@ -181,7 +198,7 @@ export function Landing() {
           The 10% is sent to the dead address. Owners are read on-chain at the moment of recording, so holding a popular Chog earns
           $CHOG whenever anyone records a splice with it.
         </p>
-        {SPONSOR_URL && (
+        {free && (
           <p className="ld-free">
             <b>First one's on us:</b> connect a wallet, sign a free message, and the game pays the fee and gas for one recording every
             48 hours.

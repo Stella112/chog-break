@@ -155,6 +155,7 @@ describe.skipIf(!ready)('sponsor ↔ ChogBreakRegistry v2 on anvil', () => {
       store: memoryStore(),
       now,
     });
+    expect(await s.status(undefined, '7.7.7.7')).toMatchObject({ eligible: false, funded: false });
     const e = await s.claim(await claimBody(generatePrivateKey(), 2, 3), '7.7.7.7').catch((x: SponsorError) => x);
     expect(e.code).toBe('SPONSOR_EMPTY');
   }, 60_000);

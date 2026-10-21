@@ -4,7 +4,7 @@ import type { Address, Hash } from 'viem';
 import { sponsorMessage } from './sponsorMessage';
 import type { RecordResult } from './registry';
 
-export type SponsorStatus = { eligible: boolean; nextAt: number | null; remainingToday: number; paused: boolean; fee: string };
+export type SponsorStatus = { eligible: boolean; funded: boolean; nextAt: number | null; remainingToday: number; paused: boolean; fee: string };
 
 export class SponsorClientError extends Error {
   constructor(

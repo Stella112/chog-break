@@ -24,13 +24,14 @@ export const IPFS_GATEWAYS = [
   'https://dweb.link/ipfs/',
 ];
 
-// Recorded Splice registry (§D10). VERIFIED 2026-10-20: deployed by Maris (deployer 0x17f2…13FC) in
-// tx 0xd2fae7a1dea094d2512c7b4e0293b94e50c7774c8bbd0df052f4c15f05743588 (block 115149552);
-// `npm run registry:verify` passes (code, immutables, fee 100 / max 10,000 $CHOG, owner, pair keys) and the
-// source is verified on Sourcify/MonadVision (exact match). Set to null to hide Recorded Splice again.
-export const REGISTRY_ADDRESS: `0x${string}` | null = '0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1';
-// Sponsor service for free, gasless recordings (sponsor/ on the VPS). null until it is live; while null the
-// app offers only the paid Recorded Splice.
-export const SPONSOR_URL: string | null = null;
+// Recorded Splice registry v2 (§D10 + recordSpliceFor). VERIFIED 2026-10-21: deployed by Maris (deployer
+// 0x17f2…13FC) in tx 0x41642ca43c6b63be4f0d3d97e84cf2b1c4274a61ec971e6fc6cfa14f55869f0d (block 115344795);
+// `npm run registry:verify` passes (code, immutables, fee 10 / max 10,000 $CHOG, owner, pair keys); source verified
+// on Sourcify/MonadVision (exact match). v1 (0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1, no recordings) is retired.
+// Set to null to hide Recorded Splice again.
+export const REGISTRY_ADDRESS: `0x${string}` | null = '0x0EBe620530E604E6D05E0ffE7589c807E9e91527';
+// Sponsor service for free, gasless recordings (sponsor/ on the VPS, systemd chogbreak-sponsor, behind Caddy).
+// RECORD FREE only shows while the sponsor says the relayer is funded and the player is eligible.
+export const SPONSOR_URL: string | null = 'https://chogbreak-api.38-49-209-149.sslip.io';
 /** The registry sends 10% of each fee here (disclosed as "sent to the dead address", never "burned"). */
 export const DEAD_ADDRESS = '0x000000000000000000000000000000000000dEaD' as const;

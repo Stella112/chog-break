@@ -16,5 +16,5 @@ Record at 1440×900 in Chrome with sound on. Use a fresh browser profile so the 
 | 2:55–3:00 | Home screen | "1,969 Chogs. Millions of experiments. SPLICE. BREAK. REPEAT." |
 
 Notes:
-- MY CHOGS needs a wallet that holds at least one Chog. The RECORDED SPLICE shot needs 100 $CHOG and a little MON in that wallet and spends them for real; pick a pair nobody has recorded yet to show FIRST DISCOVERY!
+- MY CHOGS needs a wallet that holds at least one Chog. The RECORDED SPLICE shot needs nothing if the free recording is available (sign a message), otherwise 10 $CHOG and a little MON in that wallet and spends them for real; pick a pair nobody has recorded yet to show FIRST DISCOVERY!
 - If the arena modifier for your pair is "STABLE… FOR NOW", use `/?a=70&b=352&fight=1` for a shot with modifiers, or skip the line.

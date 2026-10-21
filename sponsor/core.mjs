@@ -87,12 +87,18 @@ export function createSponsor({ publicClient, walletClient, registry, dailyCap, 
     const nextIp = store.lastIp(ip) + WINDOW_MS;
     const remainingToday = Math.max(0, dailyCap - store.countDay(today()));
     const nextAt = Math.max(nextWallet, nextIp);
-    const [paused, fee] = await Promise.all([
+    const [paused, fee, token, mon] = await Promise.all([
       publicClient.readContract({ address: registry, abi: REGISTRY_ABI, functionName: 'paused' }),
       publicClient.readContract({ address: registry, abi: REGISTRY_ABI, functionName: 'fee' }),
+      publicClient.readContract({ address: registry, abi: REGISTRY_ABI, functionName: 'CHOG_TOKEN' }),
+      publicClient.getBalance({ address: relayer }),
     ]);
+    const chog = await publicClient.readContract({ address: token, abi: ERC20_ABI, functionName: 'balanceOf', args: [relayer] });
+    // don't offer a free recording the relayer can't pay for
+    const funded = chog >= fee && mon > 0n;
     return {
-      eligible: !paused && remainingToday > 0 && nextAt <= t,
+      eligible: !paused && funded && remainingToday > 0 && nextAt <= t,
+      funded,
       nextAt: nextAt > t ? nextAt : null,
       remainingToday,
       paused,
