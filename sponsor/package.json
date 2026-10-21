@@ -1,0 +1,8 @@
+{
+  "name": "chogbreak-sponsor",
+  "private": true,
+  "type": "module",
+  "description": "Pays the fee and gas for one free CHOG//BREAK Recorded Splice per wallet and per IP every 48 h",
+  "scripts": { "start": "node server.mjs" },
+  "dependencies": { "viem": "2.57.7" }
+}

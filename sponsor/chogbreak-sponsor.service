@@ -1,0 +1,28 @@
+[Unit]
+Description=CHOG//BREAK sponsor (free gasless Recorded Splice)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# secret: RELAYER_PRIVATE_KEY (written by Maris, mode 600). Non-secret settings: sponsor.env
+EnvironmentFile=/etc/chogbreak-sponsor/relayer.env
+EnvironmentFile=/etc/chogbreak-sponsor/sponsor.env
+WorkingDirectory=/opt/chogbreak-sponsor
+ExecStart=/usr/bin/node /opt/chogbreak-sponsor/server.mjs
+Restart=on-failure
+RestartSec=5
+# runs as a throwaway unprivileged user; only its state directory is writable
+DynamicUser=yes
+StateDirectory=chogbreak-sponsor
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target
