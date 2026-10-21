@@ -50,7 +50,7 @@ Every requirement in `docs/MASTER_SPEC.md` was checked against the code, the tes
 | holder can splice their own Chog | ✅ SPLICE WITH… + Lab MY CHOGS tab |
 | local 2P works · share card exports | ✅ `p1.spec` |
 | all contract tests pass | ✅ (updated 2026-10-20) 29 Foundry tests + 5 Monad mainnet fork tests (Maris assigned the contract to the Builder) |
-| Recorded Splice · discovery in the UI · owner payouts correct | ✅ on a local chain 143 against the compiled contract (`registry.anvil.test`, `recorded.spec`) and on a mainnet fork (`Fork.t.sol`); ⏳ one real mainnet recording (Maris) |
+| Recorded Splice · discovery in the UI · owner payouts correct | ✅ on a local chain 143 against the compiled contract (`registry.anvil.test`, `recorded.spec`) and on a mainnet fork (`Fork.t.sol`); ✅ first real mainnet recording 2026-10-21 (tx 0xfa0634…c874, payouts verified in the receipt) |
 | deployed address is real and shown with explorer link | ✅ v2 2026-10-21: `0x0EBe620530E604E6D05E0ffE7589c807E9e91527` (tx `0x41642c…9f0d`; v1 `0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1` retired); `registry:verify` passes; source verified (Sourcify exact match); Monadscan links in the app |
 
 ## Phase checklists (§F)
