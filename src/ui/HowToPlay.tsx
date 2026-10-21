@@ -13,7 +13,8 @@ function Cap({ k, label, kind }: Key) {
 }
 
 /** Visual keyboard + how to win (§D7 controls overlay, always shown before the fight). */
-export function HowToPlay({ player, twoPlayer }: { player: Mutant; twoPlayer: boolean }) {
+export function HowToPlay({ player, twoPlayer, touch = false }: { player: Mutant; twoPlayer: boolean; touch?: boolean }) {
+  const t = touch && !twoPlayer;
   const special = GENE_INFO[player.special]?.label ?? player.special;
   const close = GENE_INFO[player.close]?.label ?? player.close;
   return (
@@ -38,12 +39,12 @@ export function HowToPlay({ player, twoPlayer }: { player: Mutant; twoPlayer: bo
           <span className="label">{twoPlayer ? 'PLAYER 1: MOVE' : 'MOVE'}</span>
           <div className="kb-cluster">
             <div className="kb-row">
-              <Cap k="W" label="jump" kind="move" />
+              <Cap k={t ? 'JUMP' : 'W'} label={t ? 'right thumb' : 'jump'} kind="move" />
             </div>
             <div className="kb-row">
-              <Cap k="A" label="left" kind="move" />
-              <Cap k="S" label="drop" kind="move" />
-              <Cap k="D" label="right" kind="move" />
+              <Cap k={t ? '◀' : 'A'} label="left" kind="move" />
+              <Cap k={t ? '▼' : 'S'} label="drop" kind="move" />
+              <Cap k={t ? '▶' : 'D'} label="right" kind="move" />
             </div>
           </div>
         </div>
@@ -51,12 +52,12 @@ export function HowToPlay({ player, twoPlayer }: { player: Mutant; twoPlayer: bo
           <span className="label">FIGHT</span>
           <div className="kb-cluster">
             <div className="kb-row">
-              <Cap k="I" label={close} kind="gene" />
+              <Cap k={t ? 'CLOSE' : 'I'} label={close} kind="gene" />
             </div>
             <div className="kb-row">
-              <Cap k="J" label="punch" kind="attack" />
-              <Cap k="K" label="dash" kind="attack" />
-              <Cap k="L" label={special} kind="gene" />
+              <Cap k={t ? 'PUNCH' : 'J'} label="punch" kind="attack" />
+              <Cap k={t ? 'DASH' : 'K'} label="dash" kind="attack" />
+              <Cap k={t ? 'SPEC' : 'L'} label={special} kind="gene" />
             </div>
           </div>
         </div>
@@ -71,7 +72,7 @@ export function HowToPlay({ player, twoPlayer }: { player: Mutant; twoPlayer: bo
         )}
       </div>
       <p className="small dim howto-gene">
-        Yellow keys come from your mutant's genes: they change with every splice.
+        {t ? 'On-screen buttons: move on the left, attacks on the right. ' : ''}Yellow keys come from your mutant's genes: they change with every splice.
       </p>
     </section>
   );

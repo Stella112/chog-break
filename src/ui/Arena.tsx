@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import type { Stage3D } from '../arena/three/Stage3D';
+import { IS_TOUCH_DEVICE } from '../arena/touch';
+import { GENE_INFO } from '../config/geneInfo';
+import { TouchControls } from './TouchControls';
 import type { ArenaConfig, MatchResult } from '../arena/ArenaScene';
 import { createArenaGame } from '../arena/createGame';
 
@@ -13,6 +16,10 @@ type Props = Omit<ArenaConfig, 'onEnd'> & {
 
 /** Mounts one Phaser game; destroys it on unmount or rematch (matchKey change). */
 export function Arena({ onEnd, matchKey, onQuit, twoPlayer = false, ...cfg }: Props) {
+  // phones and tablets get on-screen controls for player 1 (local 2P stays a keyboard mode)
+  const touchUi = IS_TOUCH_DEVICE && !twoPlayer;
+  const p1 = cfg.fighters[0].kit;
+  const geneLabel = (g?: string) => (g ? (GENE_INFO[g]?.label ?? g) : '');
   const host = useRef<HTMLDivElement>(null);
   const onEndRef = useRef(onEnd);
   onEndRef.current = onEnd;
@@ -31,6 +38,7 @@ export function Arena({ onEnd, matchKey, onQuit, twoPlayer = false, ...cfg }: Pr
       const g = createArenaGame(el, {
         ...cfgRef.current,
         view3d: view3d ?? undefined,
+        touch: touchUi,
         onEnd: (r) => onEndRef.current(r),
       });
       game = g;
@@ -67,7 +75,7 @@ export function Arena({ onEnd, matchKey, onQuit, twoPlayer = false, ...cfg }: Pr
       game?.destroy(true);
       stage?.dispose();
     };
-  }, [matchKey]);
+  }, [matchKey, touchUi]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -85,6 +93,7 @@ export function Arena({ onEnd, matchKey, onQuit, twoPlayer = false, ...cfg }: Pr
         tabIndex={-1}
         aria-label="Arena. Use the keyboard to fight."
       />
+      {touchUi && <TouchControls special={geneLabel(p1?.special)} close={geneLabel(p1?.close)} onQuit={onQuit} />}
       <p className="mono small dim arena-hint">
         P1: A/D move · W jump · S drop · J punch · K dash · L special · I close
         {twoPlayer

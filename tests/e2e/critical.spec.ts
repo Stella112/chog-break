@@ -122,7 +122,7 @@ test('375px: lab, reveal and pre-match fit without horizontal scroll', async ({ 
   const info = await page.locator('.reveal-info').boundingBox();
   expect(stage!.width).toBeGreaterThan(300);
   expect(info!.y).toBeGreaterThanOrEqual(stage!.y + stage!.height - 1);
-  await expect(page.getByText('Best on desktop with a keyboard.')).toHaveCount(0); // desktop UA here; touch shows it
+  await expect(page.getByText('On-screen buttons appear in the fight.', { exact: false })).toHaveCount(0); // desktop UA here; touch shows it
 });
 
 test('reduced motion: reveal is a short crossfade with no flash or lightning', async ({

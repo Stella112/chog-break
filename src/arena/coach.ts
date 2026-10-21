@@ -22,17 +22,18 @@ export class Coach {
     private scene: Phaser.Scene,
     private me: Fighter,
     private foe: Fighter,
+    touch = false,
   ) {
     this.startX = me.x;
     const special = GENE_INFO[me.kit.special]?.label ?? me.kit.special;
     const close = GENE_INFO[me.kit.close]?.label ?? me.kit.close;
     this.steps = [
-      { key: 'A  D', text: 'Move left and right', done: (f) => Math.abs(f.x - this.startX) > 70 },
-      { key: 'W', text: 'Jump. Press again in the air to double jump', done: (f) => f.jumpsUsed >= 2 },
-      { key: 'J', text: 'Punch. Tap three times for a combo', done: (f) => f.comboStep >= 2 },
-      { key: 'L', text: `Your special from the Eyes: ${special}`, done: (f) => f.specialReadyAt > 0 },
-      { key: 'I', text: `Your close move from the Mouth: ${close}`, done: (f) => f.closeReadyAt > 0 },
-      { key: 'K', text: 'Dash. It hits too', done: (f) => f.dashReadyAt > 0 },
+      { key: touch ? '◀ ▶' : 'A  D', text: 'Move left and right', done: (f) => Math.abs(f.x - this.startX) > 70 },
+      { key: touch ? 'JUMP' : 'W', text: 'Jump. Press again in the air to double jump', done: (f) => f.jumpsUsed >= 2 },
+      { key: touch ? 'PUNCH' : 'J', text: 'Punch. Tap three times for a combo', done: (f) => f.comboStep >= 2 },
+      { key: touch ? 'SPEC' : 'L', text: `Your special from the Eyes: ${special}`, done: (f) => f.specialReadyAt > 0 },
+      { key: touch ? 'CLOSE' : 'I', text: `Your close move from the Mouth: ${close}`, done: (f) => f.closeReadyAt > 0 },
+      { key: touch ? 'DASH' : 'K', text: 'Dash. It hits too', done: (f) => f.dashReadyAt > 0 },
       {
         key: '!',
         text: 'Knock them off the screen. More damage % = they fly further',
@@ -51,7 +52,7 @@ export class Coach {
 
   private show(i: number) {
     const s = this.steps[i]!;
-    this.keyText.setText(s.key);
+    this.keyText.setText(s.key).setFontSize(s.key.length > 4 ? 15 : s.key.length > 3 ? 18 : 24);
     this.bodyText.setText(s.text);
     this.progress.setText(`HOW TO PLAY ${i + 1}/${this.steps.length}`);
     this.stepShownAt = this.scene.time.now;

@@ -7,6 +7,7 @@ import { Coin, Frog, Projectile, Zone } from './entities';
 import { Fighter, TUNING } from './fighter';
 import { HudScene } from './HudScene';
 import { EMPTY_CONTROLS, KEYMAP, KeyboardSource, type ControlSource } from './input';
+import { touchPad } from './touch';
 import type { FighterKit } from './kit';
 import { ModifierRuntime, modifierPhysics, type ModifierHost } from './modifiers';
 import { ATTACKS } from './attacks';
@@ -37,6 +38,8 @@ export type ArenaConfig = {
   showControls?: boolean;
   /** Skip countdown, effects and end-of-match pause (headless sims). */
   instant?: boolean;
+  /** Touch device: player 1 also reads the on-screen controls (arena/touch.ts). */
+  touch?: boolean;
   /** 2.5D: three.js stage rendered behind this (transparent) canvas. Absent → 2D arena. */
   view3d?: Stage3D;
 };
@@ -137,7 +140,7 @@ export class ArenaScene extends Phaser.Scene implements ArenaCtx, ModifierHost {
       if (d === 'bot') return new BotSource(this.fighters[i as 0 | 1], this.fighters[(1 - i) as 0 | 1], this.cfg.difficulties?.[i] ?? this.cfg.difficulty, (this.cfg.botSeed ?? 7) + i);
       const kb = this.input.keyboard;
       if (!kb) return { read: () => EMPTY_CONTROLS };
-      return new KeyboardSource(kb, i === 0 ? KEYMAP.p1 : KEYMAP.p2);
+      return new KeyboardSource(kb, i === 0 ? KEYMAP.p1 : KEYMAP.p2, i === 0 && this.cfg.touch ? touchPad : undefined);
     }) as [ControlSource, ControlSource];
 
     this.modRuntime = new ModifierRuntime(this, this.cfg.modifiers ?? [], (this.cfg.botSeed ?? 7) * 7919);

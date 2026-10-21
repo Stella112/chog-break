@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { TouchPad } from './touch';
 
 /** One frame of intent. Bot and keyboard both produce this, so fighters never know who drives them. */
 export type Controls = {
@@ -47,7 +48,12 @@ export class KeyboardSource implements ControlSource {
    */
   private pending = { jump: false, punch: false, dash: false, special: false, close: false };
 
-  constructor(kb: Phaser.Input.Keyboard.KeyboardPlugin, map: (typeof KEYMAP)['p1'] | (typeof KEYMAP)['p2']) {
+  constructor(
+    kb: Phaser.Input.Keyboard.KeyboardPlugin,
+    map: (typeof KEYMAP)['p1'] | (typeof KEYMAP)['p2'],
+    /** On-screen touch controls merged into these keys (player 1 on touch devices). */
+    private touch?: TouchPad,
+  ) {
     const K = Phaser.Input.Keyboard.KeyCodes;
     const make = (name: string) => kb.addKey(K[name as keyof typeof K], true, false);
     this.keys = {
@@ -81,6 +87,20 @@ export class KeyboardSource implements ControlSource {
       closeHeld: k.close.isDown,
     };
     this.pending = { jump: false, punch: false, dash: false, special: false, close: false };
+    const t = this.touch;
+    if (t) {
+      const e = t.takeEdges();
+      c.left ||= t.held.left;
+      c.right ||= t.held.right;
+      c.down ||= t.held.down;
+      c.jump ||= e.jump;
+      c.punch ||= e.punch;
+      c.dash ||= e.dash;
+      c.special ||= e.special;
+      c.close ||= e.close;
+      c.dashHeld ||= t.held.dash;
+      c.closeHeld ||= t.held.close;
+    }
     return c;
   }
 }

@@ -155,7 +155,7 @@ export function PreMatch({
           </div>
         )}
         <div className="pm-bar-go">
-          {touch && <p className="error-text">Best on desktop with a keyboard.</p>}
+          {touch && <p className="small dim">On-screen buttons appear in the fight. Sideways works best.</p>}
           <button className="btn btn-primary" onClick={onFight}>
             FIGHT ▸
           </button>
@@ -164,7 +164,7 @@ export function PreMatch({
           </button>
         </div>
       </div>
-      <HowToPlay player={player} twoPlayer={mode === '2p'} />
+      <HowToPlay player={player} twoPlayer={mode === '2p'} touch={touch} />
       {modifiers.length === 0 ? (
         <p className="stable mono">STABLE… FOR NOW</p>
       ) : (

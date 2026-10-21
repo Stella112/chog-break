@@ -102,3 +102,33 @@ kbd { font-family: var(--mono); background: var(--bg); border: 1px solid var(--t
   .rs-art { width: 140px; height: 140px; }
   .rs-art canvas { width: 124px; height: 124px; }
 }
+
+/* ---------- touch controls (phones/tablets) ---------- */
+body.arena-touch .topbar, body.arena-touch .arena-hint, body.arena-touch .site-foot { display: none; }
+body.arena-touch { overscroll-behavior: none; }
+body.arena-touch .arena-wrap { margin-top: 0; }
+body.arena-touch .arena-host { max-height: 100svh; border: 0; touch-action: none; }
+.touch-ui { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; padding: 8px max(10px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); pointer-events: none; -webkit-user-select: none; user-select: none; touch-action: none; }
+.touch-ui button { pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.tc-btn { display: grid; place-items: center; gap: 0; width: 62px; height: 62px; border-radius: 50%; border: 2px solid rgba(241, 238, 247, 0.55); background: rgba(21, 19, 29, 0.55); color: #f1eef7; font: 700 0.72rem 'JetBrains Mono', monospace; line-height: 1.05; padding: 0; backdrop-filter: blur(2px); }
+.tc-btn:active { background: rgba(255, 212, 0, 0.55); color: #000; border-color: #ffd400; }
+.tc-btn small { font-size: 0.5rem; max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #ffd400; }
+.tc-btn:active small { color: #000; }
+.tc-move { display: grid; grid-template-columns: 62px 50px 62px; grid-template-rows: 62px; align-items: end; gap: 6px; }
+.tc-dir { font-size: 1.4rem; }
+.tc-down { width: 50px; height: 50px; font-size: 1rem; }
+.tc-act { display: grid; grid-template-columns: repeat(3, auto); grid-template-areas: 'close spec dash' 'punch jump jump'; gap: 6px; justify-items: center; align-items: end; }
+.tc-act .tc-btn:nth-child(1) { grid-area: close; }
+.tc-act .tc-btn:nth-child(2) { grid-area: spec; }
+.tc-act .tc-btn:nth-child(3) { grid-area: dash; }
+.tc-act .tc-btn:nth-child(4) { grid-area: punch; }
+.tc-act .tc-btn:nth-child(5) { grid-area: jump; }
+.tc-big { width: 74px; height: 74px; font-size: 0.85rem; border-color: rgba(255, 212, 0, 0.7); }
+.tc-jump { width: 84px; height: 84px; }
+.tc-gene { border-color: rgba(79, 240, 255, 0.7); }
+.tc-quit { position: fixed; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(241, 238, 247, 0.5); background: rgba(11, 10, 16, 0.7); color: #f1eef7; font-size: 1.1rem; z-index: 41; }
+.tc-rotate { position: fixed; left: 0; right: 0; top: 50%; margin: 0; text-align: center; font: 0.8rem 'JetBrains Mono', monospace; color: #a59fb8; pointer-events: none; display: none; }
+@media (orientation: portrait) { .tc-rotate { display: block; top: auto; bottom: calc(180px + env(safe-area-inset-bottom)); } }
+@media (orientation: landscape) and (max-height: 500px) { .tc-btn { width: 54px; height: 54px; } .tc-big { width: 62px; height: 62px; } .tc-jump { width: 70px; height: 70px; } .tc-move { grid-template-columns: 54px 44px 54px; grid-template-rows: 54px; } .tc-down { width: 44px; height: 44px; } }
+@media (orientation: portrait) and (max-width: 460px) { .tc-btn { width: 52px; height: 52px; font-size: 0.66rem; } .tc-big { width: 62px; height: 62px; } .tc-jump { width: 70px; height: 70px; } .tc-move { grid-template-columns: 52px 42px 52px; grid-template-rows: 52px; gap: 5px; } .tc-down { width: 42px; height: 42px; } .tc-act { gap: 5px; } .touch-ui { gap: 4px; } }
+@media (orientation: portrait) and (max-width: 360px) { .tc-btn { width: 44px; height: 44px; font-size: 0.58rem; } .tc-btn small { font-size: 0.45rem; max-width: 40px; } .tc-big { width: 52px; height: 52px; } .tc-jump { width: 58px; height: 58px; } .tc-move { grid-template-columns: 44px 36px 44px; grid-template-rows: 44px; gap: 4px; } .tc-down { width: 36px; height: 36px; } .tc-act { gap: 4px; } .touch-ui { padding-left: 8px; padding-right: 8px; } }

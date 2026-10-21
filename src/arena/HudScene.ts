@@ -68,7 +68,7 @@ export class HudScene extends Phaser.Scene {
     // First fight: start coaching once the arena is live (fighters exist).
     if (this.coachPending) {
       this.coachPending = false;
-      this.coach = new Coach(this, a.fighters[0], a.fighters[1]);
+      this.coach = new Coach(this, a.fighters[0], a.fighters[1], !!a.cfg.touch);
     }
     this.coach?.update();
     const left = Math.max(0, MATCH.durationMs - a.elapsedMs);
