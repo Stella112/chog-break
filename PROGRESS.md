@@ -231,7 +231,8 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - **Relayer funded 2026-10-21:** 1 MON + 500 $CHOG (= 50 free recordings at fee 10). Sponsor status `eligible: true, funded: true`; the live landing page shows the free-recording line.
 - **First real Recorded Splice on mainnet (2026-10-21, done by the Builder at Maris's request):** a free (sponsored) recording of pair #101 × #202 for a throwaway in-memory wallet `0x0D2E68Fb05cba05BFd637414b7BD275f0c3816DA` (key never shown or saved). Tx [0xfa06348c…c874](https://monadscan.com/tx/0xfa06348c2cc0b589c68dd7c1e9d7e21aa34b562cfc3a852b53abb7be0b9ac874) (approve [0x8028e882…a19d](https://monadscan.com/tx/0x8028e882098f0e5520d66b646075105b391470550c17a8eb955a97854293a19d)), block 115372075, status success; `first = true`, `firstDiscoverer` = the player, `payer` = relayer. Transfers in the receipt: 3.5 $CHOG to ownerOf(101) `0x335f…e25F`, 3.5 to ownerOf(202) `0xDC4F…930F` (both match on-chain ownerOf), 2 to the prize address, 1 to the dead address; relayer paid exactly 10. §F Phase 6 human checkpoint met.
 - **v1 paused 2026-10-21** by Maris: tx [0x955913d7…35ad](https://monadscan.com/tx/0x955913d70475c703b03b30897c65ed0092b4a916de02fb4c790cdbb2106135ad), block 115372529; `paused()` = true on v1, v2 unaffected.
-- **Open (Maris):** demo video, make the repo public, submit.
+- **Repo public 2026-10-21:** https://github.com/Stella112/chog-break (re-scanned first: no keys in files or history; the only 64-hex values are public tx hashes).
+- **Open (Maris):** demo video, submit.
 
 ## Broken
 - Nothing known. Note: a full e2e run during which the PC slept took 3.3 h and timed out 2 tests; both pass when rerun.

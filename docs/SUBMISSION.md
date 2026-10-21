@@ -1,12 +1,19 @@
 # Chogathon 2026 submission: CHOG//BREAK: Mutant Arena
 
-> Draft text for each submission field. The **Description** block is kept under the 8,000-character limit (checked by `npm run docs:check`). App: https://chog-break.vercel.app
+> Draft text for each submission field. The **Description** block is kept under the 8,000-character limit (checked by `npm run docs:check`). App: https://chog-break.vercel.app · Repo: https://github.com/Stella112/chog-break
 
 ## Project name
 CHOG//BREAK: Mutant Arena
 
 ## One-line pitch
 Pick two real Chog Genesis NFTs, splice their traits and art into a mutant, and fight it in an arena whose rules are mutated by the Chogs in the match.
+
+## Links
+- App: https://chog-break.vercel.app (play: https://chog-break.vercel.app/play/)
+- Repository: https://github.com/Stella112/chog-break
+- Recorded Splice registry (Monad, source verified): https://monadscan.com/address/0x0EBe620530E604E6D05E0ffE7589c807E9e91527
+- First mainnet recording: https://monadscan.com/tx/0xfa06348c2cc0b589c68dd7c1e9d7e21aa34b562cfc3a852b53abb7be0b9ac874
+- Demo video: Maris adds the YouTube (unlisted) or Drive link here after recording
 
 ## Description
 

@@ -8,7 +8,7 @@ const PLAY = '/play/';
 const LAB = '/play/?view=lab';
 const KING_BEAM = '/play/?a=18&b=66';
 /** Set when the repository is public (judges need the link). */
-const REPO_URL: string | null = null;
+const REPO_URL: string | null = 'https://github.com/Stella112/chog-break';
 
 // real Chog Genesis tokens (art served from this site, fetched from the collection's metadata)
 const STRIP = [18, 66, 70, 352, 1, 2, 5, 9, 100, 500, 7, 1900, 33, 777, 1337, 1969];
