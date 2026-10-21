@@ -29,5 +29,8 @@ export const IPFS_GATEWAYS = [
 // `npm run registry:verify` passes (code, immutables, fee 100 / max 10,000 $CHOG, owner, pair keys) and the
 // source is verified on Sourcify/MonadVision (exact match). Set to null to hide Recorded Splice again.
 export const REGISTRY_ADDRESS: `0x${string}` | null = '0xB435a54816Cb32B70F08C34fF388B9A718Ba3Db1';
+// Sponsor service for free, gasless recordings (sponsor/ on the VPS). null until it is live; while null the
+// app offers only the paid Recorded Splice.
+export const SPONSOR_URL: string | null = null;
 /** The registry sends 10% of each fee here (disclosed as "sent to the dead address", never "burned"). */
 export const DEAD_ADDRESS = '0x000000000000000000000000000000000000dEaD' as const;

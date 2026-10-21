@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { parseAbi, type Address } from 'viem';
 import { CHOG_GENESIS, explorerAddress } from '../config/chain';
 import type { Manifest } from '../data/manifest';
-import { ACTIVE_REGISTRY } from '../chain/active';
+import { ACTIVE_REGISTRY, ACTIVE_SPONSOR } from '../chain/active';
+import { claimFreeRecording, SponsorClientError, sponsorErrorMessage, sponsorStatus, type SponsorStatus } from '../chain/sponsor';
 import { publicClient, shortAddress, walletClientFor } from '../chain/client';
 import {
   formatChog,
@@ -50,6 +51,8 @@ export function RecordedSplice({ manifest, a, b, address, onMonad, onSwitchChain
   const [quote, setQuote] = useState<Quote | null>(null);
   const [step, setStep] = useState<RecordStep | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [free, setFree] = useState<SponsorStatus | null>(null);
+  const [freeBusy, setFreeBusy] = useState(false);
   if (!registry) return null;
   const read = publicClient as unknown as RegistryReader;
   const lo = Math.min(a, b);
@@ -60,6 +63,8 @@ export function RecordedSplice({ manifest, a, b, address, onMonad, onSwitchChain
     setOpen(true);
     setError(null);
     setQuote(null);
+    setFree(null);
+    if (ACTIVE_SPONSOR) sponsorStatus(ACTIVE_SPONSOR, address).then(setFree, () => setFree(null));
     try {
       const [q, ownerLo, ownerHi, pair] = await Promise.all([
         readQuote(read, registry, address),
@@ -87,6 +92,22 @@ export function RecordedSplice({ manifest, a, b, address, onMonad, onSwitchChain
     } catch (e) {
       setStep(null);
       setError(recordErrorMessage(e instanceof RecordError ? e : new RecordError('NETWORK')));
+    }
+  };
+
+  const recordFree = async () => {
+    if (!ACTIVE_SPONSOR) return;
+    setError(null);
+    setFreeBusy(true);
+    try {
+      const w = walletClientFor(address);
+      const r = await claimFreeRecording(ACTIVE_SPONSOR, address, a, b, (message) => w.signMessage({ account: address, message }));
+      onRecorded({ ...r, decimals: quote?.decimals ?? 18 });
+    } catch (e) {
+      setError(sponsorErrorMessage(e instanceof SponsorClientError ? e : new SponsorClientError('RELAY_FAILED')));
+      if (ACTIVE_SPONSOR) sponsorStatus(ACTIVE_SPONSOR, address).then(setFree, () => {});
+    } finally {
+      setFreeBusy(false);
     }
   };
 
@@ -133,6 +154,20 @@ export function RecordedSplice({ manifest, a, b, address, onMonad, onSwitchChain
           )}
         </>
       )}
+      {free?.eligible && (
+        <div className="record-free">
+          <button className="btn btn-primary small" onClick={() => void recordFree()} disabled={freeBusy || busy}>
+            {freeBusy ? 'RECORDING ON MONAD…' : 'RECORD FREE'}
+          </button>
+          <span className="small">
+            Sign a free message and we pay the fee and gas. One free recording every 48 hours. You still get the
+            first-discoverer credit.
+          </span>
+        </div>
+      )}
+      {free && !free.eligible && free.nextAt && (
+        <p className="small dim">Free recording used. The next one unlocks {new Date(free.nextAt).toLocaleString()}.</p>
+      )}
       {step && <p className="mono small" role="status">{STEP_COPY[step]}</p>}
       {error && (
         <p className="error-text" role="alert">
@@ -145,8 +180,12 @@ export function RecordedSplice({ manifest, a, b, address, onMonad, onSwitchChain
             SWITCH TO MONAD
           </button>
         ) : (
-          <button className="btn btn-primary small" onClick={() => void confirm()} disabled={!quote || busy}>
-            {busy ? 'WORKING…' : 'CONFIRM IN WALLET'}
+          <button
+            className={`btn small ${free?.eligible ? 'btn-ghost' : 'btn-primary'}`}
+            onClick={() => void confirm()}
+            disabled={!quote || busy || freeBusy}
+          >
+            {busy ? 'WORKING…' : free?.eligible ? 'PAY THE FEE MYSELF' : 'CONFIRM IN WALLET'}
           </button>
         )}
         <button

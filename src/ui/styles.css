@@ -333,3 +333,4 @@ a.btn { display: inline-block; text-decoration: none; color: inherit; }
 .record-banner.is-first strong { color: #ffd400; font-size: 1.7rem; }
 .onchain-line { color: #b48cff; margin: 0.2rem 0 0.4rem; }
 .badge-onchain { background: #b48cff; color: #000; }
+.record-free { display: grid; gap: 0.3rem; margin: 0.5rem 0; padding: 0.5rem; border: 1px dashed #4ff0ff; }
