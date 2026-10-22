@@ -1,6 +1,6 @@
 {
  "voice": "en-US-AndrewMultilingualNeural",
- "duration": 123.27,
+ "duration": 137.253,
  "lines": [
   {
    "i": 0,
@@ -179,80 +179,101 @@
   },
   {
    "i": 25,
-   "section": "onchain",
-   "text": "If you want the credit, record it on Monad.",
+   "section": "xp",
+   "text": "Every fight earns experience.",
    "start": 86.93,
-   "end": 88.978
+   "end": 89.051
   },
   {
    "i": 26,
-   "section": "onchain",
-   "text": "The first person to record a pair is its discoverer, permanently.",
-   "start": 89.278,
-   "end": 93.129
+   "section": "xp",
+   "text": "Your mutant levels up, and so do both of its parent Chogs.",
+   "start": 89.301,
+   "end": 93.257
   },
   {
    "i": 27,
-   "section": "onchain",
-   "text": "The small chog fee is split on the spot: thirty-five percent to the owner of each parent.",
-   "start": 93.579,
-   "end": 99.318
+   "section": "xp",
+   "text": "Each Chog keeps its own record: its level, its wins, and every fight it has been through.",
+   "start": 93.557,
+   "end": 99.913
   },
   {
    "i": 28,
    "section": "onchain",
-   "text": "So a popular Chog earns for its holder.",
-   "start": 99.618,
-   "end": 102.095
+   "text": "If you want the credit, record it on Monad.",
+   "start": 100.913,
+   "end": 102.961
   },
   {
    "i": 29,
    "section": "onchain",
-   "text": "And your first recording is on us.",
-   "start": 102.595,
-   "end": 104.231
+   "text": "The first person to record a pair is its discoverer, permanently.",
+   "start": 103.261,
+   "end": 107.112
   },
   {
    "i": 30,
    "section": "onchain",
-   "text": "Sign a message, and we pay the fee and the gas.",
-   "start": 104.481,
-   "end": 107.578
+   "text": "The small chog fee is split on the spot: thirty-five percent to the owner of each parent.",
+   "start": 107.562,
+   "end": 113.301
   },
   {
    "i": 31,
-   "section": "phone",
-   "text": "You don't need a wallet to play.",
-   "start": 108.578,
-   "end": 109.89
+   "section": "onchain",
+   "text": "So a popular Chog earns for its holder.",
+   "start": 113.601,
+   "end": 116.078
   },
   {
    "i": 32,
-   "section": "phone",
-   "text": "It runs in the browser, on your laptop or your phone.",
-   "start": 110.14,
-   "end": 113.091
+   "section": "onchain",
+   "text": "And your first recording is on us.",
+   "start": 116.578,
+   "end": 118.214
   },
   {
    "i": 33,
-   "section": "close",
-   "text": "One thousand, nine hundred and sixty-nine Chogs.",
-   "start": 114.091,
-   "end": 117.175
+   "section": "onchain",
+   "text": "Sign a message, and we pay the fee and the gas.",
+   "start": 118.464,
+   "end": 121.561
   },
   {
    "i": 34,
-   "section": "close",
-   "text": "Millions of experiments.",
-   "start": 117.525,
-   "end": 118.864
+   "section": "phone",
+   "text": "You don't need a wallet to play.",
+   "start": 122.561,
+   "end": 123.873
   },
   {
    "i": 35,
+   "section": "phone",
+   "text": "It runs in the browser, on your laptop or your phone.",
+   "start": 124.123,
+   "end": 127.074
+  },
+  {
+   "i": 36,
+   "section": "close",
+   "text": "One thousand, nine hundred and sixty-nine Chogs.",
+   "start": 128.074,
+   "end": 131.159
+  },
+  {
+   "i": 37,
+   "section": "close",
+   "text": "Millions of experiments.",
+   "start": 131.508,
+   "end": 132.848
+  },
+  {
+   "i": 38,
    "section": "close",
    "text": "Splice. Break. Repeat.",
-   "start": 119.514,
-   "end": 121.77
+   "start": 133.498,
+   "end": 135.753
   }
  ]
 }

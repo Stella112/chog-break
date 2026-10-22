@@ -3,7 +3,7 @@
 `out/chog-break-demo.mp4` (1080p30, 2:08) is built from the real game, not mock-ups. Rebuild it from the repo root:
 
 1. `npm run build && npx vite preview --port 4181` (the captures use the production build)
-2. Footage: `node video/capture.mjs <shot>` for `lab`, `swap`, `fight` (`SECONDS=75`), `notebook`, `phone`.
+2. Footage: `node video/capture.mjs <shot>` for `lab`, `swap`, `fight` (`SECONDS=75`), `notebook`, `xp`, `phone`.
    UI shots step Chrome's virtual time one frame at a time; the arena is stepped by hand (`game.step`). The game's
    own sound effects are recorded sample-exact into `<shot>.sfx.wav` (every AudioContext becomes one
    OfflineAudioContext whose clock is the capture clock).

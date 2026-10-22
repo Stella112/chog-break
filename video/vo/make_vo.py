@@ -1,7 +1,7 @@
 # Builds the demo voice-over sentence by sentence (Microsoft neural voice via edge-tts), with hand-set pauses,
 # and writes vo.wav plus vo.json (each line's start/end, used to time the edit).
 #   python video/vo/make_vo.py
-import asyncio, json, os, subprocess, sys
+import asyncio, hashlib, json, os, subprocess, sys
 
 VOICE = "en-US-AndrewMultilingualNeural"
 RATE = "-4%"
@@ -35,6 +35,9 @@ LINES = [
     ("notebook", "Every experiment lands in your notebook.", 300),
     ("notebook", "Swap one parent, and you get a different creature, different moves, a different fight.", 400),
     ("notebook", "There are almost two million pairs to try.", 1000),
+    ("xp", "Every fight earns experience.", 250),
+    ("xp", "Your mutant levels up, and so do both of its parent Chogs.", 300),
+    ("xp", "Each Chog keeps its own record: its level, its wins, and every fight it has been through.", 1000),
     ("onchain", "If you want the credit, record it on Monad.", 300),
     ("onchain", "The first person to record a pair is its discoverer, permanently.", 450),
     ("onchain", "The small chog fee is split on the spot: thirty-five percent to the owner of each parent.", 300),
@@ -52,7 +55,8 @@ LEAD_IN_MS = 600
 
 async def synth(i, text):
     import edge_tts
-    out = os.path.join(GEN, f"{i:02d}.mp3")
+    # cached by voice + text, so adding or moving lines never re-voices the others
+    out = os.path.join(GEN, hashlib.sha1(f"{VOICE}|{RATE}|{text}".encode()).hexdigest()[:12] + ".mp3")
     for attempt in range(6):
         if os.path.exists(out) and os.path.getsize(out) > 2000:
             return out

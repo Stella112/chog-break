@@ -42,6 +42,14 @@ def overlay(name, base, ov, at=0.0):
     return out
 
 
+def push_in(t0, d, x, y, zoom=1.5):
+    """eased push-in from the full frame to a 1/zoom window whose top-left is (x, y) in 1080p pixels, from t0 for d seconds"""
+    p = f"clip((on/{FPS}-{t0})/{d},0,1)"
+    e = f"({p})*({p})*(3-2*({p}))"
+    return (f",scale=3840:2160:flags=lanczos,zoompan=z='1+{zoom - 1}*{e}':x='{2 * x}*{e}':y='{2 * y}*{e}'"
+            f":d=1:s=1920x1080:fps={FPS},format=yuv420p")
+
+
 # ---------- picture ----------
 # (clip, start on the final timeline); consecutive clips overlap by the crossfade length given with the later one
 S = []
@@ -54,15 +62,19 @@ S.append((clip("s5_notebook", F("notebook.mp4"), 0, 2.9), 75.8, 0))
 S.append((clip("s6a_swap", F("swap.mp4"), 3.0, 2.2), 78.7, 0))  # from just after parent B is picked
 swapb = clip("s6b_swap_raw", F("swap.mp4"), 9.0, 6.1)
 S.append((overlay("s6b_swap", swapb, F("gfx-pairs.mov"), at=2.5), 80.9, 0))  # count starts at 83.4
-S.append((clip("s7_onchain", F("gfx-onchain.mp4"), 0, 22.1), 86.7, 0.3))  # +0.3 s for the crossfade into the phone
+# XP: the voice-over's XP lines (vo.json, section "xp") push everything after them back by XP_LEN
+XP_LEN = 13.983
+S.append((clip("s7a_xp", F("xp.mp4"), 0, 7.3, extra=push_in(2.6, 1.4, 340, 360)), 86.7, 0.3))  # LEVEL UP lands on "levels up"
+S.append((clip("s7b_xp", F("xp.mp4"), 10.3, XP_LEN + 0.3 - 7.0, extra=push_in(0.6, 1.2, 960, 150, zoom=2.0)), 86.7 + 7.0, 0.3))  # the Chog's card
+S.append((clip("s8_onchain", F("gfx-onchain.mp4"), 0, 22.1), 86.7 + XP_LEN, 0.3))  # +0.3 s for the crossfade into the phone
 # phone: the real phone footage sits in the frame's transparent screen
-phone = os.path.join(TMP, "s8_phone.mp4")
+phone = os.path.join(TMP, "s9_phone.mp4")
 run(["-f", "lavfi", "-i", "color=c=0x0b0a10:s=1920x1080:r=30:d=5.8", "-ss", "0.5", "-i", F("phone.mp4"), "-i", F("gfx-phone.mov"),
      "-filter_complex", "[1]fps=30,scale=1160:652,trim=duration=5.8,setpts=PTS-STARTPTS[p];[0][p]overlay=380:300[b];[b][2]overlay=format=auto,format=yuv420p",
      "-t", "5.8", "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "12", phone])
-S.append((phone, 108.5, 0.3))
-S.append((clip("s9_close", F("gfx-close.mp4"), 0, 13.6), 114.0, 0.3))
-TOTAL = 114.0 + 13.6
+S.append((phone, 108.5 + XP_LEN, 0.3))
+S.append((clip("s10_close", F("gfx-close.mp4"), 0, 13.6), 114.0 + XP_LEN, 0.3))
+TOTAL = 114.0 + XP_LEN + 13.6
 
 
 def dur(p):
@@ -97,6 +109,7 @@ sfx = [
     (F("fight.sfx.wav"), FIGHT_SS, 26.1, 49.7),
     (F("swap.sfx.wav"), 3.0, 2.2, 78.7),
     (F("swap.sfx.wav"), 9.0, 4.5, 80.9),
+    (F("xp.sfx.wav"), 0, 7.0, 86.7),              # the final KO and the victory sting
 ]
 music_lab, music_arena = F("music", "lab.wav"), F("music", "arena.wav")
 ai = ["-i", os.path.join(HERE, "vo", "vo.wav"), "-i", music_lab, "-i", music_arena] + sum([["-i", s[0]] for s in sfx], [])

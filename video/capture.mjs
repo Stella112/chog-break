@@ -1,5 +1,5 @@
 // Frame-perfect footage of the real game for the demo video.
-//   node video/capture.mjs <shot> [baseUrl]      shots: landing, lab, fight, notebook, phone
+//   node video/capture.mjs <shot> [baseUrl]      shots: landing, lab, fight, notebook, swap, xp, phone
 // UI shots: Chrome virtual time is paused and advanced exactly one frame (1/30 s) between screenshots, so
 // CSS animations and timers are smooth no matter how slow the capture is.
 // Arena shots: the Phaser loop is stopped and stepped by hand (game.step) with a virtual clock, also patched
@@ -20,9 +20,10 @@ rmSync(FRAMES, { recursive: true, force: true });
 mkdirSync(FRAMES, { recursive: true });
 
 let frameNo = 0;
+let clipY = 0; // Page.captureScreenshot clips in document coordinates: follow the scroll position
 const log = (msg) => console.log(`  [${(frameNo / FPS).toFixed(1)}s] ${msg}`);
 async function shoot(cdp, w = 1280, h = 720, scale = 1.5) {
-  const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92, clip: { x: 0, y: 0, width: w, height: h, scale } });
+  const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92, clip: { x: 0, y: clipY, width: w, height: h, scale } });
   writeFileSync(join(FRAMES, `f${String(frameNo++).padStart(5, '0')}.jpg`), Buffer.from(data, 'base64'));
 }
 
@@ -353,6 +354,83 @@ async function fight(page, seconds, { phone = false } = {}) {
   }
 }
 
+// XP: real matches off camera build the parents' record (5 wins, 1 loss), then the next win is filmed:
+// the last KO, the results panel filling and leveling up, then one parent's career card in the Lab.
+async function xp(page) {
+  const live = () => page.waitForFunction(() => window.__arena?.state().live === true, null, { timeout: 60_000 });
+  await page.goto(`${BASE}/play/?a=18&b=66&fight=1&test=1`);
+  await page.getByRole('button', { name: 'FIGHT ▸' }).click();
+  await live();
+  await page.keyboard.press('Escape'); // burn the first-fight coach
+  await page.getByRole('button', { name: 'FIGHT ▸' }).click();
+  for (const loser of [1, 1, 0, 1, 1, 1]) {
+    await live();
+    for (let k = 0; k < 2; k++) {
+      await page.waitForFunction((i) => window.__arena?.state().fighters[i].state !== 'ko', loser);
+      await page.evaluate((i) => window.__arena.forceKO(i), loser);
+      await page.waitForFunction(([i, l]) => !window.__arena || window.__arena.state().fighters[i].lives === l, [loser, 1 - k]);
+    }
+    await page.locator('.results').waitFor({ timeout: 30_000 });
+    log(`off camera: ${loser === 1 ? 'win' : 'loss'}`);
+    await page.evaluate(() => delete window.__arena); // the next match installs a fresh hook
+    await page.getByRole('button', { name: 'REMATCH' }).click();
+  }
+
+  // the filmed match: stepped by hand, then on the virtual clock from just before the last KO, so the
+  // results screen and its XP bars play at true speed
+  await page.waitForFunction(() => window.__arena?.scene?.game, null, { timeout: 60_000 });
+  await page.waitForTimeout(300);
+  await arenaSetup(page);
+  log('filmed match: stepping');
+  const until = async (fn, max = 900) => {
+    for (let i = 0; i < max && !(await page.evaluate(fn)); i++) await page.evaluate(() => window.__stepFrame());
+  };
+  await until(() => window.__arena.state().live);
+  await page.evaluate(() => window.__arena.idle(0));
+  await page.evaluate(() => window.__arena.forceKO(1));
+  await until(() => window.__arena.state().fighters[1].lives === 1 && window.__arena.state().fighters[1].state !== 'ko');
+  await until(() => false, 60); // a beat after the respawn
+  log('respawned');
+
+  // stepped frames until the results screen mounts, then the virtual clock (it stalls while the 3D arena lives)
+  const cdp = await page.context().newCDPSession(page);
+  const filmed = async (n, stopAtResults) => {
+    for (let i = 0; i < n; i++) {
+      if (stopAtResults && (await page.evaluate(() => !!document.querySelector('.results')))) return;
+      await page.evaluate((t) => { window.__audioT = t; try { window.__stepFrame(); } catch { /* arena gone */ } }, frameNo / FPS);
+      await shoot(cdp);
+    }
+  };
+  await filmed(FPS, false);
+  log('final KO');
+  await page.evaluate(() => window.__arena.forceKO(1));
+  await filmed(10 * FPS, true);
+  log('results');
+  const { frames, hold, js } = await vtSetup(page);
+  await hold(5.5);
+
+  await js(`[...document.querySelectorAll('.topbar button')].find((b) => b.textContent.trim() === 'LAB').click()`);
+  await hold(0.7);
+  log('lab');
+  await js(`(() => { const el = document.querySelector('.browser-controls input');
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, '1479');
+    el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await hold(0.9);
+  await js(`document.querySelector('.cell').click()`);
+  await hold(0.5);
+  const from = await js('window.scrollY');
+  const to = await js(`(() => { const d = document.querySelector('.detail').getBoundingClientRect();
+    const y = d.top + window.scrollY - Math.max(0, (window.innerHeight - d.height) / 2);
+    return Math.min(y, document.scrollingElement.scrollHeight - window.innerHeight); })()`);
+  const n = Math.round(0.8 * FPS);
+  await frames(n, async (i) => {
+    await js(`window.scrollTo(0, ${from + (to - from) * ease((i + 1) / n)})`);
+    clipY = await js('window.scrollY');
+  });
+  log('chog card');
+  await hold(6);
+}
+
 const FULL_BLEED = '.topbar,.arena-hint{display:none!important} main,#main{padding:0!important;margin:0!important;max-width:none!important} .arena-wrap{margin:0!important} .arena-host{border:0!important;width:100vw!important;height:100vh!important;max-height:none!important}';
 
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
@@ -381,6 +459,7 @@ try {
     else if (shot === 'notebook') await notebook(page);
     else if (shot === 'swap') await swap(page);
     else if (shot === 'onchain') await onchain(page);
+    else if (shot === 'xp') await xp(page);
     else throw new Error(`unknown shot ${shot}`);
     await saveAudio(page);
   }

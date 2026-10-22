@@ -265,7 +265,8 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - ~~$CHOG fee-on-transfer~~: **resolved 2026-10-20** by `contracts/test/Fork.t.sol` against Monad mainnet: a transfer delivers exactly the amount sent; decimals 18.
 
 ## Demo video (Maris, 2026-10-21: "very good demo video with good motion graphics and voice over… 3mins max")
-- `video/out/chog-break-demo.mp4` (2:08, 1080p30, -14 LUFS) and `chog-break-demo-web.mp4` (55 MB). Not committed (gitignored); pipeline in `video/README.md`.
+- `video/out/chog-break-demo.mp4` (2:22, 1080p30, -14 LUFS) and `chog-break-demo-web.mp4` (61 MB).
+- 2026-10-22: added the XP beat (86.7–100.7 s): real off-camera matches give the parents a record (5 W, 1 L), then the filmed win levels up the mutant and both Chogs, and Chog #1479's Lab card shows LV 4 · 6 wins · 7 fights. Everything after it moved 13.983 s later; VO lines are cached by text, so no other line was re-voiced. Not committed (gitignored); pipeline in `video/README.md`.
 - All footage is the real production build: frame-stepped captures (virtual time for UI, `game.step` for the arena), the game's own SFX recorded sample-exact via an OfflineAudioContext, the game's own music rendered offline (`renderTrackOffline` in `src/audio/music.ts`).
 - Voice: Microsoft neural voice (edge-tts, en-US-AndrewMultilingualNeural), sentence by sentence with hand-set pauses; graphics timed to word boundaries.
 - On-chain section uses the real first mainnet recording's receipt (read from RPC): 3.5 / 3.5 / 2 / 1 $CHOG. Its pair's art (#1562 wears a "RETARD Cap") is not shown, only IDs. Monadscan is behind a Cloudflare check, so no explorer screen capture.
@@ -273,7 +274,7 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 
 ## XP and wins (Maris, 2026-10-22: "there should be xp added and number of wins")
 - `src/state/progress.ts`: every lab-bot match gives XP (win 100, draw 50, loss 30, +15 per KO) to the mutant (notebook entry `xp`) and to both parent Chogs (`chogbreak.progress.v1`: xp, wins, losses, fights per token ID). Levels at 100 / 300 / 600 / 1000… XP. Cosmetic only: no stat effects, fights stay deterministic. Local 2P earns nothing.
-- Shown on results (mutant + both Chogs, +XP and LEVEL UP), notebook cards, the Lab's Chog detail panel and MY CHOGS. Stored in this browser only (not on-chain).
+- Shown on results (mutant + both Chogs; the bars fill from the old XP once on screen, then +XP and LEVEL UP), notebook cards, the Lab's Chog detail panel and MY CHOGS. Stored in this browser only (not on-chain).
 - Tests: unit (formula, levels, crediting) and e2e (two wins → 2 WINS on both Chogs, LV 2 in the notebook).
 
 ## Proposals
