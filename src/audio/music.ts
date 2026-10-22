@@ -287,3 +287,50 @@ export function setMusicMuted(m: boolean) {
   }
   music.refresh();
 }
+
+/**
+ * Render a track to an AudioBuffer without playing it (used for the demo video's soundtrack): the same
+ * voices, song and mix as in the game (master → compressor, plus the code-generated reverb send).
+ */
+export async function renderTrackOffline(track: Track, seconds: number, sampleRate = 48000): Promise<AudioBuffer> {
+  const ctx = new OfflineAudioContext(2, Math.ceil(seconds * sampleRate), sampleRate);
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -16;
+  comp.knee.value = 10;
+  comp.ratio.value = 6;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.18;
+  comp.connect(ctx.destination);
+  const master = ctx.createGain();
+  master.gain.value = 0.8;
+  master.connect(comp);
+  const len = Math.floor(sampleRate * 1.2);
+  const ir = ctx.createBuffer(2, len, sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = ir.getChannelData(ch);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  }
+  const conv = ctx.createConvolver();
+  conv.buffer = ir;
+  const wet = ctx.createGain();
+  wet.gain.value = 0.22;
+  const reverbIn = ctx.createGain();
+  reverbIn.connect(conv).connect(wet).connect(master);
+  const noise = ctx.createBuffer(1, sampleRate * 2, sampleRate);
+  const n = noise.getChannelData(0);
+  for (let i = 0; i < n.length; i++) n[i] = Math.random() * 2 - 1;
+  const song = SONGS[track];
+  const bus = ctx.createGain();
+  bus.gain.value = song.volume;
+  bus.connect(master);
+  const voice = new Voice(ctx as unknown as AudioContext, bus, reverbIn, noise);
+  const sd = 60 / song.bpm / 4;
+  for (let t = 0.05, step = 0, bar = 0; t < seconds - 0.5; t += sd) {
+    song.step(voice, bar, step, t, sd, song.chords[bar % song.chords.length]!);
+    if (++step === 16) {
+      step = 0;
+      bar++;
+    }
+  }
+  return ctx.startRendering();
+}

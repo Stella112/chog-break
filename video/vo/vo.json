@@ -1,0 +1,258 @@
+{
+ "voice": "en-US-AndrewMultilingualNeural",
+ "duration": 123.27,
+ "lines": [
+  {
+   "i": 0,
+   "section": "open",
+   "text": "There are one thousand, nine hundred and sixty-nine Chog Genesis NFTs.",
+   "start": 0.6,
+   "end": 6.269
+  },
+  {
+   "i": 1,
+   "section": "open",
+   "text": "We stopped treating them as pictures,",
+   "start": 6.719,
+   "end": 8.576
+  },
+  {
+   "i": 2,
+   "section": "open",
+   "text": "and started treating them as genetic material.",
+   "start": 8.756,
+   "end": 12.034
+  },
+  {
+   "i": 3,
+   "section": "lab",
+   "text": "This is the Lab.",
+   "start": 13.034,
+   "end": 13.66
+  },
+  {
+   "i": 4,
+   "section": "lab",
+   "text": "Every real Chog is in here, searchable by its actual traits.",
+   "start": 13.96,
+   "end": 18.132
+  },
+  {
+   "i": 5,
+   "section": "lab",
+   "text": "I'll take one wearing a crown,",
+   "start": 18.582,
+   "end": 20.002
+  },
+  {
+   "i": 6,
+   "section": "lab",
+   "text": "and one with laser eyes.",
+   "start": 20.252,
+   "end": 21.506
+  },
+  {
+   "i": 7,
+   "section": "splice",
+   "text": "Splice.",
+   "start": 22.406,
+   "end": 22.996
+  },
+  {
+   "i": 8,
+   "section": "splice",
+   "text": "The lab fails, loudly, and something walks out.",
+   "start": 24.496,
+   "end": 27.402
+  },
+  {
+   "i": 9,
+   "section": "splice",
+   "text": "Laser eyes plus a crown is one of sixteen secret recipes.",
+   "start": 27.902,
+   "end": 31.738
+  },
+  {
+   "i": 10,
+   "section": "splice",
+   "text": "This is King Beam.",
+   "start": 32.038,
+   "end": 32.889
+  },
+  {
+   "i": 11,
+   "section": "genes",
+   "text": "Every trait comes from one of the two parents, and every real trait is a gene.",
+   "start": 33.889,
+   "end": 39.09
+  },
+  {
+   "i": 12,
+   "section": "genes",
+   "text": "The laser eyes became a charged beam.",
+   "start": 39.49,
+   "end": 42.188
+  },
+  {
+   "i": 13,
+   "section": "genes",
+   "text": "The crown makes it harder to knock away.",
+   "start": 42.438,
+   "end": 44.527
+  },
+  {
+   "i": 14,
+   "section": "genes",
+   "text": "Same pair, same mutant. On any device, forever.",
+   "start": 44.977,
+   "end": 48.931
+  },
+  {
+   "i": 15,
+   "section": "fight",
+   "text": "Then you fight it.",
+   "start": 49.931,
+   "end": 50.672
+  },
+  {
+   "i": 16,
+   "section": "fight",
+   "text": "It's a party brawler.",
+   "start": 51.272,
+   "end": 52.241
+  },
+  {
+   "i": 17,
+   "section": "fight",
+   "text": "Hits raise damage, damage makes you fly further, and you win by knocking the other one off the stage.",
+   "start": 52.491,
+   "end": 58.362
+  },
+  {
+   "i": 18,
+   "section": "fight",
+   "text": "Your moves come from your parents' traits.",
+   "start": 58.762,
+   "end": 60.549
+  },
+  {
+   "i": 19,
+   "section": "arena",
+   "text": "And the arena mutates too.",
+   "start": 61.349,
+   "end": 62.884
+  },
+  {
+   "i": 20,
+   "section": "arena",
+   "text": "The Chogs' backgrounds pick the rules: low gravity, bouncy floors, a toxic floor, meteors.",
+   "start": 63.184,
+   "end": 70.277
+  },
+  {
+   "i": 21,
+   "section": "arena",
+   "text": "They hit both fighters, so an NFT changes the game without buying power.",
+   "start": 70.627,
+   "end": 75.337
+  },
+  {
+   "i": 22,
+   "section": "notebook",
+   "text": "Every experiment lands in your notebook.",
+   "start": 76.337,
+   "end": 78.229
+  },
+  {
+   "i": 23,
+   "section": "notebook",
+   "text": "Swap one parent, and you get a different creature, different moves, a different fight.",
+   "start": 78.529,
+   "end": 83.33
+  },
+  {
+   "i": 24,
+   "section": "notebook",
+   "text": "There are almost two million pairs to try.",
+   "start": 83.73,
+   "end": 85.93
+  },
+  {
+   "i": 25,
+   "section": "onchain",
+   "text": "If you want the credit, record it on Monad.",
+   "start": 86.93,
+   "end": 88.978
+  },
+  {
+   "i": 26,
+   "section": "onchain",
+   "text": "The first person to record a pair is its discoverer, permanently.",
+   "start": 89.278,
+   "end": 93.129
+  },
+  {
+   "i": 27,
+   "section": "onchain",
+   "text": "The small chog fee is split on the spot: thirty-five percent to the owner of each parent.",
+   "start": 93.579,
+   "end": 99.318
+  },
+  {
+   "i": 28,
+   "section": "onchain",
+   "text": "So a popular Chog earns for its holder.",
+   "start": 99.618,
+   "end": 102.095
+  },
+  {
+   "i": 29,
+   "section": "onchain",
+   "text": "And your first recording is on us.",
+   "start": 102.595,
+   "end": 104.231
+  },
+  {
+   "i": 30,
+   "section": "onchain",
+   "text": "Sign a message, and we pay the fee and the gas.",
+   "start": 104.481,
+   "end": 107.578
+  },
+  {
+   "i": 31,
+   "section": "phone",
+   "text": "You don't need a wallet to play.",
+   "start": 108.578,
+   "end": 109.89
+  },
+  {
+   "i": 32,
+   "section": "phone",
+   "text": "It runs in the browser, on your laptop or your phone.",
+   "start": 110.14,
+   "end": 113.091
+  },
+  {
+   "i": 33,
+   "section": "close",
+   "text": "One thousand, nine hundred and sixty-nine Chogs.",
+   "start": 114.091,
+   "end": 117.175
+  },
+  {
+   "i": 34,
+   "section": "close",
+   "text": "Millions of experiments.",
+   "start": 117.525,
+   "end": 118.864
+  },
+  {
+   "i": 35,
+   "section": "close",
+   "text": "Splice. Break. Repeat.",
+   "start": 119.514,
+   "end": 121.77
+  }
+ ]
+}

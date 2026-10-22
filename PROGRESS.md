@@ -264,6 +264,13 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - $CHOG `burn()`: the implementation bytecode contains the selectors, but the source was not checked. The spec still uses the dead address.
 - ~~$CHOG fee-on-transfer~~: **resolved 2026-10-20** by `contracts/test/Fork.t.sol` against Monad mainnet: a transfer delivers exactly the amount sent; decimals 18.
 
+## Demo video (Maris, 2026-10-21: "very good demo video with good motion graphics and voice over… 3mins max")
+- `video/out/chog-break-demo.mp4` (2:08, 1080p30, -14 LUFS) and `chog-break-demo-web.mp4` (55 MB). Not committed (gitignored); pipeline in `video/README.md`.
+- All footage is the real production build: frame-stepped captures (virtual time for UI, `game.step` for the arena), the game's own SFX recorded sample-exact via an OfflineAudioContext, the game's own music rendered offline (`renderTrackOffline` in `src/audio/music.ts`).
+- Voice: Microsoft neural voice (edge-tts, en-US-AndrewMultilingualNeural), sentence by sentence with hand-set pauses; graphics timed to word boundaries.
+- On-chain section uses the real first mainnet recording's receipt (read from RPC): 3.5 / 3.5 / 2 / 1 $CHOG. Its pair's art (#1562 wears a "RETARD Cap") is not shown, only IDs. Monadscan is behind a Cloudflare check, so no explorer screen capture.
+- Chogs whose art prints crude words are excluded from the walls; the swap clip starts after the unfiltered grid.
+
 ## Proposals
 - ~~P-2, background music~~: **approved by Maris (2026-10-18) and built**; see below.
 - ~~P-1, mutant art matches the genes~~: **approved by Maris (2026-10-19) and built** as core v2: the parent that gave the inherited Head is the top half of the art (falls back to the visual stream when neither parent has a Head). `CORE_VERSION` 1 → 2; `createMutant({ version: 1 })` still reproduces v1 exactly (unit test: v1 and v2 differ only in `visualRecipe.topParent`). Checked on KING BEAM: the crown parent is on top and the laser beam from the other parent still shows below the seam.

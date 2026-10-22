@@ -15,6 +15,8 @@ export default tseslint.config(
   },
   // The sponsor service runs in Node on the VPS.
   { files: ['sponsor/**/*.mjs'], languageOptions: { globals: { ...globals.node } } },
+  // Demo-video tooling: Node scripts that drive pages, and the graphics page itself.
+  { files: ['video/**/*.{mjs,js}'], languageOptions: { globals: { ...globals.node, ...globals.browser } } },
   // e2e tests reach into the ?test=1 runtime hooks on window.
   { files: ['tests/e2e/**/*.ts'], rules: { '@typescript-eslint/no-explicit-any': 'off' } },
   // §B: src/core must stay pure.

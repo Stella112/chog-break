@@ -1,0 +1,8 @@
+out/
+footage/
+vo/gen/
+vo/vo.wav
+node_modules/
+*.mp4
+*.mov
+*.webm

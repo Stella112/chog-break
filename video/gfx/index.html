@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Bungee&family=JetBrains+Mono:wght@400;700&display=block">
+<style>
+  /* The game's own tokens (src/ui/styles.css) so the graphics read as the same product. */
+  :root {
+    --bg: #0b0a10; --panel: #15131d; --panel-2: #1d1a28; --line: #2e2a3d; --text: #f1eef7; --dim: #a59fb8;
+    --hazard: #ffd400; --a: #4ff0ff; --b: #ff4fd8; --danger: #ff4f4f; --toxic: #8aff4f; --monad: #836ef9;
+    --display: 'Bungee', Impact, sans-serif; --mono: 'JetBrains Mono', monospace; --body: 'Archivo', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: transparent; }
+  body.opaque { background: var(--bg); }
+  #stage { position: absolute; inset: 0; color: var(--text); font-family: var(--body); overflow: hidden; }
+  .abs { position: absolute; }
+  .grid-bg { position: absolute; inset: 0; background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 64px 64px; }
+  .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%); }
+  .mono { font-family: var(--mono); }
+  .disp { font-family: var(--display); }
+  .dim { color: var(--dim); }
+  .hl { color: var(--hazard); }
+  .logo { font-family: var(--display); color: var(--text); white-space: nowrap; }
+  .logo span { color: var(--hazard); }
+
+  /* wall of real Chogs */
+  .wall { position: absolute; left: 960px; top: 540px; display: grid; }
+  .tile { position: relative; border-radius: 10px; }
+  .tile img, .tile .gene { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 10px; }
+  .tile img { object-fit: cover; }
+  .tile .gene { background: var(--panel); border: 1px solid var(--line); display: none; flex-direction: column; justify-content: center; padding: 10px; gap: 4px; }
+  .tile .gene b { font: 700 13px var(--mono); color: var(--dim); letter-spacing: 0.08em; }
+  .tile .gene i { font: 800 17px/1.05 var(--body); font-style: normal; overflow: hidden; }
+  .tile .gene u { display: block; height: 4px; border-radius: 2px; text-decoration: none; margin-top: 4px; }
+  .tile.pair-a { outline: 5px solid var(--a); outline-offset: 2px; }
+  .tile.pair-b { outline: 5px solid var(--b); outline-offset: 2px; }
+
+  .panel { background: rgba(21,19,29,0.92); border: 1px solid var(--line); }
+  .tape { height: 10px; background: repeating-linear-gradient(-45deg, var(--hazard) 0 14px, #000 14px 28px); }
+  .card-img { border-radius: 14px; display: block; object-fit: cover; }
+  .chip { font: 700 22px var(--mono); padding: 6px 12px; border: 2px solid currentColor; white-space: nowrap; }
+  .tag { display: flex; align-items: center; gap: 16px; background: var(--hazard); color: #000; padding: 12px 22px 12px 16px; font: 34px var(--display); white-space: nowrap; }
+  .tag small { font: 700 18px var(--mono); background: #000; color: var(--hazard); padding: 4px 8px; }
+  .row { display: grid; grid-template-columns: 170px 330px 210px 1fr; align-items: center; height: 92px; padding: 0 26px; border-bottom: 1px solid var(--line); }
+  .key { display: inline-grid; place-items: center; width: 46px; height: 46px; border: 2px solid var(--text); border-bottom-width: 5px; border-radius: 8px; font: 700 22px var(--mono); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="scenes.js"></script>
+</body>
+</html>
