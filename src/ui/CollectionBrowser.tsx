@@ -5,6 +5,7 @@ import { NONE } from '../core/types';
 import { GENE_INFO, SLOT_ROLE } from '../config/geneInfo';
 import { searchChogs, type Manifest } from '../data/manifest';
 import { sfx } from '../audio/sfx';
+import { ChogRank } from './Progress';
 import { ChogImage } from './ChogImage';
 import { geneForSlot } from './traitGenes';
 
@@ -206,6 +207,7 @@ export function CollectionBrowser({
                 <p className="mono dim">
                   TOKEN ID {detail.tokenId} · {detail.traits.Tier.toUpperCase()}
                 </p>
+                <ChogRank tokenId={detail.tokenId} />
                 <div className="detail-actions">
                   <button className="btn btn-a" onClick={() => onLoad('A', detail.tokenId)}>
                     LOAD INTO A

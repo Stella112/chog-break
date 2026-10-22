@@ -7,6 +7,7 @@ import { shortAddress } from '../chain/client';
 import { readNotebook } from '../state/notebook';
 import type { WalletState } from '../state/wallet';
 import { ChogImage } from './ChogImage';
+import { ChogRank } from './Progress';
 import { geneForSlot } from './traitGenes';
 import { TokenOnChain } from './OnChain';
 
@@ -31,6 +32,7 @@ function OwnedCard({ chog, onSplice, onOpen }: { chog: ChogRecord; onSplice: (id
           <p className="mono small dim">
             TOKEN ID {chog.tokenId} · {chog.traits.Tier.toUpperCase()}
           </p>
+          <ChogRank tokenId={chog.tokenId} />
           <button className="btn btn-primary small" onClick={() => onSplice(chog.tokenId)}>
             SPLICE WITH… ▸
           </button>

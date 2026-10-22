@@ -9,6 +9,8 @@ export type NotebookEntry = {
   discoveredAt: string;
   wins: number;
   losses: number;
+  /** Absent on entries saved before XP existed. */
+  xp?: number;
   recordedTx?: string;
 };
 
@@ -49,11 +51,16 @@ export function recordDiscovery(
   return true;
 }
 
-export function recordResult(pairKey: string, won: boolean) {
+export function recordResult(pairKey: string, won: boolean, xp = 0) {
   const nb = { ...readNotebook() };
   const entry = nb[pairKey];
   if (!entry) return;
-  nb[pairKey] = { ...entry, wins: entry.wins + (won ? 1 : 0), losses: entry.losses + (won ? 0 : 1) };
+  nb[pairKey] = {
+    ...entry,
+    wins: entry.wins + (won ? 1 : 0),
+    losses: entry.losses + (won ? 0 : 1),
+    xp: (entry.xp ?? 0) + xp,
+  };
   write(nb);
 }
 

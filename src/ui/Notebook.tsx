@@ -4,6 +4,7 @@ import { createMutant, type Mutant } from '../core/splice';
 import type { Manifest } from '../data/manifest';
 import { needsJar, renderMutant } from '../art/mutantRenderer';
 import { readNotebook, type NotebookEntry } from '../state/notebook';
+import { LevelBar } from './Progress';
 import { ChogImage } from './ChogImage';
 import { ShareButtons } from './ShareButtons';
 import { useOwned } from '../state/owned';
@@ -175,6 +176,7 @@ export function Notebook({ manifest, onOpen, onFight }: Props) {
                   </span>
                 </div>
                 <WinBar wins={e.wins} losses={e.losses} />
+                <LevelBar xp={e.xp ?? 0} />
                 <span className="badges">
                   {e.recipeId && <span className="badge badge-recipe">SECRET</span>}
                   {e.unstable && <span className="badge badge-unstable">UNSTABLE</span>}

@@ -5,6 +5,9 @@ import type { Mutant } from '../core/splice';
 import type { Manifest } from '../data/manifest';
 import { needsJar, renderMutant } from '../art/mutantRenderer';
 import { readNotebook } from '../state/notebook';
+import { matchXp } from '../state/progress';
+import { ChogImage } from './ChogImage';
+import { ChogRank, LevelBar } from './Progress';
 import { ShareButtons } from './ShareButtons';
 
 type Props = {
@@ -92,6 +95,7 @@ export function Results({
   const t = Math.round(result.timeMs / 1000);
   const [me, foe] = result.fighters;
   const record = readNotebook()[mutant.pairKey];
+  const xpGained = twoPlayer ? 0 : matchXp(result);
   const tip = useMemo(() => labTip(mutant, manifest), [mutant, manifest]);
   const outcome = (i: 0 | 1) =>
     result.winner === null ? 'draw' : result.winner === i ? 'win' : 'lose';
@@ -195,6 +199,24 @@ export function Results({
           </div>
         )}
       </div>
+
+      {!twoPlayer && (
+        <div className="rs-progress" aria-label="Experience earned">
+          <div className="rs-prog-row">
+            <span className="label">MUTANT</span>
+            <strong className="rs-prog-name">{mutant.name}</strong>
+            <LevelBar xp={record?.xp ?? xpGained} gained={xpGained} />
+          </div>
+          {[...new Set([mutant.lo, mutant.hi])].map((id) => (
+            <div className="rs-prog-row" key={id}>
+              <ChogImage tokenId={id} alt={manifest.byId.get(id)?.displayName ?? `Token ${id}`} thumb />
+              <strong className="rs-prog-name">{manifest.byId.get(id)?.displayName ?? `#${id}`}</strong>
+              <ChogRank tokenId={id} gained={xpGained} />
+            </div>
+          ))}
+          <p className="small dim">Every fight levels up the mutant and both parent Chogs.</p>
+        </div>
+      )}
 
       <div className="reveal-actions">
         <button className="btn btn-primary" onClick={onRematch}>

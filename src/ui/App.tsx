@@ -11,6 +11,7 @@ import { loadManifest, type Manifest } from '../data/manifest';
 import { isMuted, setMuted, sfx } from '../audio/sfx';
 import { isMusicMuted, music, setMusicMuted } from '../audio/music';
 import { readNotebook, recordDiscovery, recordResult, setRecordedTx } from '../state/notebook';
+import { matchXp, recordChogResult } from '../state/progress';
 import { needsJar, renderMutant } from '../art/mutantRenderer';
 import { SKIN_TINT } from '../config/geneInfo';
 import type { Difficulty } from '../arena/bot';
@@ -263,8 +264,12 @@ export function App() {
   };
 
   const onMatchEnd = (r: MatchResult) => {
-    // The notebook W–L tracks your mutant against the lab bot only.
-    if (mutant && mode === 'bot') recordResult(mutant.pairKey, r.winner === 0);
+    // The notebook W–L and all XP track your mutant against the lab bot only.
+    if (mutant && mode === 'bot') {
+      const xp = matchXp(r);
+      recordResult(mutant.pairKey, r.winner === 0, xp);
+      recordChogResult([mutant.lo, mutant.hi], xp, r.winner === null ? null : r.winner === 0);
+    }
     setResult(r);
     setScreen('results');
   };

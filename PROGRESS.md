@@ -271,6 +271,11 @@ Reviewed full-size screenshots of every screen (`SHOTS=1 npx playwright test tes
 - On-chain section uses the real first mainnet recording's receipt (read from RPC): 3.5 / 3.5 / 2 / 1 $CHOG. Its pair's art (#1562 wears a "RETARD Cap") is not shown, only IDs. Monadscan is behind a Cloudflare check, so no explorer screen capture.
 - Chogs whose art prints crude words are excluded from the walls; the swap clip starts after the unfiltered grid.
 
+## XP and wins (Maris, 2026-10-22: "there should be xp added and number of wins")
+- `src/state/progress.ts`: every lab-bot match gives XP (win 100, draw 50, loss 30, +15 per KO) to the mutant (notebook entry `xp`) and to both parent Chogs (`chogbreak.progress.v1`: xp, wins, losses, fights per token ID). Levels at 100 / 300 / 600 / 1000… XP. Cosmetic only: no stat effects, fights stay deterministic. Local 2P earns nothing.
+- Shown on results (mutant + both Chogs, +XP and LEVEL UP), notebook cards, the Lab's Chog detail panel and MY CHOGS. Stored in this browser only (not on-chain).
+- Tests: unit (formula, levels, crediting) and e2e (two wins → 2 WINS on both Chogs, LV 2 in the notebook).
+
 ## Proposals
 - ~~P-2, background music~~: **approved by Maris (2026-10-18) and built**; see below.
 - ~~P-1, mutant art matches the genes~~: **approved by Maris (2026-10-19) and built** as core v2: the parent that gave the inherited Head is the top half of the art (falls back to the visual stream when neither parent has a Head). `CORE_VERSION` 1 → 2; `createMutant({ version: 1 })` still reproduces v1 exactly (unit test: v1 and v2 differ only in `visualRecipe.topParent`). Checked on KING BEAM: the crown parent is on top and the laser beam from the other parent still shows below the seam.

@@ -136,3 +136,28 @@ test('2.5D fallback: ?arena=2d runs the flat 2D arena', async ({ page }) => {
   await expect(page.locator('canvas.arena-3d')).toHaveCount(0);
   await expect(page.locator('.arena-host canvas')).toHaveCount(1);
 });
+
+test('XP and wins build up on the mutant and both parent Chogs', async ({ page }) => {
+  const errors: string[] = [];
+  await toArena(page, errors);
+  await koTwice(page, 1);
+  const panel = page.locator('.rs-progress');
+  await expect(panel).toBeVisible({ timeout: 10_000 });
+  await expect(panel.locator('.lv-gain')).toHaveCount(3);
+  await expect(panel.getByText('1 WIN · 1 FIGHT')).toHaveCount(2);
+  const firstXp = Number((await panel.locator('.lv .dim').first().innerText()).replace(/\D/g, ''));
+  expect(firstXp).toBeGreaterThanOrEqual(100);
+  await expect(panel.locator('.lv-up').first()).toBeVisible(); // a win is ≥ 100 XP: level 2
+  await panel.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/xp-results.png` : undefined });
+
+  await page.getByRole('button', { name: 'REMATCH' }).click();
+  await page.waitForFunction(() => window.__arena?.state().live === true, null, { timeout: 15_000 });
+  await koTwice(page, 1);
+  await expect(panel.getByText('2 WINS · 2 FIGHTS')).toHaveCount(2, { timeout: 10_000 });
+  await expect(panel.locator('.lv-up')).toHaveCount(0); // 200 XP: still level 2 (level 3 is 300)
+
+  await page.getByRole('button', { name: /NOTEBOOK/ }).click();
+  await expect(page.locator('.nb-card .lv-num').first()).toHaveText('LV 2');
+  await page.locator('.nb-card').first().screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/xp-notebook.png` : undefined });
+  expect(errors).toEqual([]);
+});

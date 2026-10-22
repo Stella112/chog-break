@@ -335,3 +335,12 @@ a.btn { display: inline-block; text-decoration: none; color: inherit; }
 .badge-onchain { background: #b48cff; color: #000; }
 .record-free { display: grid; gap: 0.3rem; margin: 0.5rem 0; padding: 0.5rem; border: 1px dashed #4ff0ff; }
 .kcap-key { white-space: nowrap; }
+
+/* Progression: XP level bars (mutants and Chogs) */
+.lv { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+.lv-num { color: var(--hazard); font-weight: 700; font-size: 0.8rem; }
+.lv-bar { flex: 1 1 60px; min-width: 60px; max-width: 160px; height: 6px; background: var(--bg); border: 1px solid var(--line); }
+.lv-bar span { display: block; height: 100%; background: var(--hazard); transition: width 0.6s ease-out; }
+.lv-gain { color: var(--toxic); }
+.lv-up { background: var(--hazard); color: var(--bg); padding: 0 0.35rem; font-weight: 700; }
+.chog-rank { display: flex; flex-direction: column; gap: 0.2rem; margin: 0.35rem 0 0.5rem; }
