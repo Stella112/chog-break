@@ -13,7 +13,7 @@ Pick two real Chog Genesis NFTs, splice their traits and art into a mutant, and 
 - Repository: https://github.com/Stella112/chog-break
 - Recorded Splice registry (Monad, source verified): https://monadscan.com/address/0x0EBe620530E604E6D05E0ffE7589c807E9e91527
 - First mainnet recording: https://monadscan.com/tx/0xfa06348c2cc0b589c68dd7c1e9d7e21aa34b562cfc3a852b53abb7be0b9ac874
-- Demo video: Maris adds the YouTube (unlisted) or Drive link here after recording
+- Demo video (2:22): Maris adds the YouTube (unlisted) or Drive link here after uploading `video/out/chog-break-demo-web.mp4`
 
 ## Description
 
@@ -28,6 +28,8 @@ CHOG//BREAK turns the 1,969 Chog Genesis NFTs into ingredients. Pick any two rea
 **Fight.** Take your mutant into a Smash-style side-view arena against a bot (Easy, Normal, Hard) or a friend on the same keyboard. Damage % builds up, knockback grows, knock them off the screen. Your mutant's genes are your moveset: its special, close move, recovery, weight, speed and passives all come from the parents. The arena mutates too: the Backgrounds of all four Chogs in the match pick modifiers such as a rotating toxic floor, low gravity, slippery or bouncy floors, meteor showers, coin rain or a shrinking stage. These affect both fighters, so an NFT changes the rules rather than buying power.
 
 **Discover.** Sixteen secret recipes hide in specific cross-parent combinations (laser eyes + crown = KING BEAM; Skull + Radioactive = NUCLEAR UNDEAD). Each one renames the mutant, changes its look and adds a perk. The Lab Notebook keeps every mutant you have made with its fight record, shows secret mutations found as "N / ???", and the results screen hints when one of your parents is half of a recipe you haven't found. With 1,937,496 possible pairs, the natural question after every fight is "what happens if I splice that one instead?"
+
+**Progression.** Every fight against the bot earns XP (100 for a win, +15 per KO). The mutant levels up, and so does each of its two parent Chogs, so a Chog builds a career across every mutant it parents: its level, XP, wins and fights show on the results screen, in the Notebook, in the Lab and in MY CHOGS. XP is cosmetic and never changes a stat, so fights stay fair and deterministic. It is stored on the device.
 
 **Recorded Splice ($CHOG).** With a wallet, a player can record any experiment on Monad for a 10 $CHOG fee (registry `0x0EBe620530E604E6D05E0ffE7589c807E9e91527`, source verified). The first to record a pair is its permanent first discoverer, and every recording pays 35% of the fee to the current owner of each parent Chog, so holding a popular Chog earns $CHOG. The rest goes 20% to a prize pool and 10% to the dead address. New players get their first recording free and gasless: they sign a message and the game pays the fee and gas, and they still get the discoverer credit. The free experiment stays the default.
 
@@ -53,7 +55,9 @@ The NFTs supply the parents' identity and art, the mutant's genetics, its visual
 5. Optional: **TRY A SECRET MUTATION** on the home screen; **LOCAL 2P** on the pre-match screen.
 
 ## Tech stack
-Vite + TypeScript (strict), React 18, Phaser 3 (Arcade Physics), viem (hashing), WebAudio (all sound and music synthesized in code), Vitest + Playwright, static hosting. Data pipeline in TypeScript against Monad mainnet (chain 143) and IPFS.
+Vite + TypeScript (strict), React 18, Phaser 3 (Arcade Physics) with a three.js 2.5D arena, viem (wallet, hashing, Monad reads), Solidity + Foundry (Recorded Splice registry on Monad mainnet), a small Node sponsor service for the gasless first recording, WebAudio (all sound and music synthesized in code), Vitest + Playwright, Vercel static hosting. Data pipeline in TypeScript against Monad mainnet (chain 143) and IPFS.
+
+Short form for the tech-stack field: `React, TypeScript, Phaser, three.js, viem, Solidity, Foundry, Monad`
 
 ## Pre-existing work
 None. All code was written during Chogathon 2026. Open-source libraries are listed in the README. Art comes from the Chog Genesis collection's own metadata.
@@ -63,3 +67,11 @@ Internal playtesting only. The first playtest feedback ("I don't know how to pla
 
 ## What's next
 a Daily Experiment challenge, and online play.
+
+## Judge access instructions
+No login, invite or wallet is needed. Open https://chog-break.vercel.app/play/?a=18&b=66 (a secret mutation) and press FIGHT twice; the first fight coaches the controls (desktop keyboard: A/D move, W jump, J punch, K dash, L special, I close move). Phones also work: the fight shows on-screen touch controls.
+
+Optional wallet path: CONNECT WALLET shows the Chogs you hold (read-only, never asks to sign). If your wallet extension (Zerion or MetaMask) shows a "malicious dApp" warning for chog-break.vercel.app, that is a false positive from an automated scanner: choose "continue to the site", or open the link in a browser profile without a wallet extension. The game does not need a wallet.
+
+## Go-to-market (optional field)
+Who uses it: Chog holders and the wider Monad community, who get a reason to open their NFTs beyond holding them. How it grows: every mutant is a shareable link and a share card (same pair, same mutant everywhere), so each player invites the next. Holders have a reason to promote popular Chogs, because every Recorded Splice pays 35% of the fee to the owner of each parent Chog. Daily Experiment challenges and online play are the next retention steps.
